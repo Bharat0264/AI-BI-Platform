@@ -264,4 +264,14 @@ AI Autonomous Business Intelligence Platform demonstrates the integration of:
 * Voice AI
 * Predictive Analytics
 
-into a si
+into a single intelligent analytics ecosystem.
+
+The project helps businesses make smarter data-driven decisions using modern AI technologies.
+
+---
+
+# Author
+
+Bharath Sai Pulipati
+
+Major Project — AI Autonomous Business Intelligence Platform
