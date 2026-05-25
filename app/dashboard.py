@@ -2,8 +2,16 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from llm_engine import ask_ai
+from report_generator import generate_pdf_report
+from prediction import predict_sales
 
+from autonomous_insights import (
+    generate_autonomous_insights
+)
 
+from voice_assistant import (
+    listen_to_voice
+)
 
 st.set_page_config(
     page_title="AI BI Platform",
@@ -190,3 +198,133 @@ if uploaded_file is not None:
             )
 
         st.success(answer)
+        st.subheader("AI Report Generator")
+
+
+    if st.button("Generate AI Report"):
+
+        with st.spinner(
+            "Generating AI Executive Report..."
+        ):
+
+            report_prompt = """
+Generate a professional business report
+based on the dataset analysis.
+
+Include:
+- Executive summary
+- Business insights
+- Problems detected
+- Recommendations
+- Strategic suggestions
+"""
+
+            report_text = ask_ai(
+                report_prompt,
+                filtered_df
+            )
+
+            pdf_path = generate_pdf_report(
+                report_text
+            )
+
+            st.success(
+                "AI Report Generated Successfully!"
+            )
+
+            st.text_area(
+                "Generated Report",
+                report_text,
+                height=300
+            )
+
+            with open(pdf_path, "rb") as file:
+
+                st.download_button(
+                    label="Download PDF Report",
+                    data=file,
+                    file_name="AI_Business_Report.pdf",
+                    mime="application/pdf"
+                )
+        st.subheader("Sales Forecasting")
+
+
+    monthly_sales, future_df = predict_sales(
+        filtered_df
+    )
+
+
+    forecast_chart = px.line(
+        monthly_sales,
+        x='Order Date',
+        y='Sales',
+        title='Historical Monthly Sales'
+    )
+
+
+    forecast_chart.add_scatter(
+        x=future_df['Month_Index'],
+        y=future_df['Predicted Sales'],
+        mode='lines+markers',
+        name='Predicted Sales'
+    )
+
+
+    st.plotly_chart(
+        forecast_chart,
+        use_container_width=True
+    )
+
+
+    st.dataframe(future_df)
+
+    st.subheader(
+        "Autonomous AI Insights"
+    )
+
+
+    autonomous_insights = (
+        generate_autonomous_insights(
+            filtered_df
+        )
+    )
+
+
+    for insight in autonomous_insights:
+
+        st.warning(insight)
+    
+        st.subheader(
+        "Voice AI Assistant"
+    )
+
+
+    if st.button(
+        "Start Voice Assistant"
+    ):
+
+        with st.spinner(
+            "Listening to voice..."
+        ):
+
+            voice_query = (
+                listen_to_voice()
+            )
+
+
+        st.info(
+            f"Voice Query: {voice_query}"
+        )
+
+
+        with st.spinner(
+            "AI analyzing query..."
+        ):
+
+            voice_answer = ask_ai(
+                voice_query,
+                filtered_df
+            )
+
+
+        st.success(voice_answer)
