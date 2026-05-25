@@ -274,4 +274,4 @@ The project helps businesses make smarter data-driven decisions using modern AI 
 
 Bharath Sai Pulipati
 
-Major Project — AI Autonomous Business Intelligence Platform
+AI Autonomous Business Intelligence Platform
