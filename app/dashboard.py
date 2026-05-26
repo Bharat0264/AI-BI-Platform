@@ -14,20 +14,30 @@ from streamlit_mic_recorder import (
 )
 
 
-# Page Configuration
+# ============================================
+# PAGE CONFIG
+# ============================================
+
 st.set_page_config(
     page_title="AI BI Platform",
+    page_icon="🚀",
     layout="wide"
 )
 
 
-# Title
+# ============================================
+# TITLE
+# ============================================
+
 st.title(
     "🚀 AI Autonomous Business Intelligence Platform"
 )
 
 
-# File Upload
+# ============================================
+# FILE UPLOAD
+# ============================================
+
 uploaded_file = st.file_uploader(
     "Upload CSV File",
     type=["csv"]
@@ -36,14 +46,36 @@ uploaded_file = st.file_uploader(
 
 if uploaded_file is not None:
 
-    # Load Dataset
+    # ============================================
+    # LOAD DATASET
+    # ============================================
+
     df = pd.read_csv(
         uploaded_file,
         encoding='latin1'
     )
 
 
-    # Sidebar Filters
+    # ============================================
+    # SIDEBAR
+    # ============================================
+
+    st.sidebar.title("Navigation")
+
+
+    page = st.sidebar.radio(
+        "Go To",
+        [
+            "🏠 Dashboard",
+            "🤖 AI Assistant",
+            "📈 Forecasting",
+            "📄 AI Reports",
+            "🧠 Autonomous Insights",
+            "🎤 Voice Assistant"
+        ]
+    )
+
+
     st.sidebar.header("Filters")
 
 
@@ -61,252 +93,302 @@ if uploaded_file is not None:
     )
 
 
-    # Apply Filters
+    # ============================================
+    # FILTER DATA
+    # ============================================
+
     filtered_df = df[
         (df["Region"].isin(region)) &
         (df["Category"].isin(category))
     ]
 
 
-    # =========================
-    # KPI SECTION
-    # =========================
+    # ============================================
+    # DASHBOARD PAGE
+    # ============================================
 
-    total_sales = filtered_df["Sales"].sum()
+    if page == "🏠 Dashboard":
 
-    total_profit = filtered_df["Profit"].sum()
-
-    total_orders = filtered_df[
-        "Order ID"
-    ].nunique()
-
-    avg_discount = filtered_df[
-        "Discount"
-    ].mean()
+        st.header("Business Dashboard")
 
 
-    col1, col2, col3, col4 = st.columns(4)
+        # KPIs
+        total_sales = filtered_df["Sales"].sum()
+
+        total_profit = filtered_df["Profit"].sum()
+
+        total_orders = filtered_df[
+            "Order ID"
+        ].nunique()
+
+        avg_discount = filtered_df[
+            "Discount"
+        ].mean()
 
 
-    col1.metric(
-        "Total Sales",
-        f"${total_sales:,.0f}"
-    )
+        col1, col2, col3, col4 = st.columns(4)
 
 
-    col2.metric(
-        "Total Profit",
-        f"${total_profit:,.0f}"
-    )
+        col1.metric(
+            "Total Sales",
+            f"${total_sales:,.0f}"
+        )
 
 
-    col3.metric(
-        "Orders",
-        total_orders
-    )
+        col2.metric(
+            "Total Profit",
+            f"${total_profit:,.0f}"
+        )
 
 
-    col4.metric(
-        "Avg Discount",
-        f"{avg_discount:.0%}"
-    )
+        col3.metric(
+            "Orders",
+            total_orders
+        )
 
 
-    # =========================
-    # SALES BY CATEGORY
-    # =========================
-
-    st.subheader(
-        "Sales by Category"
-    )
+        col4.metric(
+            "Avg Discount",
+            f"{avg_discount:.0%}"
+        )
 
 
-    category_sales = (
-        filtered_df.groupby(
-            "Category"
-        )["Sales"]
-        .sum()
-        .reset_index()
-    )
+        # Sales by Category
+        st.subheader(
+            "Sales by Category"
+        )
 
 
-    fig1 = px.bar(
-        category_sales,
-        x="Category",
-        y="Sales",
-        color="Category",
-        title="Sales by Category"
-    )
+        category_sales = (
+            filtered_df.groupby(
+                "Category"
+            )["Sales"]
+            .sum()
+            .reset_index()
+        )
 
 
-    st.plotly_chart(
-        fig1,
-        use_container_width=True
-    )
+        fig1 = px.bar(
+            category_sales,
+            x="Category",
+            y="Sales",
+            color="Category",
+            title="Sales by Category"
+        )
 
 
-    # =========================
-    # PROFIT BY REGION
-    # =========================
-
-    st.subheader(
-        "Profit by Region"
-    )
+        st.plotly_chart(
+            fig1,
+            use_container_width=True
+        )
 
 
-    region_profit = (
-        filtered_df.groupby(
-            "Region"
-        )["Profit"]
-        .sum()
-        .reset_index()
-    )
+        # Profit by Region
+        st.subheader(
+            "Profit by Region"
+        )
 
 
-    fig2 = px.bar(
-        region_profit,
-        x="Region",
-        y="Profit",
-        color="Region",
-        title="Profit by Region"
-    )
+        region_profit = (
+            filtered_df.groupby(
+                "Region"
+            )["Profit"]
+            .sum()
+            .reset_index()
+        )
 
 
-    st.plotly_chart(
-        fig2,
-        use_container_width=True
-    )
+        fig2 = px.bar(
+            region_profit,
+            x="Region",
+            y="Profit",
+            color="Region",
+            title="Profit by Region"
+        )
 
 
-    # =========================
-    # MONTHLY SALES TREND
-    # =========================
-
-    st.subheader(
-        "Monthly Sales Trend"
-    )
+        st.plotly_chart(
+            fig2,
+            use_container_width=True
+        )
 
 
-    filtered_df["Order Date"] = pd.to_datetime(
-        filtered_df["Order Date"]
-    )
+        # Monthly Sales Trend
+        st.subheader(
+            "Monthly Sales Trend"
+        )
 
 
-    monthly_sales_chart = (
-        filtered_df.groupby(
-            filtered_df[
+        filtered_df["Order Date"] = (
+            pd.to_datetime(
+                filtered_df["Order Date"]
+            )
+        )
+
+
+        monthly_sales_chart = (
+            filtered_df.groupby(
+                filtered_df[
+                    "Order Date"
+                ].dt.to_period("M")
+            )["Sales"]
+            .sum()
+            .reset_index()
+        )
+
+
+        monthly_sales_chart["Order Date"] = (
+            monthly_sales_chart[
                 "Order Date"
-            ].dt.to_period("M")
-        )["Sales"]
-        .sum()
-        .reset_index()
-    )
+            ].astype(str)
+        )
 
 
-    monthly_sales_chart["Order Date"] = (
-        monthly_sales_chart[
-            "Order Date"
-        ].astype(str)
-    )
+        fig3 = px.line(
+            monthly_sales_chart,
+            x="Order Date",
+            y="Sales",
+            title="Monthly Sales Trend"
+        )
 
 
-    fig3 = px.line(
-        monthly_sales_chart,
-        x="Order Date",
-        y="Sales",
-        title="Monthly Sales Trend"
-    )
+        st.plotly_chart(
+            fig3,
+            use_container_width=True
+        )
 
 
-    st.plotly_chart(
-        fig3,
-        use_container_width=True
-    )
+        # Business Insights
+        st.subheader(
+            "Business Insights"
+        )
 
 
-    # =========================
-    # BUSINESS INSIGHTS
-    # =========================
-
-    st.subheader(
-        "Business Insights"
-    )
-
-
-    top_category = (
-        filtered_df.groupby(
-            "Category"
-        )["Sales"]
-        .sum()
-        .idxmax()
-    )
+        top_category = (
+            filtered_df.groupby(
+                "Category"
+            )["Sales"]
+            .sum()
+            .idxmax()
+        )
 
 
-    top_region = (
-        filtered_df.groupby(
-            "Region"
-        )["Profit"]
-        .sum()
-        .idxmax()
-    )
+        top_region = (
+            filtered_df.groupby(
+                "Region"
+            )["Profit"]
+            .sum()
+            .idxmax()
+        )
 
 
-    st.success(
-        f"Top Sales Category: {top_category}"
-    )
+        st.success(
+            f"Top Sales Category: {top_category}"
+        )
 
 
-    st.success(
-        f"Most Profitable Region: {top_region}"
-    )
+        st.success(
+            f"Most Profitable Region: {top_region}"
+        )
 
 
-    # =========================
-    # AI BUSINESS ASSISTANT
-    # =========================
+    # ============================================
+    # AI ASSISTANT PAGE
+    # ============================================
 
-    st.subheader(
-        "AI Business Assistant"
-    )
+    elif page == "🤖 AI Assistant":
 
-
-    user_query = st.text_input(
-        "Ask Any Business Question"
-    )
+        st.header(
+            "AI Business Assistant"
+        )
 
 
-    if user_query:
+        user_query = st.text_input(
+            "Ask Any Business Question"
+        )
 
-        with st.spinner(
-            "AI is analyzing business data..."
-        ):
 
-            answer = ask_ai(
-                user_query,
+        if user_query:
+
+            with st.spinner(
+                "AI is analyzing business data..."
+            ):
+
+                answer = ask_ai(
+                    user_query,
+                    filtered_df
+                )
+
+            st.success(answer)
+
+
+    # ============================================
+    # FORECASTING PAGE
+    # ============================================
+
+    elif page == "📈 Forecasting":
+
+        st.header(
+            "Sales Forecasting"
+        )
+
+
+        monthly_sales, future_df = (
+            predict_sales(
                 filtered_df
             )
-
-        st.success(answer)
-
-
-    # =========================
-    # AI REPORT GENERATOR
-    # =========================
-
-    st.subheader(
-        "AI Report Generator"
-    )
+        )
 
 
-    if st.button(
-        "Generate AI Report"
-    ):
+        forecast_chart = px.line(
+            monthly_sales,
+            x='Order Date',
+            y='Sales',
+            title='Historical Monthly Sales'
+        )
 
-        with st.spinner(
-            "Generating AI Executive Report..."
+
+        forecast_chart.add_scatter(
+            x=future_df['Month_Index'],
+            y=future_df[
+                'Predicted Sales'
+            ],
+            mode='lines+markers',
+            name='Predicted Sales'
+        )
+
+
+        st.plotly_chart(
+            forecast_chart,
+            use_container_width=True
+        )
+
+
+        st.dataframe(
+            future_df
+        )
+
+
+    # ============================================
+    # AI REPORTS PAGE
+    # ============================================
+
+    elif page == "📄 AI Reports":
+
+        st.header(
+            "AI Report Generator"
+        )
+
+
+        if st.button(
+            "Generate AI Report"
         ):
 
-            report_prompt = """
+            with st.spinner(
+                "Generating AI Executive Report..."
+            ):
+
+                report_prompt = """
 Generate a professional business report
 based on the dataset analysis.
 
@@ -319,132 +401,93 @@ Include:
 """
 
 
-            report_text = ask_ai(
-                report_prompt,
+                report_text = ask_ai(
+                    report_prompt,
+                    filtered_df
+                )
+
+
+                pdf_path = (
+                    generate_pdf_report(
+                        report_text
+                    )
+                )
+
+
+                st.success(
+                    "AI Report Generated Successfully!"
+                )
+
+
+                st.text_area(
+                    "Generated Report",
+                    report_text,
+                    height=300
+                )
+
+
+                with open(
+                    pdf_path,
+                    "rb"
+                ) as file:
+
+                    st.download_button(
+                        label="Download PDF Report",
+                        data=file,
+                        file_name=(
+                            "AI_Business_Report.pdf"
+                        ),
+                        mime="application/pdf"
+                    )
+
+
+    # ============================================
+    # AUTONOMOUS INSIGHTS PAGE
+    # ============================================
+
+    elif page == "🧠 Autonomous Insights":
+
+        st.header(
+            "Autonomous AI Insights"
+        )
+
+
+        autonomous_insights = (
+            generate_autonomous_insights(
                 filtered_df
             )
+        )
 
 
-            pdf_path = (
-                generate_pdf_report(
-                    report_text
-                )
-            )
+        for insight in autonomous_insights:
 
+            st.warning(insight)
+
+
+    # ============================================
+    # VOICE ASSISTANT PAGE
+    # ============================================
+
+    elif page == "🎤 Voice Assistant":
+
+        st.header(
+            "Browser Voice Assistant"
+        )
+
+
+        audio = mic_recorder(
+            start_prompt="Start Recording",
+            stop_prompt="Stop Recording",
+            key='voice_recorder'
+        )
+
+
+        if audio:
 
             st.success(
-                "AI Report Generated Successfully!"
+                "Voice recorded successfully!"
             )
 
-
-            st.text_area(
-                "Generated Report",
-                report_text,
-                height=300
+            st.info(
+                "Browser audio captured."
             )
-
-
-            with open(
-                pdf_path,
-                "rb"
-            ) as file:
-
-                st.download_button(
-                    label="Download PDF Report",
-                    data=file,
-                    file_name=(
-                        "AI_Business_Report.pdf"
-                    ),
-                    mime="application/pdf"
-                )
-
-
-    # =========================
-    # SALES FORECASTING
-    # =========================
-
-    st.subheader(
-        "Sales Forecasting"
-    )
-
-
-    monthly_sales, future_df = predict_sales(
-        filtered_df
-    )
-
-
-    forecast_chart = px.line(
-        monthly_sales,
-        x='Order Date',
-        y='Sales',
-        title='Historical Monthly Sales'
-    )
-
-
-    forecast_chart.add_scatter(
-        x=future_df['Month_Index'],
-        y=future_df[
-            'Predicted Sales'
-        ],
-        mode='lines+markers',
-        name='Predicted Sales'
-    )
-
-
-    st.plotly_chart(
-        forecast_chart,
-        use_container_width=True
-    )
-
-
-    st.dataframe(
-        future_df
-    )
-
-
-    # =========================
-    # AUTONOMOUS AI INSIGHTS
-    # =========================
-
-    st.subheader(
-        "Autonomous AI Insights"
-    )
-
-
-    autonomous_insights = (
-        generate_autonomous_insights(
-            filtered_df
-        )
-    )
-
-
-    for insight in autonomous_insights:
-
-        st.warning(insight)
-
-
-    # =========================
-    # BROWSER VOICE ASSISTANT
-    # =========================
-
-    st.subheader(
-        "Browser Voice Assistant"
-    )
-
-
-    audio = mic_recorder(
-        start_prompt="Start Recording",
-        stop_prompt="Stop Recording",
-        key='voice_recorder'
-    )
-
-
-    if audio:
-
-        st.success(
-            "Voice recorded successfully!"
-        )
-
-        st.info(
-            "Browser audio captured."
-        )
