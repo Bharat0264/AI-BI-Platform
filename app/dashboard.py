@@ -1,17 +1,18 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+
 from llm_engine import ask_ai
 from report_generator import generate_pdf_report
 from prediction import predict_sales
-
 from autonomous_insights import (
     generate_autonomous_insights
 )
 
-from voice_assistant import (
-    listen_to_voice
+from streamlit_mic_recorder import (
+    mic_recorder
 )
+
 
 st.set_page_config(
     page_title="AI BI Platform",
@@ -19,7 +20,9 @@ st.set_page_config(
 )
 
 
-st.title("AI Autonomous Business Intelligence Platform")
+st.title(
+    "🚀 AI Autonomous Business Intelligence Platform"
+)
 
 
 uploaded_file = st.file_uploader(
@@ -30,9 +33,16 @@ uploaded_file = st.file_uploader(
 
 if uploaded_file is not None:
 
-    df = pd.read_csv(uploaded_file, encoding='latin1')
+    # Load Dataset
+    df = pd.read_csv(
+        uploaded_file,
+        encoding='latin1'
+    )
 
+
+    # Sidebar Filters
     st.sidebar.header("Filters")
+
 
     region = st.sidebar.multiselect(
         "Select Region",
@@ -40,41 +50,56 @@ if uploaded_file is not None:
         default=df["Region"].unique()
     )
 
+
     category = st.sidebar.multiselect(
         "Select Category",
         options=df["Category"].unique(),
         default=df["Category"].unique()
     )
 
+
+    # Filtered Data
     filtered_df = df[
         (df["Region"].isin(region)) &
         (df["Category"].isin(category))
     ]
 
+
+    # KPI Calculations
     total_sales = filtered_df["Sales"].sum()
 
     total_profit = filtered_df["Profit"].sum()
 
-    total_orders = filtered_df["Order ID"].nunique()
+    total_orders = filtered_df[
+        "Order ID"
+    ].nunique()
 
-    avg_discount = filtered_df["Discount"].mean()
+    avg_discount = filtered_df[
+        "Discount"
+    ].mean()
 
+
+    # KPI Cards
     col1, col2, col3, col4 = st.columns(4)
+
 
     col1.metric(
         "Total Sales",
         f"${total_sales:,.0f}"
     )
 
+
     col2.metric(
         "Total Profit",
         f"${total_profit:,.0f}"
     )
 
+
     col3.metric(
         "Orders",
         total_orders
     )
+
 
     col4.metric(
         "Avg Discount",
@@ -82,13 +107,20 @@ if uploaded_file is not None:
     )
 
 
-    st.subheader("Sales by Category")
+    # Sales by Category
+    st.subheader(
+        "Sales by Category"
+    )
+
 
     category_sales = (
-        filtered_df.groupby("Category")["Sales"]
+        filtered_df.groupby(
+            "Category"
+        )["Sales"]
         .sum()
         .reset_index()
     )
+
 
     fig1 = px.bar(
         category_sales,
@@ -98,19 +130,27 @@ if uploaded_file is not None:
         title="Sales by Category"
     )
 
+
     st.plotly_chart(
         fig1,
         use_container_width=True
     )
 
 
-    st.subheader("Profit by Region")
+    # Profit by Region
+    st.subheader(
+        "Profit by Region"
+    )
+
 
     region_profit = (
-        filtered_df.groupby("Region")["Profit"]
+        filtered_df.groupby(
+            "Region"
+        )["Profit"]
         .sum()
         .reset_index()
     )
+
 
     fig2 = px.bar(
         region_profit,
@@ -120,29 +160,43 @@ if uploaded_file is not None:
         title="Profit by Region"
     )
 
+
     st.plotly_chart(
         fig2,
         use_container_width=True
     )
 
 
-    st.subheader("Monthly Sales Trend")
-
-    filtered_df["Order Date"] = pd.to_datetime(
-        filtered_df["Order Date"]
+    # Monthly Sales Trend
+    st.subheader(
+        "Monthly Sales Trend"
     )
+
+
+    filtered_df["Order Date"] = (
+        pd.to_datetime(
+            filtered_df["Order Date"]
+        )
+    )
+
 
     monthly_sales = (
         filtered_df.groupby(
-            filtered_df["Order Date"].dt.to_period("M")
+            filtered_df[
+                "Order Date"
+            ].dt.to_period("M")
         )["Sales"]
         .sum()
         .reset_index()
     )
 
+
     monthly_sales["Order Date"] = (
-        monthly_sales["Order Date"].astype(str)
+        monthly_sales[
+            "Order Date"
+        ].astype(str)
     )
+
 
     fig3 = px.line(
         monthly_sales,
@@ -151,40 +205,57 @@ if uploaded_file is not None:
         title="Monthly Sales Trend"
     )
 
+
     st.plotly_chart(
         fig3,
         use_container_width=True
     )
 
 
-    st.subheader("Business Insights")
+    # Business Insights
+    st.subheader(
+        "Business Insights"
+    )
+
 
     top_category = (
-        filtered_df.groupby("Category")["Sales"]
+        filtered_df.groupby(
+            "Category"
+        )["Sales"]
         .sum()
         .idxmax()
     )
 
+
     top_region = (
-        filtered_df.groupby("Region")["Profit"]
+        filtered_df.groupby(
+            "Region"
+        )["Profit"]
         .sum()
         .idxmax()
     )
+
 
     st.success(
         f"Top Sales Category: {top_category}"
     )
+
 
     st.success(
         f"Most Profitable Region: {top_region}"
     )
 
 
-    st.subheader("AI Business Assistant")
+    # AI Business Assistant
+    st.subheader(
+        "AI Business Assistant"
+    )
+
 
     user_query = st.text_input(
         "Ask Any Business Question"
     )
+
 
     if user_query:
 
@@ -198,10 +269,17 @@ if uploaded_file is not None:
             )
 
         st.success(answer)
-        st.subheader("AI Report Generator")
 
 
-    if st.button("Generate AI Report"):
+    # AI Report Generator
+    st.subheader(
+        "AI Report Generator"
+    )
+
+
+    if st.button(
+        "Generate AI Report"
+    ):
 
         with st.spinner(
             "Generating AI Executive Report..."
@@ -219,18 +297,24 @@ Include:
 - Strategic suggestions
 """
 
+
             report_text = ask_ai(
                 report_prompt,
                 filtered_df
             )
 
-            pdf_path = generate_pdf_report(
-                report_text
+
+            pdf_path = (
+                generate_pdf_report(
+                    report_text
+                )
             )
+
 
             st.success(
                 "AI Report Generated Successfully!"
             )
+
 
             st.text_area(
                 "Generated Report",
@@ -238,18 +322,30 @@ Include:
                 height=300
             )
 
-            with open(pdf_path, "rb") as file:
+
+            with open(
+                pdf_path,
+                "rb"
+            ) as file:
 
                 st.download_button(
                     label="Download PDF Report",
                     data=file,
-                    file_name="AI_Business_Report.pdf",
+                    file_name=(
+                        "AI_Business_Report.pdf"
+                    ),
                     mime="application/pdf"
                 )
-        st.subheader("Sales Forecasting")
 
 
-    monthly_sales, future_df = predict_sales(
+    # Predictive Analytics
+    st.subheader(
+        "Sales Forecasting"
+    )
+
+
+    monthly_sales,
+    future_df = predict_sales(
         filtered_df
     )
 
@@ -264,7 +360,9 @@ Include:
 
     forecast_chart.add_scatter(
         x=future_df['Month_Index'],
-        y=future_df['Predicted Sales'],
+        y=future_df[
+            'Predicted Sales'
+        ],
         mode='lines+markers',
         name='Predicted Sales'
     )
@@ -276,8 +374,12 @@ Include:
     )
 
 
-    st.dataframe(future_df)
+    st.dataframe(
+        future_df
+    )
 
+
+    # Autonomous AI Insights
     st.subheader(
         "Autonomous AI Insights"
     )
@@ -293,38 +395,27 @@ Include:
     for insight in autonomous_insights:
 
         st.warning(insight)
-    
-        st.subheader(
-        "Voice AI Assistant"
+
+
+    # Browser Voice Assistant
+    st.subheader(
+        "Browser Voice Assistant"
     )
 
 
-    if st.button(
-        "Start Voice Assistant"
-    ):
-
-        with st.spinner(
-            "Listening to voice..."
-        ):
-
-            voice_query = (
-                listen_to_voice()
-            )
+    audio = mic_recorder(
+        start_prompt="Start Recording",
+        stop_prompt="Stop Recording",
+        key='voice_recorder'
+    )
 
 
-        st.info(
-            f"Voice Query: {voice_query}"
+    if audio:
+
+        st.success(
+            "Voice recorded successfully!"
         )
 
-
-        with st.spinner(
-            "AI analyzing query..."
-        ):
-
-            voice_answer = ask_ai(
-                voice_query,
-                filtered_df
-            )
-
-
-        st.success(voice_answer)
+        st.info(
+            "Browser audio captured."
+        )
