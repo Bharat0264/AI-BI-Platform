@@ -14,17 +14,20 @@ from streamlit_mic_recorder import (
 )
 
 
+# Page Configuration
 st.set_page_config(
     page_title="AI BI Platform",
     layout="wide"
 )
 
 
+# Title
 st.title(
     "🚀 AI Autonomous Business Intelligence Platform"
 )
 
 
+# File Upload
 uploaded_file = st.file_uploader(
     "Upload CSV File",
     type=["csv"]
@@ -58,14 +61,17 @@ if uploaded_file is not None:
     )
 
 
-    # Filtered Data
+    # Apply Filters
     filtered_df = df[
         (df["Region"].isin(region)) &
         (df["Category"].isin(category))
     ]
 
 
-    # KPI Calculations
+    # =========================
+    # KPI SECTION
+    # =========================
+
     total_sales = filtered_df["Sales"].sum()
 
     total_profit = filtered_df["Profit"].sum()
@@ -79,7 +85,6 @@ if uploaded_file is not None:
     ].mean()
 
 
-    # KPI Cards
     col1, col2, col3, col4 = st.columns(4)
 
 
@@ -107,7 +112,10 @@ if uploaded_file is not None:
     )
 
 
-    # Sales by Category
+    # =========================
+    # SALES BY CATEGORY
+    # =========================
+
     st.subheader(
         "Sales by Category"
     )
@@ -137,7 +145,10 @@ if uploaded_file is not None:
     )
 
 
-    # Profit by Region
+    # =========================
+    # PROFIT BY REGION
+    # =========================
+
     st.subheader(
         "Profit by Region"
     )
@@ -167,20 +178,21 @@ if uploaded_file is not None:
     )
 
 
-    # Monthly Sales Trend
+    # =========================
+    # MONTHLY SALES TREND
+    # =========================
+
     st.subheader(
         "Monthly Sales Trend"
     )
 
 
-    filtered_df["Order Date"] = (
-        pd.to_datetime(
-            filtered_df["Order Date"]
-        )
+    filtered_df["Order Date"] = pd.to_datetime(
+        filtered_df["Order Date"]
     )
 
 
-    monthly_sales = (
+    monthly_sales_chart = (
         filtered_df.groupby(
             filtered_df[
                 "Order Date"
@@ -191,15 +203,15 @@ if uploaded_file is not None:
     )
 
 
-    monthly_sales["Order Date"] = (
-        monthly_sales[
+    monthly_sales_chart["Order Date"] = (
+        monthly_sales_chart[
             "Order Date"
         ].astype(str)
     )
 
 
     fig3 = px.line(
-        monthly_sales,
+        monthly_sales_chart,
         x="Order Date",
         y="Sales",
         title="Monthly Sales Trend"
@@ -212,7 +224,10 @@ if uploaded_file is not None:
     )
 
 
-    # Business Insights
+    # =========================
+    # BUSINESS INSIGHTS
+    # =========================
+
     st.subheader(
         "Business Insights"
     )
@@ -246,7 +261,10 @@ if uploaded_file is not None:
     )
 
 
-    # AI Business Assistant
+    # =========================
+    # AI BUSINESS ASSISTANT
+    # =========================
+
     st.subheader(
         "AI Business Assistant"
     )
@@ -271,7 +289,10 @@ if uploaded_file is not None:
         st.success(answer)
 
 
-    # AI Report Generator
+    # =========================
+    # AI REPORT GENERATOR
+    # =========================
+
     st.subheader(
         "AI Report Generator"
     )
@@ -338,14 +359,16 @@ Include:
                 )
 
 
-    # Predictive Analytics
+    # =========================
+    # SALES FORECASTING
+    # =========================
+
     st.subheader(
         "Sales Forecasting"
     )
 
 
-    monthly_sales,
-    future_df = predict_sales(
+    monthly_sales, future_df = predict_sales(
         filtered_df
     )
 
@@ -379,7 +402,10 @@ Include:
     )
 
 
-    # Autonomous AI Insights
+    # =========================
+    # AUTONOMOUS AI INSIGHTS
+    # =========================
+
     st.subheader(
         "Autonomous AI Insights"
     )
@@ -397,7 +423,10 @@ Include:
         st.warning(insight)
 
 
-    # Browser Voice Assistant
+    # =========================
+    # BROWSER VOICE ASSISTANT
+    # =========================
+
     st.subheader(
         "Browser Voice Assistant"
     )
