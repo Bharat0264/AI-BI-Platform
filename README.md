@@ -87,7 +87,7 @@ services:
     name: ai-bi-platform
     runtime: python
     buildCommand: python -m pip install -r requirements.txt
-    startCommand: python server.py
+    startCommand: python start.py
 ```
 
 On Render:
