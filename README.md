@@ -80,8 +80,8 @@ services:
   - type: web
     name: ai-bi-platform
     runtime: python
-    buildCommand: python3 -m pip install -r requirements.txt
-    startCommand: python3 -m gunicorn app.dashboard:server --bind 0.0.0.0:$PORT
+    buildCommand: python -m pip install -r requirements.txt
+    startCommand: sh ./render-start.sh
 ```
 
 On Render:
