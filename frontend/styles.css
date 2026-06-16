@@ -121,6 +121,14 @@ section { scroll-margin-top: 24px; margin-bottom: 34px; }
 
 .hero p { max-width: 790px; color: rgba(255,255,255,.76); line-height: 1.7; }
 .upload { display: grid; grid-template-columns: minmax(220px, 420px) auto; gap: 10px; align-items: center; max-width: 650px; }
+.upload-status {
+  grid-column: 1 / -1;
+  min-height: 20px;
+  color: rgba(255,255,255,.82);
+  font-size: .9rem;
+}
+
+.upload-status.error { color: #fecaca; }
 
 .metrics, .chart-grid, .quality-grid, .card-grid, .export-grid {
   display: grid;

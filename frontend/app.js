@@ -21,6 +21,12 @@ async function fetchJson(url, options) {
   return payload;
 }
 
+function setUploadStatus(message, isError = false) {
+  const status = document.getElementById("uploadStatus");
+  status.textContent = message;
+  status.classList.toggle("error", isError);
+}
+
 function fillSelect(element, values, selected) {
   element.innerHTML = values.map((value) => (
     `<option value="${value}" ${selected.includes(value) ? "selected" : ""}>${value}</option>`
@@ -32,13 +38,13 @@ function selectedValues(element) {
 }
 
 function renderMetrics(metrics) {
-  document.getElementById("metrics").innerHTML = metrics.map((item) => `
+  document.getElementById("metrics").innerHTML = metrics.length ? metrics.map((item) => `
     <article class="metric">
       <div class="metric-label">${item.label}</div>
       <div class="metric-value">${item.value}</div>
       <div class="metric-note">${item.note}</div>
     </article>
-  `).join("");
+  `).join("") : "";
 }
 
 function plotBar(id, title, labels, values) {
@@ -145,9 +151,9 @@ function renderTable(id, rows) {
 }
 
 function renderCards(id, cards) {
-  document.getElementById(id).innerHTML = cards.map((item) => `
+  document.getElementById(id).innerHTML = cards.length ? cards.map((item) => `
     <article class="card"><h3>${item.title}</h3><p>${item.body}</p></article>
-  `).join("");
+  `).join("") : `<article class="card"><h3>No CSV imported</h3><p>Import a CSV to generate this analysis.</p></article>`;
 }
 
 function render(payload) {
@@ -191,14 +197,39 @@ document.getElementById("resetFilters").addEventListener("click", async () => {
   await loadAnalysis();
 });
 
-document.getElementById("uploadForm").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const file = document.getElementById("datasetFile").files[0];
-  if (!file) return;
+async function uploadDataset() {
+  const fileInput = document.getElementById("datasetFile");
+  const button = document.getElementById("analyzeCsvButton");
+  const file = fileInput.files[0];
+  if (!file) {
+    setUploadStatus("Choose a CSV file to analyze.", true);
+    fileInput.click();
+    return;
+  }
+
+  setUploadStatus(`Analyzing ${file.name}...`);
+  button.disabled = true;
   const formData = new FormData();
   formData.append("dataset", file);
-  const payload = await fetchJson("/api/upload", { method: "POST", body: formData });
-  render(payload);
+  try {
+    const payload = await fetchJson("/api/upload", { method: "POST", body: formData });
+    render(payload);
+    setUploadStatus(`Imported ${payload.source} with ${payload.rows.toLocaleString()} rows.`);
+  } catch (error) {
+    setUploadStatus(error.message, true);
+  } finally {
+    button.disabled = false;
+  }
+}
+
+document.getElementById("uploadForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  await uploadDataset();
+});
+
+document.getElementById("datasetFile").addEventListener("change", () => {
+  const file = document.getElementById("datasetFile").files[0];
+  setUploadStatus(file ? `${file.name} selected. Click Analyze CSV to import it.` : "");
 });
 
 document.getElementById("askButton").addEventListener("click", async () => {

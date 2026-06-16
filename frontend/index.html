@@ -37,7 +37,8 @@
       <p>Analyze business data, track executive KPIs, detect risk, forecast sales, ask AI questions, and generate reports from one full-stack website.</p>
       <form id="uploadForm" class="upload">
         <input type="file" id="datasetFile" accept=".csv">
-        <button type="submit">Analyze CSV</button>
+        <button type="submit" id="analyzeCsvButton">Analyze CSV</button>
+        <div class="upload-status" id="uploadStatus" aria-live="polite"></div>
       </form>
     </section>
 

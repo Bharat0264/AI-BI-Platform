@@ -22,6 +22,7 @@ from report_generator import generate_pdf_report
 app = Flask(__name__, static_folder="frontend", static_url_path="")
 
 DATA_PATH = ROOT_DIR / "data" / "Sample - Superstore.csv"
+ACTIVE_DATASET = {"df": None, "source": None}
 REQUIRED_COLUMNS = [
     "Order ID",
     "Order Date",
@@ -64,7 +65,49 @@ def dataset_from_request():
     uploaded = request.files.get("dataset")
     if uploaded and uploaded.filename:
         return read_csv(uploaded), uploaded.filename
-    return read_csv(DATA_PATH), "Sample - Superstore.csv"
+    if ACTIVE_DATASET["df"] is not None:
+        return ACTIVE_DATASET["df"].copy(), ACTIVE_DATASET["source"]
+    return None, None
+
+
+def empty_payload():
+    return {
+        "empty": True,
+        "source": "No CSV imported",
+        "rows": 0,
+        "regions": [],
+        "categories": [],
+        "selectedRegions": [],
+        "selectedCategories": [],
+        "metrics": [],
+        "quality": {
+            "score": "N/A",
+            "rows": 0,
+            "cleanRows": 0,
+            "columns": 0,
+            "missingCells": 0,
+            "duplicateRows": 0,
+            "invalidDates": 0,
+            "missingRequired": [],
+        },
+        "charts": {
+            "categorySales": {"labels": [], "values": []},
+            "regionProfit": {"labels": [], "values": []},
+            "monthlySales": {"labels": [], "values": []},
+            "forecast": {
+                "historyLabels": [],
+                "historyValues": [],
+                "labels": [],
+                "values": [],
+                "lower": [],
+                "upper": [],
+            },
+        },
+        "insights": [],
+        "anomalies": [],
+        "forecastTable": [],
+        "preview": [],
+    }
 
 
 def filter_dataset(df, payload=None):
@@ -229,14 +272,23 @@ def index():
 @app.route("/api/analysis", methods=["GET"])
 def api_analysis():
     raw_df, source_name = dataset_from_request()
+    if raw_df is None:
+        return jsonify(empty_payload())
     payload, status = analysis_payload(raw_df, source_name)
     return jsonify(payload), status
 
 
 @app.route("/api/upload", methods=["POST"])
 def api_upload():
-    raw_df, source_name = dataset_from_request()
+    uploaded = request.files.get("dataset")
+    if not uploaded or not uploaded.filename:
+        return jsonify({"error": "Choose a CSV file to import."}), 400
+
+    raw_df, source_name = read_csv(uploaded), uploaded.filename
     payload, status = analysis_payload(raw_df, source_name)
+    if status == 200:
+        ACTIVE_DATASET["df"] = raw_df.copy()
+        ACTIVE_DATASET["source"] = source_name
     return jsonify(payload), status
 
 
@@ -247,7 +299,9 @@ def api_ask():
     if not question:
         return jsonify({"error": "Question is required."}), 400
 
-    raw_df = read_csv(DATA_PATH)
+    raw_df, _ = dataset_from_request()
+    if raw_df is None:
+        return jsonify({"error": "Import a CSV before asking AI questions."}), 400
     df = prepare_dataset(raw_df)
     filtered, *_ = filter_dataset(df, body)
     answer = ask_ai(question, filtered)
@@ -256,7 +310,9 @@ def api_ask():
 
 @app.route("/api/export/filtered")
 def export_filtered():
-    raw_df = read_csv(DATA_PATH)
+    raw_df, _ = dataset_from_request()
+    if raw_df is None:
+        return jsonify({"error": "Import a CSV before exporting data."}), 400
     df = prepare_dataset(raw_df)
     filtered, *_ = filter_dataset(df)
     return Response(
@@ -268,7 +324,9 @@ def export_filtered():
 
 @app.route("/api/report")
 def export_report():
-    raw_df = read_csv(DATA_PATH)
+    raw_df, _ = dataset_from_request()
+    if raw_df is None:
+        return jsonify({"error": "Import a CSV before generating a report."}), 400
     df = prepare_dataset(raw_df)
     filtered, *_ = filter_dataset(df)
     _, forecast = predict_sales(filtered.copy())
