@@ -1,21 +1,29 @@
-from html import escape
-from io import StringIO
+import sys
 from pathlib import Path
 
 import pandas as pd
 import plotly.express as px
-import streamlit as st
+from flask import Flask
+from flask import Response
+from flask import render_template_string
+from flask import request
+from flask import send_file
+from flask import url_for
+
+CURRENT_DIR = Path(__file__).resolve().parent
+ROOT_DIR = CURRENT_DIR.parent
+if str(CURRENT_DIR) not in sys.path:
+    sys.path.insert(0, str(CURRENT_DIR))
 
 from autonomous_insights import generate_autonomous_insights
 from llm_engine import ask_ai
 from prediction import predict_sales
 from report_generator import generate_pdf_report
-from streamlit_mic_recorder import mic_recorder
 
 
-BASE_DIR = Path(__file__).resolve().parents[1]
-DEMO_DATA_PATH = BASE_DIR / "data" / "Sample - Superstore.csv"
+server = Flask(__name__)
 
+DEMO_DATA_PATH = ROOT_DIR / "data" / "Sample - Superstore.csv"
 REQUIRED_COLUMNS = [
     "Order ID",
     "Order Date",
@@ -25,278 +33,7 @@ REQUIRED_COLUMNS = [
     "Profit",
     "Discount",
 ]
-
-ACCENT = "#17c3b2"
-INK = "#101828"
-MUTED = "#667085"
-PLOT_COLORS = ["#17c3b2", "#f97316", "#7c3aed", "#0ea5e9", "#ef4444", "#84cc16"]
-
-
-st.set_page_config(
-    page_title="AI BI Platform",
-    page_icon=":bar_chart:",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
-
-
-def inject_theme():
-    st.markdown(
-        """
-        <style>
-            :root {
-                --ink: #101828;
-                --muted: #667085;
-                --line: rgba(16, 24, 40, 0.10);
-                --panel: rgba(255, 255, 255, 0.88);
-                --accent: #17c3b2;
-                --accent-dark: #0f766e;
-                --warm: #f97316;
-                --canvas: #f7f9fc;
-            }
-
-            .stApp {
-                background:
-                    radial-gradient(circle at top left, rgba(23, 195, 178, 0.14), transparent 32rem),
-                    radial-gradient(circle at top right, rgba(249, 115, 22, 0.10), transparent 30rem),
-                    linear-gradient(180deg, #f8fbff 0%, #eef4f8 100%);
-                color: var(--ink);
-            }
-
-            [data-testid="stHeader"] { background: transparent; }
-
-            [data-testid="stSidebar"] {
-                background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
-                border-right: 1px solid rgba(255, 255, 255, 0.08);
-            }
-
-            [data-testid="stSidebar"] * { color: #f8fafc !important; }
-
-            [data-testid="stSidebar"] [data-baseweb="select"] > div,
-            [data-testid="stSidebar"] [data-baseweb="input"] {
-                background: rgba(255, 255, 255, 0.08);
-                border-color: rgba(255, 255, 255, 0.14);
-                border-radius: 12px;
-            }
-
-            .block-container {
-                max-width: 1400px;
-                padding-top: 2rem;
-                padding-bottom: 3rem;
-            }
-
-            .hero {
-                position: relative;
-                overflow: hidden;
-                border: 1px solid rgba(255, 255, 255, 0.75);
-                border-radius: 28px;
-                padding: 34px;
-                background:
-                    linear-gradient(135deg, rgba(16, 24, 40, 0.95), rgba(15, 118, 110, 0.88)),
-                    linear-gradient(45deg, rgba(23, 195, 178, 0.6), rgba(249, 115, 22, 0.45));
-                box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
-                margin-bottom: 22px;
-            }
-
-            .hero:after {
-                content: "";
-                position: absolute;
-                inset: auto -60px -130px auto;
-                width: 360px;
-                height: 360px;
-                background: conic-gradient(from 140deg, rgba(23, 195, 178, 0.48), rgba(249, 115, 22, 0.42), transparent);
-                filter: blur(8px);
-                opacity: 0.75;
-                transform: rotate(-12deg);
-            }
-
-            .eyebrow {
-                color: #99f6e4;
-                font-size: 0.78rem;
-                font-weight: 800;
-                letter-spacing: 0.10em;
-                text-transform: uppercase;
-                margin-bottom: 12px;
-            }
-
-            .hero h1 {
-                color: #ffffff;
-                font-size: clamp(2.2rem, 5vw, 4.8rem);
-                line-height: 0.96;
-                letter-spacing: 0;
-                margin: 0;
-                max-width: 920px;
-            }
-
-            .hero p {
-                color: rgba(255, 255, 255, 0.76);
-                font-size: 1.05rem;
-                line-height: 1.7;
-                max-width: 780px;
-                margin: 18px 0 0 0;
-            }
-
-            .pill-row {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 10px;
-                margin-top: 24px;
-            }
-
-            .pill {
-                display: inline-flex;
-                align-items: center;
-                min-height: 34px;
-                padding: 7px 12px;
-                border-radius: 999px;
-                color: #ecfeff;
-                background: rgba(255, 255, 255, 0.10);
-                border: 1px solid rgba(255, 255, 255, 0.18);
-                font-size: 0.82rem;
-                font-weight: 700;
-            }
-
-            .metric-card,
-            .glass-panel,
-            .insight-card,
-            .upload-shell {
-                background: rgba(255, 255, 255, 0.82);
-                border: 1px solid rgba(255, 255, 255, 0.88);
-                box-shadow: 0 18px 50px rgba(16, 24, 40, 0.10);
-            }
-
-            .metric-card {
-                min-height: 154px;
-                padding: 22px;
-                border-radius: 20px;
-            }
-
-            .metric-label {
-                color: var(--muted);
-                font-size: 0.78rem;
-                font-weight: 800;
-                letter-spacing: 0.08em;
-                text-transform: uppercase;
-            }
-
-            .metric-value {
-                color: var(--ink);
-                font-size: 2rem;
-                font-weight: 900;
-                letter-spacing: 0;
-                margin-top: 10px;
-            }
-
-            .metric-note {
-                color: var(--muted);
-                font-size: 0.88rem;
-                margin-top: 8px;
-            }
-
-            .section-title {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 16px;
-                margin: 28px 0 12px 0;
-            }
-
-            .section-title h2 {
-                color: var(--ink);
-                font-size: 1.35rem;
-                margin: 0;
-                letter-spacing: 0;
-            }
-
-            .section-title p {
-                color: var(--muted);
-                margin: 0;
-                font-size: 0.95rem;
-            }
-
-            .glass-panel {
-                padding: 24px;
-                border-radius: 22px;
-            }
-
-            .insight-card {
-                padding: 18px 20px;
-                border-radius: 18px;
-                min-height: 112px;
-            }
-
-            .insight-card strong {
-                color: var(--ink);
-                display: block;
-                margin-bottom: 8px;
-            }
-
-            .insight-card span {
-                color: var(--muted);
-                line-height: 1.55;
-            }
-
-            .upload-shell {
-                padding: 28px;
-                border-radius: 24px;
-            }
-
-            div[data-testid="stFileUploader"] section {
-                border: 1px dashed rgba(15, 118, 110, 0.42);
-                background: rgba(23, 195, 178, 0.06);
-                border-radius: 18px;
-            }
-
-            div[data-testid="stFileUploader"] label,
-            div[data-testid="stFileUploader"] small,
-            div[data-testid="stFileUploader"] p,
-            div[data-testid="stFileUploader"] span {
-                color: var(--ink) !important;
-            }
-
-            div[data-testid="stFileUploader"] button,
-            div.stButton > button,
-            div[data-testid="stDownloadButton"] > button {
-                border-radius: 13px;
-                border: 1px solid rgba(15, 118, 110, 0.22);
-                background: linear-gradient(135deg, #14b8a6, #0f766e) !important;
-                color: white !important;
-                font-weight: 800;
-                min-height: 42px;
-                box-shadow: 0 10px 28px rgba(20, 184, 166, 0.23);
-            }
-
-            div[data-testid="stFileUploader"] button:hover,
-            div.stButton > button:hover,
-            div[data-testid="stDownloadButton"] > button:hover {
-                border-color: rgba(15, 118, 110, 0.42);
-                color: white !important;
-                transform: translateY(-1px);
-            }
-
-            .chat-bubble-user,
-            .chat-bubble-ai {
-                padding: 16px 18px;
-                border-radius: 18px;
-                margin-bottom: 12px;
-                border: 1px solid rgba(16, 24, 40, 0.08);
-            }
-
-            .chat-bubble-user {
-                background: #ecfdf5;
-            }
-
-            .chat-bubble-ai {
-                background: #ffffff;
-            }
-
-            .status-good { color: #0f766e; font-weight: 800; }
-            .status-risk { color: #b42318; font-weight: 800; }
-            .status-watch { color: #c2410c; font-weight: 800; }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+PLOT_COLORS = ["#14b8a6", "#f97316", "#7c3aed", "#0ea5e9", "#ef4444", "#84cc16"]
 
 
 def money(value):
@@ -307,83 +44,6 @@ def percent(value):
     if pd.isna(value):
         return "0%"
     return f"{value:.0%}"
-
-
-def section_title(title, caption):
-    st.markdown(
-        f"""
-        <div class="section-title">
-            <div>
-                <h2>{escape(title)}</h2>
-                <p>{escape(caption)}</p>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
-def metric_card(label, value, note):
-    st.markdown(
-        f"""
-        <div class="metric-card">
-            <div class="metric-label">{escape(str(label))}</div>
-            <div class="metric-value">{escape(str(value))}</div>
-            <div class="metric-note">{escape(str(note))}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
-def insight_card(title, body):
-    st.markdown(
-        f"""
-        <div class="insight-card">
-            <strong>{escape(str(title))}</strong>
-            <span>{escape(str(body))}</span>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
-def style_figure(fig, height=420):
-    fig.update_layout(
-        template="plotly_white",
-        height=height,
-        margin=dict(l=16, r=16, t=54, b=20),
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(255,255,255,0)",
-        font=dict(color=INK, family="Inter, Segoe UI, sans-serif"),
-        title=dict(font=dict(size=18, color=INK), x=0.02),
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-    )
-    fig.update_xaxes(showgrid=False, linecolor="rgba(16, 24, 40, 0.12)")
-    fig.update_yaxes(gridcolor="rgba(16, 24, 40, 0.08)", zeroline=False)
-    return fig
-
-
-def render_hero():
-    st.markdown(
-        """
-        <div class="hero">
-            <div class="eyebrow">Autonomous analytics command center</div>
-            <h1>AI Business Intelligence Platform</h1>
-            <p>
-                Upload a business CSV or launch the demo dataset to explore executive KPIs,
-                data quality, anomaly detection, AI recommendations, forecasts, and board-ready reports.
-            </p>
-            <div class="pill-row">
-                <span class="pill">Demo-ready workflow</span>
-                <span class="pill">AI analyst chat</span>
-                <span class="pill">ML forecast bands</span>
-                <span class="pill">Export center</span>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
 
 
 def read_csv(source):
@@ -403,19 +63,49 @@ def prepare_dataset(df):
     return prepared.dropna(subset=["Order Date"])
 
 
+def load_dataset():
+    uploaded = request.files.get("dataset")
+    if uploaded and uploaded.filename:
+        raw_df = read_csv(uploaded)
+        return raw_df, uploaded.filename
+
+    raw_df = read_csv(DEMO_DATA_PATH)
+    return raw_df, "Sample - Superstore.csv"
+
+
+def filter_dataset(df):
+    selected_regions = request.values.getlist("region")
+    selected_categories = request.values.getlist("category")
+
+    regions = sorted(df["Region"].dropna().astype(str).unique())
+    categories = sorted(df["Category"].dropna().astype(str).unique())
+
+    if not selected_regions:
+        selected_regions = regions
+    if not selected_categories:
+        selected_categories = categories
+
+    filtered = df[
+        df["Region"].astype(str).isin(selected_regions)
+        & df["Category"].astype(str).isin(selected_categories)
+    ].copy()
+
+    return filtered, regions, categories, selected_regions, selected_categories
+
+
 def get_metrics(df):
     total_sales = df["Sales"].sum()
     total_profit = df["Profit"].sum()
     total_orders = df["Order ID"].nunique()
     avg_discount = df["Discount"].mean()
     profit_margin = total_profit / total_sales if total_sales else 0
-    return {
-        "Total Sales": money(total_sales),
-        "Total Profit": money(total_profit),
-        "Orders": f"{total_orders:,}",
-        "Avg Discount": percent(avg_discount),
-        "Profit Margin": percent(profit_margin),
-    }
+    return [
+        ("Total Sales", money(total_sales), "Revenue across selected records"),
+        ("Total Profit", money(total_profit), "Net contribution after costs"),
+        ("Orders", f"{total_orders:,}", "Unique customer orders"),
+        ("Avg Discount", percent(avg_discount), "Average discount rate"),
+        ("Profit Margin", percent(profit_margin), "Profit as a share of sales"),
+    ]
 
 
 def run_data_quality_scan(raw_df, prepared_df):
@@ -423,29 +113,20 @@ def run_data_quality_scan(raw_df, prepared_df):
     missing_cells = int(raw_df.isna().sum().sum())
     duplicate_rows = int(raw_df.duplicated().sum())
     missing_required = validate_dataset(raw_df)
-    numeric_issues = {}
-
-    for column in ["Sales", "Profit", "Discount"]:
-        if column in raw_df.columns:
-            numeric_issues[column] = int(pd.to_numeric(raw_df[column], errors="coerce").isna().sum())
-
     score = 100
     score -= min(30, len(missing_required) * 12)
     score -= min(20, missing_cells // max(len(raw_df), 1))
-    score -= min(20, invalid_dates)
+    score -= min(20, int(invalid_dates))
     score -= min(15, duplicate_rows)
-    score = max(score, 0)
-
     return {
-        "score": score,
+        "score": max(score, 0),
+        "rows": len(raw_df),
+        "clean_rows": len(prepared_df),
+        "columns": len(raw_df.columns),
         "missing_cells": missing_cells,
         "duplicate_rows": duplicate_rows,
         "invalid_dates": int(invalid_dates),
-        "missing_required": missing_required,
-        "numeric_issues": numeric_issues,
-        "row_count": len(raw_df),
-        "clean_row_count": len(prepared_df),
-        "column_count": len(raw_df.columns),
+        "missing_required": ", ".join(missing_required) if missing_required else "None",
     }
 
 
@@ -454,629 +135,355 @@ def build_advanced_insights(df):
     total_profit = df["Profit"].sum()
     margin = total_profit / total_sales if total_sales else 0
     avg_discount = df["Discount"].mean()
-
     category_sales = df.groupby("Category")["Sales"].sum().sort_values(ascending=False)
     region_profit = df.groupby("Region")["Profit"].sum().sort_values()
-
     loss_df = df[df["Profit"] < 0]
+
     top_category = category_sales.index[0] if not category_sales.empty else "N/A"
     weakest_region = region_profit.index[0] if not region_profit.empty else "N/A"
     strongest_region = region_profit.index[-1] if not region_profit.empty else "N/A"
 
-    insights = [
-        {
-            "title": "Revenue opportunity",
-            "body": f"{top_category} is the strongest category. Build campaigns and bundles around this segment.",
-        },
-        {
-            "title": "Profit leak",
-            "body": f"{len(loss_df):,} transactions are loss-making. Review discounting, shipping cost, and product mix.",
-        },
-        {
-            "title": "Regional risk",
-            "body": f"{weakest_region} has the weakest profit contribution while {strongest_region} leads performance.",
-        },
-        {
-            "title": "Pricing pressure",
-            "body": f"Average discount is {percent(avg_discount)}. Keep discounts below margin-protecting thresholds.",
-        },
-        {
-            "title": "Executive action",
-            "body": f"Current margin is {percent(margin)}. Prioritize high-margin categories before chasing pure revenue growth.",
-        },
+    return [
+        ("Revenue opportunity", f"{top_category} is the strongest category. Build campaigns and bundles around it."),
+        ("Profit leak", f"{len(loss_df):,} transactions are loss-making. Review discounting, shipping cost, and product mix."),
+        ("Regional risk", f"{weakest_region} has the weakest profit contribution while {strongest_region} leads performance."),
+        ("Pricing pressure", f"Average discount is {percent(avg_discount)}. Keep discounts below margin-protecting thresholds."),
+        ("Executive action", f"Current margin is {percent(margin)}. Prioritize high-margin categories before chasing pure revenue growth."),
     ]
-    return insights
 
 
 def detect_anomalies(df):
     anomalies = []
+    losses = df[df["Profit"] < 0]
+    if not losses.empty:
+        worst = losses.sort_values("Profit").iloc[0]
+        anomalies.append(("Largest loss", f"{worst.get('Category', 'Unknown')} in {worst.get('Region', 'Unknown')} lost {money(abs(worst['Profit']))}."))
 
-    monthly = (
+    high_discount = df[df["Discount"] >= 0.5]
+    if not high_discount.empty:
+        anomalies.append(("High discounts", f"{len(high_discount):,} rows have discounts of 50% or more."))
+
+    monthly = df.groupby(df["Order Date"].dt.to_period("M"))["Sales"].sum()
+    if len(monthly) >= 3:
+        latest = monthly.iloc[-1]
+        average = monthly.iloc[:-1].mean()
+        if average and latest < average * 0.75:
+            anomalies.append(("Recent slowdown", f"Latest monthly sales are {money(latest)}, below the prior average of {money(average)}."))
+
+    if not anomalies:
+        anomalies.append(("No major anomaly", "No extreme losses, discount spikes, or recent sales breaks were detected."))
+    return anomalies
+
+
+def figure_html(fig):
+    fig.update_layout(
+        template="plotly_white",
+        height=390,
+        margin=dict(l=14, r=14, t=48, b=24),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(255,255,255,0)",
+        font=dict(color="#101828", family="Inter, Segoe UI, sans-serif"),
+    )
+    fig.update_xaxes(showgrid=False, linecolor="rgba(16, 24, 40, 0.12)")
+    fig.update_yaxes(gridcolor="rgba(16, 24, 40, 0.08)", zeroline=False)
+    return fig.to_html(full_html=False, include_plotlyjs=False, config={"displayModeBar": False})
+
+
+def chart_bundle(df):
+    category_sales = df.groupby("Category")["Sales"].sum().reset_index()
+    region_profit = df.groupby("Region")["Profit"].sum().reset_index()
+    monthly_sales = (
         df.groupby(df["Order Date"].dt.to_period("M"))["Sales"]
         .sum()
         .reset_index()
-        .sort_values("Order Date")
-    )
-    monthly["Sales Change"] = monthly["Sales"].pct_change()
-
-    if len(monthly) >= 3:
-        drops = monthly[monthly["Sales Change"] <= -0.25]
-        for _, row in drops.tail(3).iterrows():
-            anomalies.append(
-                {
-                    "title": f"Sales drop in {row['Order Date']}",
-                    "body": f"Monthly sales fell by {abs(row['Sales Change']):.0%}. Check campaigns, inventory, and market demand.",
-                }
-            )
-
-    high_discount_losses = df[(df["Discount"] >= 0.30) & (df["Profit"] < 0)]
-    if not high_discount_losses.empty:
-        anomalies.append(
-            {
-                "title": "High-discount loss cluster",
-                "body": f"{len(high_discount_losses):,} rows combine discounts above 30% with negative profit.",
-            }
-        )
-
-    region_profit = df.groupby("Region")["Profit"].sum()
-    negative_regions = region_profit[region_profit < 0]
-    for region, profit in negative_regions.items():
-        anomalies.append(
-            {
-                "title": f"Negative regional profit: {region}",
-                "body": f"This region is at {money(profit)} profit and needs margin recovery actions.",
-            }
-        )
-
-    category_margin = df.groupby("Category").apply(
-        lambda group: group["Profit"].sum() / group["Sales"].sum()
-        if group["Sales"].sum()
-        else 0,
-        include_groups=False,
-    )
-    weak_categories = category_margin[category_margin < 0]
-    for category, margin in weak_categories.items():
-        anomalies.append(
-            {
-                "title": f"Category margin alert: {category}",
-                "body": f"Category margin is {percent(margin)}. Review product economics and discount rules.",
-            }
-        )
-
-    if not anomalies:
-        anomalies.append(
-            {
-                "title": "No critical anomalies detected",
-                "body": "The active filters do not show severe drops, negative regions, or high-discount loss clusters.",
-            }
-        )
-
-    return anomalies[:8]
-
-
-def build_category_sales_fig(df):
-    category_sales = (
-        df.groupby("Category", as_index=False)["Sales"].sum().sort_values("Sales", ascending=False)
-    )
-    fig = px.bar(
-        category_sales,
-        x="Category",
-        y="Sales",
-        color="Category",
-        color_discrete_sequence=PLOT_COLORS,
-        title="Revenue by Category",
-    )
-    fig.update_traces(marker_line_width=0, hovertemplate="%{x}<br>Sales: $%{y:,.0f}<extra></extra>")
-    return style_figure(fig)
-
-
-def build_region_profit_fig(df):
-    region_profit = (
-        df.groupby("Region", as_index=False)["Profit"].sum().sort_values("Profit", ascending=False)
-    )
-    fig = px.bar(
-        region_profit,
-        x="Region",
-        y="Profit",
-        color="Profit",
-        color_continuous_scale=["#ef4444", "#f97316", "#17c3b2"],
-        title="Profit by Region",
-    )
-    fig.update_traces(marker_line_width=0, hovertemplate="%{x}<br>Profit: $%{y:,.0f}<extra></extra>")
-    return style_figure(fig)
-
-
-def build_monthly_sales_fig(df):
-    monthly_sales = (
-        df.groupby(df["Order Date"].dt.to_period("M"))["Sales"].sum().reset_index()
     )
     monthly_sales["Order Date"] = monthly_sales["Order Date"].astype(str)
-    fig = px.line(
-        monthly_sales,
-        x="Order Date",
-        y="Sales",
-        markers=True,
-        title="Monthly Sales Trend",
-    )
-    fig.update_traces(
-        line=dict(color=ACCENT, width=4),
-        marker=dict(size=8, color="#0f766e"),
-        hovertemplate="%{x}<br>Sales: $%{y:,.0f}<extra></extra>",
-    )
-    return style_figure(fig, height=440)
 
-
-def build_forecast_fig(monthly_sales, future_df):
-    fig = px.line(
-        monthly_sales,
-        x="Order Date",
-        y="Sales",
-        markers=True,
-        title="Historical and Predicted Monthly Sales",
-    )
-    fig.update_traces(
-        name="Historical Sales",
-        line=dict(color=ACCENT, width=4),
-        marker=dict(size=8),
-        hovertemplate="%{x}<br>Sales: $%{y:,.0f}<extra></extra>",
-    )
-
-    if not future_df.empty:
-        fig.add_scatter(
-            x=future_df["Forecast Month"],
-            y=future_df["Upper Bound"],
-            mode="lines",
-            line=dict(width=0),
-            showlegend=False,
-            hoverinfo="skip",
-        )
-        fig.add_scatter(
-            x=future_df["Forecast Month"],
-            y=future_df["Lower Bound"],
-            mode="lines",
-            fill="tonexty",
-            fillcolor="rgba(249, 115, 22, 0.16)",
-            line=dict(width=0),
-            name="Confidence Band",
-            hoverinfo="skip",
-        )
-        fig.add_scatter(
-            x=future_df["Forecast Month"],
-            y=future_df["Predicted Sales"],
-            mode="lines+markers",
-            name="Predicted Sales",
-            line=dict(color="#f97316", width=4, dash="dash"),
-            marker=dict(size=8),
-            hovertemplate="%{x}<br>Prediction: $%{y:,.0f}<extra></extra>",
-        )
-
-    return style_figure(fig, height=460)
-
-
-def fig_to_png(fig):
-    try:
-        return fig.to_image(format="png", scale=2)
-    except Exception:
-        return None
-
-
-def dataframe_to_csv(df):
-    buffer = StringIO()
-    df.to_csv(buffer, index=False)
-    return buffer.getvalue()
-
-
-def sidebar_filters(df, source_name):
-    st.sidebar.markdown("### AI BI Platform")
-    st.sidebar.caption("Executive analytics workspace")
-
-    page = st.sidebar.radio(
-        "Workspace",
-        [
-            "Dashboard",
-            "Data Quality",
-            "AI Assistant",
-            "Forecasting",
-            "AI Reports",
-            "Autonomous Insights",
-            "Exports",
-            "Voice Assistant",
-        ],
-    )
-
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("### Filters")
-    regions = sorted(df["Region"].dropna().unique())
-    categories = sorted(df["Category"].dropna().unique())
-
-    selected_regions = st.sidebar.multiselect("Region", options=regions, default=regions)
-    selected_categories = st.sidebar.multiselect("Category", options=categories, default=categories)
-
-    st.sidebar.markdown("---")
-    st.sidebar.caption(f"Source: {source_name}")
-    st.sidebar.caption(f"{len(df):,} records loaded")
-
-    return page, selected_regions, selected_categories
-
-
-def render_upload_state():
-    st.markdown('<div class="upload-shell">', unsafe_allow_html=True)
-    uploaded_file = st.file_uploader(
-        "Upload your CSV file",
-        type=["csv"],
-        help="Use a Superstore-style CSV with sales, profit, region, category, discount, order date, and order id columns.",
-    )
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        if st.button("Try demo dataset", use_container_width=True):
-            st.session_state["use_demo_data"] = True
-    with col2:
-        if st.button("Reset dataset", use_container_width=True):
-            st.session_state["use_demo_data"] = False
-            st.session_state["chat_history"] = []
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    section_title("What this workspace unlocks", "A premium analytics layer for your business dataset.")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        insight_card("Executive dashboards", "Track revenue, profit, orders, margins, trends, and category performance.")
-    with col2:
-        insight_card("Data quality and risks", "Scan missing values, duplicates, invalid dates, pricing issues, and anomalies.")
-    with col3:
-        insight_card("Exports and reports", "Download filtered data, forecasts, chart images, insights, and premium PDFs.")
-
-    return uploaded_file
-
-
-def render_dashboard(filtered_df):
-    metrics = get_metrics(filtered_df)
-    section_title("Executive Snapshot", "High-signal performance indicators from the active filters.")
-    col1, col2, col3, col4 = st.columns(4)
-    metric_items = list(metrics.items())
-    for column, item in zip([col1, col2, col3, col4], metric_items[:4]):
-        with column:
-            metric_card(item[0], item[1], "Active filter view")
-
-    chart_col1, chart_col2 = st.columns(2)
-    with chart_col1:
-        st.plotly_chart(build_category_sales_fig(filtered_df), use_container_width=True)
-    with chart_col2:
-        st.plotly_chart(build_region_profit_fig(filtered_df), use_container_width=True)
-
-    section_title("Revenue Momentum", "Monthly sales trend with executive chart treatment.")
-    st.plotly_chart(build_monthly_sales_fig(filtered_df), use_container_width=True)
-
-    section_title("AI Business Signals", "Automated readouts from the current filtered dataset.")
-    insights = build_advanced_insights(filtered_df)
-    cols = st.columns(3)
-    for index, item in enumerate(insights[:3]):
-        with cols[index % 3]:
-            insight_card(item["title"], item["body"])
-
-
-def render_data_quality(raw_df, prepared_df, quality):
-    section_title("Data Quality Scan", "Column health, invalid rows, duplicates, and readiness for analytics.")
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        metric_card("Quality Score", f"{quality['score']}/100", "Higher is cleaner")
-    with col2:
-        metric_card("Missing Cells", f"{quality['missing_cells']:,}", "Across all columns")
-    with col3:
-        metric_card("Duplicate Rows", f"{quality['duplicate_rows']:,}", "Exact duplicates")
-    with col4:
-        metric_card("Valid Rows", f"{quality['clean_row_count']:,}", f"from {quality['row_count']:,} rows")
-
-    section_title("Column Diagnostics", "Review missing values and type conversion issues.")
-    diagnostics = pd.DataFrame(
-        {
-            "Column": raw_df.columns,
-            "Missing Values": raw_df.isna().sum().values,
-            "Unique Values": raw_df.nunique(dropna=True).values,
-            "Data Type": raw_df.dtypes.astype(str).values,
-        }
-    )
-    st.dataframe(diagnostics, use_container_width=True)
-
-    issues = []
-    if quality["missing_required"]:
-        issues.append("Missing required columns: " + ", ".join(quality["missing_required"]))
-    if quality["invalid_dates"]:
-        issues.append(f"{quality['invalid_dates']:,} invalid order dates were excluded.")
-    if quality["duplicate_rows"]:
-        issues.append(f"{quality['duplicate_rows']:,} duplicate rows detected.")
-    for column, count in quality["numeric_issues"].items():
-        if count:
-            issues.append(f"{column} has {count:,} non-numeric values.")
-
-    section_title("Readiness Notes", "Actionable checks before using the dataset for decisions.")
-    if issues:
-        for item in issues:
-            st.warning(item)
-    else:
-        st.success("Dataset is ready for dashboarding, AI analysis, forecasting, and reporting.")
-
-    with st.expander("Preview cleaned data"):
-        st.dataframe(prepared_df.head(50), use_container_width=True)
-
-
-def render_ai_assistant(filtered_df):
-    section_title("AI Business Assistant", "Chat with dataset memory during this session.")
-    st.markdown('<div class="glass-panel">', unsafe_allow_html=True)
-
-    if "chat_history" not in st.session_state:
-        st.session_state["chat_history"] = []
-
-    for message in st.session_state["chat_history"][-8:]:
-        klass = "chat-bubble-user" if message["role"] == "user" else "chat-bubble-ai"
-        label = "You" if message["role"] == "user" else "AI Analyst"
-        st.markdown(
-            f'<div class="{klass}"><strong>{label}</strong><br>{escape(message["content"])}</div>',
-            unsafe_allow_html=True,
-        )
-
-    prompt = st.text_area(
-        "Ask a business question",
-        placeholder="Example: Which region has the weakest profit performance and what should we do next?",
-        height=120,
-    )
-
-    col1, col2 = st.columns([2, 1])
-    with col1:
-        analyze = st.button("Analyze with AI", use_container_width=True)
-    with col2:
-        if st.button("Clear chat", use_container_width=True):
-            st.session_state["chat_history"] = []
-            st.rerun()
-
-    if analyze and prompt.strip():
-        context = "\n".join(
-            f"{item['role']}: {item['content']}" for item in st.session_state["chat_history"][-6:]
-        )
-        question = f"Previous conversation:\n{context}\n\nNew question:\n{prompt}"
-        st.session_state["chat_history"].append({"role": "user", "content": prompt})
-        with st.spinner("AI is analyzing business performance..."):
-            answer = ask_ai(question, filtered_df)
-        st.session_state["chat_history"].append({"role": "assistant", "content": answer})
-        st.rerun()
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-
-def render_forecasting(filtered_df):
-    section_title("Sales Forecasting", "Six-month ML forecast with confidence bands.")
-
-    if filtered_df["Order Date"].dt.to_period("M").nunique() < 2:
-        st.warning("Forecasting needs at least two months of order history.")
-        return None
-
-    monthly_sales, future_df = predict_sales(filtered_df.copy())
-    st.plotly_chart(build_forecast_fig(monthly_sales, future_df), use_container_width=True)
-    st.dataframe(
-        future_df[["Forecast Month", "Predicted Sales", "Lower Bound", "Upper Bound"]].style.format(
-            {
-                "Predicted Sales": "${:,.0f}",
-                "Lower Bound": "${:,.0f}",
-                "Upper Bound": "${:,.0f}",
-            }
-        ),
-        use_container_width=True,
-    )
-    return future_df
-
-
-def render_reports(filtered_df):
-    section_title("AI Report Generator", "Create a premium executive report and download it as a PDF.")
-    st.markdown('<div class="glass-panel">', unsafe_allow_html=True)
-    st.write("The report now includes KPI tables, autonomous signals, anomalies, forecast bands, and AI narrative.")
-
-    if st.button("Generate Executive Report", use_container_width=True):
-        with st.spinner("Generating AI executive report..."):
-            metrics = get_metrics(filtered_df)
-            insights = build_advanced_insights(filtered_df)
-            anomalies = detect_anomalies(filtered_df)
-            _, forecast = predict_sales(filtered_df.copy())
-            report_prompt = """
-Generate a professional executive business report based on the dataset analysis.
-
-Include:
-- Executive summary
-- Revenue and profit insights
-- Risks and anomalies
-- Forecast interpretation
-- Strategic recommendations
-"""
-            report_text = ask_ai(report_prompt, filtered_df)
-            pdf_path = generate_pdf_report(
-                report_text,
-                metrics=metrics,
-                insights=insights,
-                anomalies=anomalies,
-                forecast=forecast,
-            )
-
-        st.success("Premium AI report generated successfully.")
-        st.text_area("Generated AI narrative", report_text, height=320)
-        with open(pdf_path, "rb") as file:
-            st.download_button(
-                label="Download Premium PDF Report",
-                data=file,
-                file_name="AI_Business_Report.pdf",
-                mime="application/pdf",
-                use_container_width=True,
-            )
-    st.markdown("</div>", unsafe_allow_html=True)
-
-
-def render_autonomous_insights(filtered_df):
-    section_title("Autonomous Insights", "Growth opportunities, profit leaks, and risk signals.")
-    insights = build_advanced_insights(filtered_df)
-    anomalies = detect_anomalies(filtered_df)
-    legacy_insights = generate_autonomous_insights(filtered_df)
-
-    tab1, tab2, tab3 = st.tabs(["Recommendations", "Anomalies", "Classic Engine"])
-    with tab1:
-        cols = st.columns(2)
-        for index, item in enumerate(insights):
-            with cols[index % 2]:
-                insight_card(item["title"], item["body"])
-    with tab2:
-        cols = st.columns(2)
-        for index, item in enumerate(anomalies):
-            with cols[index % 2]:
-                insight_card(item["title"], item["body"])
-    with tab3:
-        for index, item in enumerate(legacy_insights, start=1):
-            insight_card(f"Signal {index}", item)
-
-
-def render_exports(filtered_df):
-    section_title("Export Center", "Download data, forecast, insights, charts, and reports.")
-    insights = build_advanced_insights(filtered_df)
-    anomalies = detect_anomalies(filtered_df)
-    monthly_sales, forecast = predict_sales(filtered_df.copy())
-
-    col1, col2 = st.columns(2)
-    with col1:
-        st.download_button(
-            "Download filtered data CSV",
-            data=dataframe_to_csv(filtered_df),
-            file_name="filtered_business_data.csv",
-            mime="text/csv",
-            use_container_width=True,
-        )
-    with col2:
-        st.download_button(
-            "Download forecast CSV",
-            data=dataframe_to_csv(forecast),
-            file_name="sales_forecast.csv",
-            mime="text/csv",
-            use_container_width=True,
-        )
-
-    insight_text = "\n".join(
-        [f"- {item['title']}: {item['body']}" for item in insights + anomalies]
-    )
-    st.download_button(
-        "Download insights summary",
-        data=insight_text,
-        file_name="business_insights.md",
-        mime="text/markdown",
-        use_container_width=True,
-    )
-
-    section_title("Chart Image Exports", "PNG exports require Kaleido, included in requirements.")
-    charts = {
-        "revenue_by_category.png": build_category_sales_fig(filtered_df),
-        "profit_by_region.png": build_region_profit_fig(filtered_df),
-        "monthly_sales_trend.png": build_monthly_sales_fig(filtered_df),
-        "forecast.png": build_forecast_fig(monthly_sales, forecast),
+    return {
+        "category": figure_html(px.bar(category_sales, x="Category", y="Sales", color="Category", color_discrete_sequence=PLOT_COLORS, title="Sales by Category")),
+        "region": figure_html(px.bar(region_profit, x="Region", y="Profit", color="Region", color_discrete_sequence=PLOT_COLORS, title="Profit by Region")),
+        "monthly": figure_html(px.line(monthly_sales, x="Order Date", y="Sales", markers=True, title="Monthly Sales Trend")),
     }
-    cols = st.columns(2)
-    for index, (file_name, fig) in enumerate(charts.items()):
-        png = fig_to_png(fig)
-        with cols[index % 2]:
-            if png:
-                st.download_button(
-                    f"Download {file_name}",
-                    data=png,
-                    file_name=file_name,
-                    mime="image/png",
-                    use_container_width=True,
-                )
-            else:
-                st.info(f"{file_name} export needs Kaleido installed.")
-
-    if st.button("Generate downloadable PDF snapshot", use_container_width=True):
-        report_text = "Automated executive snapshot generated from current filters."
-        pdf_path = generate_pdf_report(
-            report_text,
-            metrics=get_metrics(filtered_df),
-            insights=insights,
-            anomalies=anomalies,
-            forecast=forecast,
-        )
-        with open(pdf_path, "rb") as file:
-            st.download_button(
-                "Download PDF snapshot",
-                data=file,
-                file_name="AI_Business_Report.pdf",
-                mime="application/pdf",
-                use_container_width=True,
-            )
 
 
-def render_voice_assistant():
-    section_title("Voice Assistant", "Capture browser audio for voice-driven analysis workflows.")
-    st.markdown('<div class="glass-panel">', unsafe_allow_html=True)
-    audio = mic_recorder(
-        start_prompt="Start Recording",
-        stop_prompt="Stop Recording",
-        key="voice_recorder",
-    )
-    if audio:
-        st.success("Voice recorded successfully.")
-        st.info("Browser audio captured and ready for the next voice workflow.")
-    st.markdown("</div>", unsafe_allow_html=True)
+def forecast_chart(monthly_sales, forecast):
+    fig = px.line(monthly_sales, x="Order Date", y="Sales", markers=True, title="Sales Forecast")
+    if not forecast.empty:
+        fig.add_scatter(x=forecast["Forecast Month"], y=forecast["Predicted Sales"], mode="lines+markers", name="Forecast")
+        fig.add_scatter(x=forecast["Forecast Month"], y=forecast["Upper Bound"], mode="lines", name="Upper bound", line=dict(width=0), showlegend=False)
+        fig.add_scatter(x=forecast["Forecast Month"], y=forecast["Lower Bound"], mode="lines", name="Lower bound", fill="tonexty", line=dict(width=0), fillcolor="rgba(20,184,166,0.16)", showlegend=False)
+    return figure_html(fig)
 
 
-def load_active_dataset(uploaded_file):
-    if uploaded_file is not None:
-        st.session_state["use_demo_data"] = False
-        return read_csv(uploaded_file), uploaded_file.name
-
-    if st.session_state.get("use_demo_data"):
-        if not DEMO_DATA_PATH.exists():
-            st.error("Demo dataset was not found in the data folder.")
-            st.stop()
-        return read_csv(DEMO_DATA_PATH), "Sample - Superstore.csv"
-
-    return None, None
+def dataframe_csv(df):
+    return df.to_csv(index=False).encode("utf-8")
 
 
-inject_theme()
-render_hero()
+def encoded_query(selected_regions, selected_categories):
+    parts = []
+    for region in selected_regions:
+        parts.append(("region", region))
+    for category in selected_categories:
+        parts.append(("category", category))
+    return parts
 
-uploaded_file = render_upload_state()
-raw_df, source_name = load_active_dataset(uploaded_file)
 
-if raw_df is not None:
+def build_context():
+    raw_df, source_name = load_dataset()
     missing_columns = validate_dataset(raw_df)
     if missing_columns:
-        st.error(
-            "This CSV is missing required columns: "
-            + ", ".join(missing_columns)
-            + ". Please upload a Superstore-style business dataset."
-        )
-        st.stop()
+        return {"error": f"This CSV is missing required columns: {', '.join(missing_columns)}."}
 
     df = prepare_dataset(raw_df)
     if df.empty:
-        st.error("No valid dated rows were found after processing the uploaded CSV.")
-        st.stop()
+        return {"error": "No valid dated rows were found after processing the dataset."}
 
-    quality = run_data_quality_scan(raw_df, df)
-    page, selected_regions, selected_categories = sidebar_filters(df, source_name)
-    filtered_df = df[
-        df["Region"].isin(selected_regions) & df["Category"].isin(selected_categories)
-    ].copy()
-
+    filtered_df, regions, categories, selected_regions, selected_categories = filter_dataset(df)
     if filtered_df.empty:
-        st.warning("No rows match the selected filters. Adjust the sidebar filters to continue.")
-        st.stop()
+        return {"error": "No rows match the selected filters."}
 
-    if page == "Dashboard":
-        render_dashboard(filtered_df)
-    elif page == "Data Quality":
-        render_data_quality(raw_df, df, quality)
-    elif page == "AI Assistant":
-        render_ai_assistant(filtered_df)
-    elif page == "Forecasting":
-        render_forecasting(filtered_df)
-    elif page == "AI Reports":
-        render_reports(filtered_df)
-    elif page == "Autonomous Insights":
-        render_autonomous_insights(filtered_df)
-    elif page == "Exports":
-        render_exports(filtered_df)
-    elif page == "Voice Assistant":
-        render_voice_assistant()
+    monthly_sales, forecast = predict_sales(filtered_df.copy())
+    ai_prompt = request.values.get("prompt", "").strip()
+    ai_answer = None
+    if ai_prompt:
+        ai_answer = ask_ai(ai_prompt, filtered_df)
+
+    return {
+        "error": None,
+        "source_name": source_name,
+        "raw_df": raw_df,
+        "df": df,
+        "filtered_df": filtered_df,
+        "regions": regions,
+        "categories": categories,
+        "selected_regions": selected_regions,
+        "selected_categories": selected_categories,
+        "metrics": get_metrics(filtered_df),
+        "quality": run_data_quality_scan(raw_df, df),
+        "insights": build_advanced_insights(filtered_df),
+        "classic_insights": generate_autonomous_insights(filtered_df),
+        "anomalies": detect_anomalies(filtered_df),
+        "charts": chart_bundle(filtered_df),
+        "monthly_sales": monthly_sales,
+        "forecast": forecast,
+        "forecast_chart": forecast_chart(monthly_sales, forecast),
+        "ai_prompt": ai_prompt,
+        "ai_answer": ai_answer,
+        "active_page": request.values.get("page", "dashboard"),
+        "query_pairs": encoded_query(selected_regions, selected_categories),
+    }
+
+
+PAGE_TEMPLATE = """
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI BI Platform</title>
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <style>
+    :root { --ink:#101828; --muted:#667085; --line:#d0d5dd; --accent:#14b8a6; --accent-dark:#0f766e; --warm:#f97316; --canvas:#f4f7fb; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: Inter, Segoe UI, Arial, sans-serif; color:var(--ink); background:linear-gradient(180deg,#f8fbff 0%,#eef4f8 100%); }
+    a { color: inherit; text-decoration: none; }
+    .layout { display:grid; grid-template-columns: 292px 1fr; min-height:100vh; }
+    aside { background:#111827; color:#f8fafc; padding:24px 18px; position:sticky; top:0; height:100vh; overflow:auto; }
+    .brand { font-size:1.05rem; font-weight:900; margin-bottom:4px; }
+    .caption { color:#cbd5e1; font-size:.86rem; line-height:1.45; }
+    .nav { display:grid; gap:8px; margin:24px 0; }
+    .nav a { padding:11px 12px; border-radius:8px; color:#e5e7eb; font-weight:750; }
+    .nav a.active, .nav a:hover { background:rgba(20,184,166,.16); color:white; }
+    label { display:block; margin:14px 0 8px; font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; font-weight:850; color:#cbd5e1; }
+    select, textarea, input[type=file] { width:100%; border:1px solid rgba(255,255,255,.16); border-radius:8px; padding:10px; background:rgba(255,255,255,.08); color:white; }
+    option { color:#111827; }
+    button, .button { border:0; border-radius:8px; background:linear-gradient(135deg,var(--accent),var(--accent-dark)); color:white; font-weight:850; padding:11px 14px; cursor:pointer; display:inline-flex; justify-content:center; align-items:center; min-height:42px; }
+    .secondary { background:#f8fafc; color:#111827; border:1px solid var(--line); }
+    .main { padding:28px; max-width:1440px; width:100%; margin:0 auto; }
+    .hero { color:white; background:linear-gradient(135deg,#101828,#0f766e); border-radius:8px; padding:32px; box-shadow:0 24px 70px rgba(15,23,42,.20); margin-bottom:22px; }
+    .hero h1 { margin:0; font-size:clamp(2.1rem,5vw,4.7rem); line-height:1; letter-spacing:0; max-width:920px; }
+    .hero p { max-width:780px; color:rgba(255,255,255,.76); line-height:1.7; }
+    .eyebrow { color:#99f6e4; text-transform:uppercase; letter-spacing:.1em; font-size:.78rem; font-weight:900; margin-bottom:12px; }
+    .pill-row { display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; }
+    .pill { border:1px solid rgba(255,255,255,.18); background:rgba(255,255,255,.10); color:#ecfeff; border-radius:999px; padding:8px 12px; font-size:.82rem; font-weight:800; }
+    .grid { display:grid; gap:16px; }
+    .metrics { grid-template-columns:repeat(5,minmax(0,1fr)); }
+    .two { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .three { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .card, .panel { background:rgba(255,255,255,.86); border:1px solid rgba(255,255,255,.9); box-shadow:0 18px 50px rgba(16,24,40,.09); border-radius:8px; padding:20px; }
+    .metric-label { color:var(--muted); font-size:.76rem; text-transform:uppercase; letter-spacing:.08em; font-weight:900; }
+    .metric-value { margin-top:10px; font-size:1.75rem; font-weight:950; }
+    .metric-note { margin-top:8px; color:var(--muted); font-size:.88rem; }
+    h2 { margin:30px 0 12px; font-size:1.35rem; }
+    h3 { margin:0 0 8px; font-size:1rem; }
+    .muted { color:var(--muted); }
+    .table { width:100%; border-collapse:collapse; overflow:hidden; border-radius:8px; }
+    .table th, .table td { padding:11px 12px; border-bottom:1px solid #e4e7ec; text-align:left; font-size:.92rem; }
+    .table th { background:#0f766e; color:white; }
+    .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+    .assistant textarea { min-height:130px; background:white; color:var(--ink); border-color:var(--line); }
+    .answer { white-space:pre-wrap; line-height:1.6; }
+    .alert { padding:16px; border-radius:8px; background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; }
+    @media (max-width: 980px) { .layout { grid-template-columns:1fr; } aside { position:relative; height:auto; } .metrics, .two, .three { grid-template-columns:1fr; } .main { padding:18px; } }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside>
+      <div class="brand">AI BI Platform</div>
+      <div class="caption">Executive analytics workspace</div>
+      <nav class="nav">
+        {% for key, label in [("dashboard","Dashboard"),("quality","Data Quality"),("forecast","Forecasting"),("insights","Insights"),("assistant","AI Assistant"),("exports","Exports")] %}
+          <a class="{{ 'active' if active_page == key else '' }}" href="{{ url_for('index', page=key) }}">{{ label }}</a>
+        {% endfor %}
+      </nav>
+      <form method="get">
+        <input type="hidden" name="page" value="{{ active_page }}">
+        <label>Region</label>
+        <select name="region" multiple size="4">
+          {% for region in regions %}
+            <option value="{{ region }}" {{ 'selected' if region in selected_regions else '' }}>{{ region }}</option>
+          {% endfor %}
+        </select>
+        <label>Category</label>
+        <select name="category" multiple size="4">
+          {% for category in categories %}
+            <option value="{{ category }}" {{ 'selected' if category in selected_categories else '' }}>{{ category }}</option>
+          {% endfor %}
+        </select>
+        <div class="actions"><button type="submit">Apply Filters</button><a class="button secondary" href="{{ url_for('index') }}">Reset</a></div>
+      </form>
+      <p class="caption" style="margin-top:24px;">Source: {{ source_name }}<br>{{ filtered_df|length }} filtered rows</p>
+    </aside>
+    <main class="main">
+      {% if error %}
+        <div class="alert">{{ error }}</div>
+      {% else %}
+      <section class="hero">
+        <div class="eyebrow">Autonomous analytics command center</div>
+        <h1>AI Business Intelligence Platform</h1>
+        <p>Upload a business CSV or use the included demo dataset to explore KPIs, data quality, anomaly detection, AI recommendations, forecasts, and board-ready reports.</p>
+        <form method="post" enctype="multipart/form-data" class="actions">
+          <input type="hidden" name="page" value="{{ active_page }}">
+          <input type="file" name="dataset" accept=".csv">
+          <button type="submit">Analyze CSV</button>
+        </form>
+      </section>
+
+      {% if active_page == "dashboard" %}
+        <section class="grid metrics">
+          {% for label, value, note in metrics %}
+            <article class="card"><div class="metric-label">{{ label }}</div><div class="metric-value">{{ value }}</div><div class="metric-note">{{ note }}</div></article>
+          {% endfor %}
+        </section>
+        <h2>Performance Dashboard</h2>
+        <section class="grid two"><div class="panel">{{ charts.category|safe }}</div><div class="panel">{{ charts.region|safe }}</div></section>
+        <h2>Trend Analysis</h2>
+        <section class="panel">{{ charts.monthly|safe }}</section>
+      {% elif active_page == "quality" %}
+        <h2>Data Quality</h2>
+        <section class="grid three">
+          {% for label, value in quality.items() %}
+            <article class="card"><div class="metric-label">{{ label.replace('_', ' ') }}</div><div class="metric-value">{{ value }}</div></article>
+          {% endfor %}
+        </section>
+        <h2>Cleaned Data Preview</h2>
+        <section class="panel">{{ preview|safe }}</section>
+      {% elif active_page == "forecast" %}
+        <h2>Forecasting</h2>
+        <section class="panel">{{ forecast_chart|safe }}</section>
+        <h2>Six-Month Forecast</h2>
+        <section class="panel">{{ forecast_table|safe }}</section>
+      {% elif active_page == "insights" %}
+        <h2>Autonomous Recommendations</h2>
+        <section class="grid two">{% for title, body in insights %}<article class="card"><h3>{{ title }}</h3><p class="muted">{{ body }}</p></article>{% endfor %}</section>
+        <h2>Anomalies</h2>
+        <section class="grid two">{% for title, body in anomalies %}<article class="card"><h3>{{ title }}</h3><p class="muted">{{ body }}</p></article>{% endfor %}</section>
+        <h2>Classic Insight Engine</h2>
+        <section class="grid two">{% for item in classic_insights %}<article class="card"><p>{{ item }}</p></article>{% endfor %}</section>
+      {% elif active_page == "assistant" %}
+        <h2>AI Assistant</h2>
+        <section class="panel assistant">
+          <form method="post">
+            <input type="hidden" name="page" value="assistant">
+            {% for key, value in query_pairs %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endfor %}
+            <textarea name="prompt" placeholder="Ask a business question...">{{ ai_prompt }}</textarea>
+            <div class="actions"><button type="submit">Analyze with AI</button></div>
+          </form>
+          {% if ai_answer %}<h2>Answer</h2><div class="answer">{{ ai_answer }}</div>{% endif %}
+        </section>
+      {% elif active_page == "exports" %}
+        <h2>Export Center</h2>
+        <section class="grid two">
+          <a class="button" href="{{ url_for('download_filtered') }}">Download Filtered CSV</a>
+          <a class="button" href="{{ url_for('download_forecast') }}">Download Forecast CSV</a>
+          <a class="button" href="{{ url_for('download_report') }}">Generate PDF Report</a>
+        </section>
+      {% endif %}
+      {% endif %}
+    </main>
+  </div>
+</body>
+</html>
+"""
+
+
+@server.route("/", methods=["GET", "POST"])
+def index():
+    context = build_context()
+    if context["error"]:
+        return render_template_string(PAGE_TEMPLATE, **context)
+
+    context["preview"] = context["df"].head(50).to_html(classes="table", index=False)
+    forecast = context["forecast"].copy()
+    if not forecast.empty:
+        for column in ["Predicted Sales", "Lower Bound", "Upper Bound"]:
+            forecast[column] = forecast[column].map(money)
+    context["forecast_table"] = forecast.to_html(classes="table", index=False)
+    return render_template_string(PAGE_TEMPLATE, **context)
+
+
+@server.route("/download/filtered")
+def download_filtered():
+    raw_df = read_csv(DEMO_DATA_PATH)
+    df = prepare_dataset(raw_df)
+    filtered_df, *_ = filter_dataset(df)
+    return Response(
+        dataframe_csv(filtered_df),
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment; filename=filtered_business_data.csv"},
+    )
+
+
+@server.route("/download/forecast")
+def download_forecast():
+    raw_df = read_csv(DEMO_DATA_PATH)
+    df = prepare_dataset(raw_df)
+    filtered_df, *_ = filter_dataset(df)
+    _, forecast = predict_sales(filtered_df.copy())
+    return Response(
+        dataframe_csv(forecast),
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment; filename=sales_forecast.csv"},
+    )
+
+
+@server.route("/download/report")
+def download_report():
+    raw_df = read_csv(DEMO_DATA_PATH)
+    df = prepare_dataset(raw_df)
+    filtered_df, *_ = filter_dataset(df)
+    _, forecast = predict_sales(filtered_df.copy())
+    insights = [{"title": title, "body": body} for title, body in build_advanced_insights(filtered_df)]
+    anomalies = [{"title": title, "body": body} for title, body in detect_anomalies(filtered_df)]
+    metrics = {label: value for label, value, _ in get_metrics(filtered_df)}
+    report_text = "Automated executive snapshot generated from the current business dataset."
+    pdf_path = generate_pdf_report(report_text, metrics=metrics, insights=insights, anomalies=anomalies, forecast=forecast)
+    return send_file(pdf_path, as_attachment=True, download_name="AI_Business_Report.pdf")
+
+
+app = server
+
+
+if __name__ == "__main__":
+    server.run(host="0.0.0.0", port=5000, debug=True)

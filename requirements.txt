@@ -1,4 +1,5 @@
-streamlit
+Flask
+gunicorn
 pandas
 numpy
 plotly
@@ -9,4 +10,3 @@ scikit-learn
 google-generativeai
 python-dotenv
 reportlab
-streamlit-mic-recorder
