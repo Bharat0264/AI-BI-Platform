@@ -79,9 +79,9 @@ This repo includes `render.yaml`.
 services:
   - type: web
     name: ai-bi-platform
-    env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app.dashboard:server --bind 0.0.0.0:$PORT
+    runtime: python
+    buildCommand: python3 -m pip install -r requirements.txt
+    startCommand: python3 -m gunicorn app.dashboard:server --bind 0.0.0.0:$PORT
 ```
 
 On Render:
