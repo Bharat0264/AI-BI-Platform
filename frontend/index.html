@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI BI Platform</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand">AI BI Platform</div>
+    <div class="caption">Frontend + backend analytics suite</div>
+    <nav>
+      <a href="#dashboard" class="active">Dashboard</a>
+      <a href="#quality">Data Quality</a>
+      <a href="#forecast">Forecast</a>
+      <a href="#insights">Insights</a>
+      <a href="#assistant">AI Assistant</a>
+      <a href="#exports">Exports</a>
+    </nav>
+    <form id="filterForm">
+      <label>Region</label>
+      <select id="regionFilter" multiple size="4"></select>
+      <label>Category</label>
+      <select id="categoryFilter" multiple size="4"></select>
+      <button type="submit">Apply Filters</button>
+      <button type="button" class="ghost" id="resetFilters">Reset</button>
+    </form>
+    <div class="source" id="sourceLabel">Loading dataset...</div>
+  </aside>
+
+  <main>
+    <section class="hero">
+      <div class="eyebrow">Autonomous analytics command center</div>
+      <h1>AI Business Intelligence Platform</h1>
+      <p>Analyze business data, track executive KPIs, detect risk, forecast sales, ask AI questions, and generate reports from one full-stack website.</p>
+      <form id="uploadForm" class="upload">
+        <input type="file" id="datasetFile" accept=".csv">
+        <button type="submit">Analyze CSV</button>
+      </form>
+    </section>
+
+    <section id="dashboard">
+      <div class="metrics" id="metrics"></div>
+      <h2>Performance Dashboard</h2>
+      <div class="chart-grid">
+        <div class="panel"><div id="categoryChart"></div></div>
+        <div class="panel"><div id="regionChart"></div></div>
+      </div>
+      <div class="panel wide"><div id="monthlyChart"></div></div>
+    </section>
+
+    <section id="quality">
+      <h2>Data Quality</h2>
+      <div class="quality-grid" id="qualityCards"></div>
+      <div class="panel table-wrap"><table id="previewTable"></table></div>
+    </section>
+
+    <section id="forecast">
+      <h2>Forecast</h2>
+      <div class="panel wide"><div id="forecastChart"></div></div>
+      <div class="panel table-wrap"><table id="forecastTable"></table></div>
+    </section>
+
+    <section id="insights">
+      <h2>Autonomous Insights</h2>
+      <div class="card-grid" id="insightCards"></div>
+      <h2>Anomalies</h2>
+      <div class="card-grid" id="anomalyCards"></div>
+    </section>
+
+    <section id="assistant">
+      <h2>AI Assistant</h2>
+      <div class="panel assistant">
+        <textarea id="question" placeholder="Ask a business question..."></textarea>
+        <button id="askButton">Analyze With AI</button>
+        <pre id="answer"></pre>
+      </div>
+    </section>
+
+    <section id="exports">
+      <h2>Export Center</h2>
+      <div class="export-grid">
+        <a class="button" href="/api/export/filtered">Download Filtered CSV</a>
+        <a class="button" href="/api/report">Generate PDF Report</a>
+      </div>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

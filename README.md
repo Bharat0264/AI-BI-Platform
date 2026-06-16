@@ -1,10 +1,11 @@
 # AI Autonomous Business Intelligence Platform
 
-An AI-powered business intelligence web app for analyzing CSV datasets, exploring KPIs, detecting risk signals, forecasting sales, asking Gemini-powered business questions, and generating executive PDF reports.
+An AI-powered business intelligence website with a Flask backend API and a custom HTML/CSS/JavaScript frontend for analyzing CSV datasets, exploring KPIs, detecting risk signals, forecasting sales, asking Gemini-powered business questions, and generating executive PDF reports.
 
 ## Features
 
 - CSV upload and demo dataset analysis
+- Separate frontend and backend structure
 - Executive KPI dashboard
 - Interactive Plotly charts
 - Region and category filters
@@ -19,7 +20,7 @@ An AI-powered business intelligence web app for analyzing CSV datasets, explorin
 | Technology | Purpose |
 | --- | --- |
 | Flask | Web application server |
-| Gunicorn | Production WSGI server |
+| HTML/CSS/JavaScript | Frontend experience |
 | Pandas / NumPy | Data processing |
 | Plotly | Interactive charts |
 | Scikit-learn | Forecasting model |
@@ -37,6 +38,11 @@ AI-BI-Platform/
 │   ├── llm_engine.py
 │   ├── autonomous_insights.py
 │   └── ...
+├── frontend/
+│   ├── index.html
+│   ├── styles.css
+│   └── app.js
+├── server.py
 ├── data/
 │   └── Sample - Superstore.csv
 ├── outputs/
@@ -62,7 +68,7 @@ GEMINI_API_KEY=your_api_key_here
 Run the web app:
 
 ```bash
-python app/dashboard.py
+python server.py
 ```
 
 Open:
@@ -81,7 +87,7 @@ services:
     name: ai-bi-platform
     runtime: python
     buildCommand: python -m pip install -r requirements.txt
-    startCommand: sh ./render-start.sh
+    startCommand: python server.py
 ```
 
 On Render:

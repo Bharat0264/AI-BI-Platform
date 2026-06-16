@@ -3,4 +3,4 @@ services:
     name: ai-bi-platform
     runtime: python
     buildCommand: python -m pip install -r requirements.txt
-    startCommand: sh ./render-start.sh
+    startCommand: python server.py
