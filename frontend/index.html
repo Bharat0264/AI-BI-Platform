@@ -12,7 +12,10 @@
     <div class="brand">AI BI Platform</div>
     <div class="caption">Frontend + backend analytics suite</div>
     <nav>
-      <a href="#dashboard" class="active">Dashboard</a>
+      <a href="#overview" class="active">Executive</a>
+      <a href="#dashboard">Dashboard</a>
+      <a href="#risk">Risk Center</a>
+      <a href="#segments">Segments</a>
       <a href="#quality">Data Quality</a>
       <a href="#forecast">Forecast</a>
       <a href="#insights">Insights</a>
@@ -32,24 +35,60 @@
 
   <main>
     <section class="hero">
-      <div class="eyebrow">Autonomous analytics command center</div>
+      <div class="eyebrow">Enterprise analytics command center</div>
       <h1>AI Business Intelligence Platform</h1>
-      <p>Analyze business data, track executive KPIs, detect risk, forecast sales, ask AI questions, and generate reports from one full-stack website.</p>
+      <p>Analyze business data, measure profit quality, detect risk exposure, forecast sales, ask AI questions, and generate board-ready reports from one full-stack website.</p>
       <form id="uploadForm" class="upload">
         <input type="file" id="datasetFile" accept=".csv">
         <button type="submit" id="analyzeCsvButton">Analyze CSV</button>
+        <button type="button" class="secondary" id="demoButton">Load Demo Dataset</button>
         <div class="upload-status" id="uploadStatus" aria-live="polite"></div>
       </form>
     </section>
 
-    <section id="dashboard">
+    <section id="overview">
       <div class="metrics" id="metrics"></div>
+      <div class="overview-grid">
+        <div>
+          <h2>Executive Summary</h2>
+          <div class="summary-grid" id="executiveSummary"></div>
+        </div>
+        <div>
+          <h2>Dataset Profile</h2>
+          <div class="profile-grid" id="datasetProfile"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="dashboard">
       <h2>Performance Dashboard</h2>
       <div class="chart-grid">
         <div class="panel"><div id="categoryChart"></div></div>
         <div class="panel"><div id="regionChart"></div></div>
       </div>
+      <div class="chart-grid">
+        <div class="panel"><div id="marginChart"></div></div>
+        <div class="panel"><div id="discountChart"></div></div>
+      </div>
       <div class="panel wide"><div id="monthlyChart"></div></div>
+    </section>
+
+    <section id="risk">
+      <h2>Risk Command Center</h2>
+      <div class="risk-grid">
+        <div class="risk-score" id="riskOverview"></div>
+        <div class="panel table-wrap"><table id="marginMatrixTable"></table></div>
+      </div>
+      <h2>Discount Sensitivity</h2>
+      <div class="panel table-wrap"><table id="discountSensitivityTable"></table></div>
+    </section>
+
+    <section id="segments">
+      <h2>Customer and Segment Performance</h2>
+      <div class="chart-grid">
+        <div class="panel table-wrap"><table id="segmentTable"></table></div>
+        <div class="panel table-wrap"><table id="productTable"></table></div>
+      </div>
     </section>
 
     <section id="quality">
@@ -69,13 +108,21 @@
       <div class="card-grid" id="insightCards"></div>
       <h2>Anomalies</h2>
       <div class="card-grid" id="anomalyCards"></div>
+      <h2>Growth Opportunities</h2>
+      <div class="card-grid" id="opportunityCards"></div>
     </section>
 
     <section id="assistant">
       <h2>AI Assistant</h2>
       <div class="panel assistant">
         <textarea id="question" placeholder="Ask a business question..."></textarea>
-        <button id="askButton">Analyze With AI</button>
+        <div class="assistant-actions">
+          <button id="voiceQuestionButton" type="button">Start Voice Question</button>
+          <button id="askButton" type="button">Analyze With AI</button>
+          <button id="speakAnswerButton" type="button" class="secondary">Play Answer</button>
+          <button id="stopVoiceButton" type="button" class="ghost inline">Stop Voice</button>
+        </div>
+        <div class="voice-status" id="voiceStatus" aria-live="polite">Voice assistant ready.</div>
         <pre id="answer"></pre>
       </div>
     </section>

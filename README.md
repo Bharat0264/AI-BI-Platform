@@ -1,18 +1,23 @@
 # AI Autonomous Business Intelligence Platform
 
-An AI-powered business intelligence website with a Flask backend API and a custom HTML/CSS/JavaScript frontend for analyzing CSV datasets, exploring KPIs, detecting risk signals, forecasting sales, asking Gemini-powered business questions, and generating executive PDF reports.
+An AI-powered business intelligence website with a Flask backend API and a custom HTML/CSS/JavaScript frontend for analyzing CSV datasets, exploring executive KPIs, diagnosing profit risk, forecasting sales, asking Gemini-powered business questions, and generating executive PDF reports.
 
 ## Features
 
 - CSV upload and demo dataset analysis
 - Separate frontend and backend structure
-- Executive KPI dashboard
+- Executive KPI dashboard with period-over-period movement
 - Interactive Plotly charts
 - Region and category filters
 - Data quality diagnostics
-- Autonomous recommendations and anomaly detection
+- Dataset profile, date range, customer/product coverage, and upload guardrails
+- Autonomous recommendations, anomaly severity, and growth opportunity mapping
+- Margin-risk matrix across region and category combinations
+- Discount sensitivity analysis by discount band
+- Segment and product leaderboards
+- Risk score with practical profit recovery levers
 - Six-month ML sales forecast
-- Gemini AI business assistant
+- Gemini AI business assistant with browser voice questions and spoken answers
 - Downloadable CSV exports and PDF reports
 
 ## Tech Stack
