@@ -20,6 +20,7 @@
       <a href="#forecast">Forecast</a>
       <a href="#insights">Insights</a>
       <a href="#assistant">AI Assistant</a>
+      <a href="#stocks">Indian Stocks</a>
       <a href="#exports">Exports</a>
     </nav>
     <form id="filterForm">
@@ -39,11 +40,38 @@
       <h1>AI Business Intelligence Platform</h1>
       <p>Analyze business data, measure profit quality, detect risk exposure, forecast sales, ask AI questions, and generate board-ready reports from one full-stack website.</p>
       <form id="uploadForm" class="upload">
-        <input type="file" id="datasetFile" accept=".csv">
+        <input type="file" id="datasetFile" accept=".csv,.xlsx,.xls,.json">
         <button type="submit" id="analyzeCsvButton">Analyze CSV</button>
         <button type="button" class="secondary" id="demoButton">Load Demo Dataset</button>
         <div class="upload-status" id="uploadStatus" aria-live="polite"></div>
       </form>
+    </section>
+
+    <section id="stocks">
+      <div class="eyebrow">NSE &amp; BSE market research</div>
+      <h2>Indian Market Outlook</h2>
+      <p>Select the instrument class first so company symbols never resolve to similarly named funds.</p>
+      <div class="asset-tabs" id="assetTabs" role="tablist" aria-label="Asset class">
+        <button type="button" class="active" data-asset="stocks">Stocks</button>
+        <button type="button" data-asset="etfs">ETFs</button>
+        <button type="button" data-asset="mutualfunds">Mutual Funds</button>
+        <button type="button" data-asset="bonds">Bonds</button>
+        <button type="button" data-asset="futures">F&amp;O</button>
+      </div>
+      <form id="stockForm" class="stock-search">
+        <input id="stockCompany" type="search" placeholder="Reliance Industries or RELIANCE.NS" required>
+        <button id="stockAnalyzeButton" type="submit">Analyze Stock</button>
+      </form>
+      <div id="stockStatus" class="upload-status" aria-live="polite"></div>
+      <div id="stockResults" hidden>
+        <div id="stockHeader" class="stock-header"></div>
+        <div id="stockMetrics" class="metrics"></div>
+        <div class="panel wide"><div id="stockChart"></div></div>
+        <h2>Scenario Forecast</h2>
+        <div class="panel table-wrap"><table id="stockForecastTable"></table></div>
+        <div id="stockSignals" class="card-grid"></div>
+        <p id="stockDisclaimer" class="disclaimer"></p>
+      </div>
     </section>
 
     <section id="overview">

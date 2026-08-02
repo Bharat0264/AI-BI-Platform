@@ -18,6 +18,8 @@ if str(APP_DIR) not in sys.path:
 from llm_engine import ask_ai
 from prediction import predict_sales
 from report_generator import generate_pdf_report
+from schema_engine import normalize_business_dataset
+from stock_analysis import analyze_stock
 
 
 app = Flask(__name__, static_folder="frontend", static_url_path="")
@@ -36,8 +38,18 @@ REQUIRED_COLUMNS = [
 ]
 
 
-def read_csv(source):
-    return pd.read_csv(source, encoding="latin1")
+def read_dataset(source, filename=None):
+    name = (filename or getattr(source, "filename", "") or str(source)).lower()
+    if name.endswith((".xlsx", ".xls")):
+        return pd.read_excel(source)
+    if name.endswith(".json"):
+        return pd.read_json(source)
+    try:
+        return pd.read_csv(source, encoding="utf-8")
+    except UnicodeDecodeError:
+        if hasattr(source, "seek"):
+            source.seek(0)
+        return pd.read_csv(source, encoding="latin1")
 
 
 def validate_dataset(df):
@@ -45,7 +57,7 @@ def validate_dataset(df):
 
 
 def prepare_dataset(df):
-    prepared = df.copy()
+    prepared, _, _ = normalize_business_dataset(df)
     prepared["Order Date"] = pd.to_datetime(prepared["Order Date"], errors="coerce")
     prepared["Sales"] = pd.to_numeric(prepared["Sales"], errors="coerce").fillna(0)
     prepared["Profit"] = pd.to_numeric(prepared["Profit"], errors="coerce").fillna(0)
@@ -93,7 +105,7 @@ def change_ratio(current, previous):
 def dataset_from_request():
     uploaded = request.files.get("dataset")
     if uploaded and uploaded.filename:
-        return read_csv(uploaded), uploaded.filename
+        return read_dataset(uploaded, uploaded.filename), uploaded.filename
     if ACTIVE_DATASET["df"] is not None:
         return ACTIVE_DATASET["df"].copy(), ACTIVE_DATASET["source"]
     return None, None
@@ -455,9 +467,10 @@ def risk_overview(df):
 
 
 def analysis_payload(raw_df, source_name, payload=None):
-    missing = validate_dataset(raw_df)
-    if missing:
-        return {"error": f"Missing required columns: {', '.join(missing)}"}, 400
+    try:
+        raw_df, column_mapping, schema_warnings = normalize_business_dataset(raw_df)
+    except ValueError as exc:
+        return {"error": str(exc)}, 400
 
     df = prepare_dataset(raw_df)
     if df.empty:
@@ -483,7 +496,7 @@ def analysis_payload(raw_df, source_name, payload=None):
         "selectedCategories": selected_categories,
         "metrics": kpis(filtered),
         "quality": quality_scan(raw_df, df),
-        "datasetProfile": dataset_profile(raw_df, df, filtered, source_name),
+        "datasetProfile": {**dataset_profile(raw_df, df, filtered, source_name), "columnMapping": column_mapping, "schemaWarnings": schema_warnings},
         "executiveSummary": executive_summary(filtered),
         "riskOverview": risk_overview(filtered),
         "charts": {
@@ -538,11 +551,11 @@ def api_reset():
 def api_upload():
     uploaded = request.files.get("dataset")
     if not uploaded or not uploaded.filename:
-        return jsonify({"error": "Choose a CSV file to import."}), 400
-    if not uploaded.filename.lower().endswith(".csv"):
-        return jsonify({"error": "Only CSV files are supported."}), 400
+        return jsonify({"error": "Choose a CSV, Excel, or JSON file to import."}), 400
+    if not uploaded.filename.lower().endswith((".csv", ".xlsx", ".xls", ".json")):
+        return jsonify({"error": "Upload a CSV, Excel, or JSON business dataset."}), 400
 
-    raw_df, source_name = read_csv(uploaded), uploaded.filename
+    raw_df, source_name = read_dataset(uploaded, uploaded.filename), uploaded.filename
     payload, status = analysis_payload(raw_df, source_name)
     if status == 200:
         ACTIVE_DATASET["df"] = raw_df.copy()
@@ -554,7 +567,7 @@ def api_upload():
 def api_demo():
     if not DATA_PATH.exists():
         return jsonify({"error": "Demo dataset is not available on this deployment."}), 404
-    raw_df = read_csv(DATA_PATH)
+    raw_df = read_dataset(DATA_PATH)
     payload, status = analysis_payload(raw_df, DATA_PATH.name)
     if status == 200:
         ACTIVE_DATASET["df"] = raw_df.copy()
@@ -576,6 +589,22 @@ def api_ask():
     filtered, *_ = filter_dataset(df, body)
     answer = ask_ai(question, filtered)
     return jsonify({"answer": answer})
+
+
+@app.route("/api/stocks/analyze", methods=["POST"])
+def api_stock_analysis():
+    body = request.get_json(silent=True) or {}
+    company = str(body.get("company", "")).strip()
+    asset_type = str(body.get("assetType", "stocks")).strip().lower()
+    if not company:
+        return jsonify({"error": "Enter an Indian company name or NSE/BSE symbol."}), 400
+    try:
+        return jsonify(analyze_stock(company, asset_type))
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 404
+    except Exception:
+        app.logger.exception("Stock market data request failed")
+        return jsonify({"error": "Live market data is temporarily unavailable. Please try again shortly."}), 503
 
 
 @app.route("/api/export/filtered")

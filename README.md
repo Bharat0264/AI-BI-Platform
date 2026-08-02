@@ -4,7 +4,9 @@ An AI-powered business intelligence website with a Flask backend API and a custo
 
 ## Features
 
-- CSV upload and demo dataset analysis
+- CSV, Excel, and JSON upload with semantic business-column detection
+- Automatic mapping of common date, revenue, profit, region, category, and transaction fields
+- Indian NSE/BSE stock lookup with trend scoring, risk metrics, and Monte Carlo scenarios
 - Separate frontend and backend structure
 - Executive KPI dashboard with period-over-period movement
 - Interactive Plotly charts

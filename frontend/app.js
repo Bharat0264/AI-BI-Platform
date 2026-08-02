@@ -6,6 +6,7 @@ const state = {
   lastAnswer: "",
   recognition: null,
   listening: false,
+  assetType: "stocks",
 };
 
 const colors = ["#14b8a6", "#f97316", "#7c3aed", "#0ea5e9", "#ef4444", "#84cc16"];
@@ -530,6 +531,44 @@ document.getElementById("stopVoiceButton").addEventListener("click", () => {
   if (state.recognition && state.listening) state.recognition.stop();
   stopSpeaking();
   setVoiceStatus("Voice stopped.");
+});
+
+document.getElementById("stockForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const company = document.getElementById("stockCompany").value.trim();
+  const button = document.getElementById("stockAnalyzeButton");
+  const status = document.getElementById("stockStatus");
+  button.disabled = true;
+  status.textContent = `Fetching recent market data for ${company}...`;
+  status.classList.remove("error");
+  try {
+    const data = await fetchJson("/api/stocks/analyze", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({company, assetType:state.assetType})});
+    document.getElementById("stockResults").hidden = false;
+    document.getElementById("stockHeader").innerHTML = `<div><h3>${escapeHtml(data.company)}</h3><span>${escapeHtml(data.symbol)} · ${escapeHtml(data.exchange)} · As of ${escapeHtml(data.asOf)}</span></div><div class="stock-score"><strong>${escapeHtml(data.score)}/100</strong><span>${escapeHtml(data.stance)}</span></div>`;
+    const metrics = [["Latest price",`${data.currency} ${Number(data.price).toLocaleString()}`],["1 month",`${data.returns.oneMonth}%`],["3 months",`${data.returns.threeMonths}%`],["1 year",`${data.returns.oneYear}%`],["Volatility",`${data.technicals.annualizedVolatility}%`],["52-week range",`${data.fiftyTwoWeekLow} – ${data.fiftyTwoWeekHigh}`]];
+    document.getElementById("stockMetrics").innerHTML = metrics.map(([l,v]) => `<article class="metric"><div class="metric-label">${escapeHtml(l)}</div><div class="metric-value">${escapeHtml(v)}</div></article>`).join("");
+    Plotly.newPlot("stockChart", [{type:"scatter",mode:"lines",x:data.chart.dates,y:data.chart.prices,line:{color:"#14b8a6",width:3}}], chartLayout(`${data.symbol} recent price history`), {displayModeBar:false,responsive:true});
+    renderTable("stockForecastTable", data.forecasts.map(f => ({Horizon:f.horizon,"Median scenario":f.median,"10th percentile":f.low,"90th percentile":f.high,"Probability above current":`${f.positiveProbability}%`})));
+    document.getElementById("stockSignals").innerHTML = data.signals.map((s,i) => `<article class="card"><div class="card-kicker">Signal ${i+1}</div><p>${escapeHtml(s)}</p></article>`).join("") + `<article class="card"><div class="card-kicker">Method</div><p>${escapeHtml(data.methodology)}</p></article>`;
+    document.getElementById("stockDisclaimer").textContent = data.disclaimer;
+    status.textContent = "Analysis complete. Scenarios are uncertainty ranges, not guarantees.";
+  } catch (error) {
+    status.textContent = error.message;
+    status.classList.add("error");
+  } finally {
+    button.disabled = false;
+  }
+});
+
+document.querySelectorAll("#assetTabs button").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    state.assetType = tab.dataset.asset;
+    document.querySelectorAll("#assetTabs button").forEach((item) => item.classList.toggle("active", item === tab));
+    const labels = {stocks:"stock symbol or company",etfs:"ETF symbol or name",mutualfunds:"mutual fund name",bonds:"listed bond symbol",futures:"futures contract symbol"};
+    document.getElementById("stockCompany").placeholder = `Enter ${labels[state.assetType]}`;
+    document.getElementById("stockResults").hidden = true;
+    document.getElementById("stockStatus").textContent = `${tab.textContent} selected.`;
+  });
 });
 
 if (!browserSupportsVoiceInput()) {

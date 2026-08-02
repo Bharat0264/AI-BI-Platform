@@ -7,4 +7,5 @@ outputs/*.log
 outputs/*.err
 .codex-server*.log
 .codex-server.pid
+.codex-local-server*.log
 

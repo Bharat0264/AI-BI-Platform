@@ -350,9 +350,23 @@ th { color: white; background: #1f2937; position: sticky; top: 0; }
   padding: 16px;
 }
 
+.stock-search { display:grid; grid-template-columns:1fr auto; gap:12px; max-width:760px; }
+.asset-tabs { display:flex; flex-wrap:wrap; gap:8px; margin:16px 0; }
+.asset-tabs button { width:auto; padding:10px 16px; color:#344054; background:#eef2f6; }
+.asset-tabs button.active { color:#fff; background:var(--violet); }
+.stock-search input { min-height:46px; padding:0 14px; border:1px solid var(--line); border-radius:8px; font:inherit; }
+.stock-header { margin-top:18px; display:flex; justify-content:space-between; align-items:center; gap:18px; padding:18px; background:#101828; color:#fff; border-radius:12px; }
+.stock-header h3 { font-size:1.3rem; }
+.stock-header span { color:#cbd5e1; }
+.stock-score { text-align:right; }
+.stock-score strong,.stock-score span { display:block; }
+.stock-score strong { font-size:1.6rem; color:#5eead4; }
+.disclaimer { padding:14px; border-left:4px solid var(--warm); background:#fffbeb; color:#7c2d12; }
+
 @media (max-width: 980px) {
   .sidebar { position: relative; width: 100%; }
   main { margin-left: 0; padding: 18px; }
   .metrics, .chart-grid, .quality-grid, .card-grid, .export-grid, .upload, .overview-grid, .summary-grid, .profile-grid, .risk-grid, .risk-details { grid-template-columns: 1fr; }
   .assistant-actions button { width: 100%; }
+  .stock-search { grid-template-columns:1fr; }
 }
