@@ -7,4 +7,8 @@ outputs/*.log
 outputs/*.err
 .codex-server*.log
 .codex-server.pid
+.codex-local-server*.log
+data/platform.db
+data/.active_dataset.pkl
+data/.active_dataset_source.txt
 
