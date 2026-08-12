@@ -7,6 +7,9 @@ ALIASES = {
     "Order Date": ["order date", "order_date", "date", "transaction date", "invoice date", "timestamp"],
     "Region": ["region", "market", "state", "country", "territory", "location", "city"],
     "Category": ["category", "product category", "department", "industry", "type", "product line"],
+    "Product Name": ["product name", "product", "item", "item name", "sku", "commodity", "crop"],
+    "Quantity": ["quantity", "qty", "units", "units sold", "volume", "demand"],
+    "Inventory": ["inventory", "stock", "stock on hand", "on hand", "available stock", "closing stock"],
     "Sales": ["sales", "revenue", "amount", "total", "turnover", "net sales", "price"],
     "Profit": ["profit", "net profit", "gross profit", "income", "margin", "earnings"],
     "Discount": ["discount", "discount rate", "discount percent", "markdown"],
@@ -47,4 +50,8 @@ def normalize_business_dataset(df):
         text = next((c for c in result.select_dtypes(include=["object"]).columns if c not in used), None)
         result["Category"] = result[text].fillna("Uncategorized") if text else "Uncategorized"
     if "Order ID" not in mapping: result["Order ID"] = [f"ROW-{i+1}" for i in range(len(result))]
+    if "Product Name" not in mapping: result["Product Name"] = result["Category"]
+    if "Quantity" not in mapping:
+        result["Quantity"] = 1.0
+        warnings.append("Quantity not supplied; demand planning treats each row as one unit. Add a quantity/units column for stock recommendations.")
     return result, mapping, warnings

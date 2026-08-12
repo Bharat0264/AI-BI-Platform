@@ -318,6 +318,26 @@ function renderCards(id, cards) {
   `).join("") : `<article class="card"><h3>No CSV imported</h3><p>Import a CSV to generate this analysis.</p></article>`;
 }
 
+function renderDemandPlan(plan = {}) {
+  const totals = plan.totals || {};
+  document.getElementById("demandMonth").textContent = totals.forecastMonth ? `Forecast: ${totals.forecastMonth}` : "Load data to forecast";
+  const values = [
+    ["Predicted units", Number(totals.predictedUnits || 0).toLocaleString()],
+    ["Stock to add", Number(totals.stockToAdd || 0).toLocaleString()],
+    ["Expected revenue", `$${Number(totals.predictedRevenue || 0).toLocaleString()}`],
+    ["Expected profit", `$${Number(totals.predictedProfit || 0).toLocaleString()}`],
+  ];
+  document.getElementById("demandMetrics").innerHTML = values.map(([label,value]) => `<article class="metric"><div class="metric-label">${escapeHtml(label)}</div><div class="metric-value">${escapeHtml(value)}</div></article>`).join("");
+  const notice = document.getElementById("demandNotice");
+  notice.hidden = !plan.quantityIsEstimated;
+  notice.textContent = plan.quantityIsEstimated ? "No quantity/units column was found. Unit demand currently treats each transaction row as one unit. Upload quantity and optional inventory/stock columns for precise replenishment recommendations." : "";
+  const products = plan.products || [];
+  const priority = products.filter(item => item.action === "Increase production").slice(0, 6);
+  document.getElementById("productionRecommendations").innerHTML = priority.length ? priority.map(item => `<article class="card growth-bet"><div class="card-kicker">${escapeHtml(item.sector)} · ${escapeHtml(item.confidence)}% confidence</div><h3>${escapeHtml(item.product)}</h3><p>Add <strong>${Number(item.stockToAdd).toLocaleString()} units</strong> for ${escapeHtml(item.forecastMonth)}. Expected demand is ${Number(item.predictedUnits).toLocaleString()} units, producing about $${Number(item.predictedRevenue).toLocaleString()} revenue and $${Number(item.predictedProfit).toLocaleString()} profit.</p></article>`).join("") : `<article class="card"><p>No product currently shows a strong production-increase signal.</p></article>`;
+  renderTable("demandProductTable", products.map(item => ({Product:item.product,Sector:item.sector,Action:item.action,"Predicted units":item.predictedUnits,"Safety stock":item.safetyStock,"Stock to add":item.stockToAdd,"Expected revenue":`$${Number(item.predictedRevenue).toLocaleString()}`,"Expected profit":`$${Number(item.predictedProfit).toLocaleString()}`,Growth:`${item.growthRate}%`,Confidence:`${item.confidence}%`})));
+  renderTable("demandSectorTable", (plan.sectors || []).map(item => ({Sector:item.sector,"Stock to add":item.stockToAdd,"Expected revenue":`$${Number(item.predictedRevenue).toLocaleString()}`,"Expected profit":`$${Number(item.predictedProfit).toLocaleString()}`,Growth:`${item.growthRate}%`,Recommendation:item.growthRate >= 3 ? "Increase production" : item.growthRate <= -8 ? "Reduce production" : "Maintain"})));
+}
+
 function render(payload) {
   state.regions = payload.regions;
   state.categories = payload.categories;
@@ -342,6 +362,7 @@ function render(payload) {
   renderTable("discountSensitivityTable", payload.discountSensitivity || []);
   renderTable("previewTable", payload.preview);
   renderTable("forecastTable", payload.forecastTable);
+  renderDemandPlan(payload.demandPlan);
 
   plotBar("categoryChart", "Sales by Category", payload.charts.categorySales.labels, payload.charts.categorySales.values);
   plotBar("regionChart", "Profit by Region", payload.charts.regionProfit.labels, payload.charts.regionProfit.values);
@@ -456,6 +477,8 @@ async function askBusinessQuestion({ speak = true } = {}) {
     });
     state.lastAnswer = payload.answer;
     document.getElementById("answer").textContent = payload.answer;
+    const citations = payload.citations || [];
+    document.getElementById("answerCitations").innerHTML = citations.map(item => `<article><span>${escapeHtml(item.label)}</span><strong>${escapeHtml(item.value)}</strong><small>${escapeHtml(item.source)}</small></article>`).join("");
     setVoiceStatus(speak ? "AI answer ready. Playing response..." : "AI answer ready.");
     if (speak) speakText(payload.answer);
   } catch (error) {
@@ -582,6 +605,6 @@ document.querySelectorAll("nav a").forEach((link) => {
   });
 });
 
-resetAnalysisOnFreshPage().catch((error) => {
+loadAnalysis().catch((error) => {
   document.getElementById("sourceLabel").textContent = error.message;
 });

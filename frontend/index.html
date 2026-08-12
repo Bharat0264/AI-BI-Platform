@@ -20,6 +20,7 @@
       <a href="#forecast">Forecast</a>
       <a href="#insights">Insights</a>
       <a href="#assistant">AI Assistant</a>
+      <a href="#decision-room">Decision Room</a>
       <a href="#stocks">Indian Stocks</a>
       <a href="#exports">Exports</a>
     </nav>
@@ -129,6 +130,15 @@
       <h2>Forecast</h2>
       <div class="panel wide"><div id="forecastChart"></div></div>
       <div class="panel table-wrap"><table id="forecastTable"></table></div>
+      <div class="section-heading demand-heading"><div><h2>Demand &amp; Production Planner</h2><p>Next-month unit demand, inventory requirements, revenue, profit, and production recommendations.</p></div><div id="demandMonth" class="workspace-badge"></div></div>
+      <div class="metrics demand-metrics" id="demandMetrics"></div>
+      <div id="demandNotice" class="disclaimer" hidden></div>
+      <h2>Where to Increase Production</h2>
+      <div id="productionRecommendations" class="card-grid"></div>
+      <div class="chart-grid wide">
+        <div class="panel table-wrap"><h3>Product Stock Plan</h3><table id="demandProductTable"></table></div>
+        <div class="panel table-wrap"><h3>Sector Outlook</h3><table id="demandSectorTable"></table></div>
+      </div>
     </section>
 
     <section id="insights">
@@ -152,7 +162,74 @@
         </div>
         <div class="voice-status" id="voiceStatus" aria-live="polite">Voice assistant ready.</div>
         <pre id="answer"></pre>
+        <div id="answerCitations" class="evidence-grid"></div>
       </div>
+    </section>
+
+    <section id="decision-room">
+      <div class="section-heading">
+        <div><div class="eyebrow dark">From insight to execution</div><h2>AI Decision Room</h2></div>
+        <div class="workspace-badge" id="workspaceBadge">Local workspace</div>
+      </div>
+
+      <div class="platform-tabs" role="tablist">
+        <button type="button" class="active" data-platform-tab="workspace">Workspace</button>
+        <button type="button" data-platform-tab="scenario">What-if Lab</button>
+        <button type="button" data-platform-tab="builder">Chart Builder</button>
+        <button type="button" data-platform-tab="operations">Alerts &amp; Actions</button>
+        <button type="button" data-platform-tab="governance">Data &amp; Governance</button>
+      </div>
+
+      <div class="platform-pane active" data-platform-pane="workspace">
+        <div class="chart-grid">
+          <div class="panel">
+            <h3>Workspace identity</h3>
+            <div class="form-grid"><input id="profileName" placeholder="User name"><input id="workspaceName" placeholder="Workspace"><select id="profileRole"><option>Admin</option><option>Analyst</option><option>Executive</option></select></div>
+            <button id="saveProfile" type="button">Save profile</button>
+          </div>
+          <div class="panel">
+            <h3>Save current dashboard</h3>
+            <div class="form-grid"><input id="dashboardName" placeholder="e.g. Q3 Executive Review"></div>
+            <button id="saveDashboard" type="button">Save dashboard</button>
+          </div>
+        </div>
+        <div class="panel wide"><h3>Saved dashboards &amp; analysis history</h3><div class="split-list"><div id="dashboardList"></div><div id="historyList"></div></div></div>
+      </div>
+
+      <div class="platform-pane" data-platform-pane="scenario">
+        <div class="scenario-layout">
+          <div class="panel controls"><h3>Business assumptions</h3>
+            <label>Volume change <output id="volumeValue">0%</output></label><input id="volumeChange" type="range" min="-50" max="100" value="0">
+            <label>Price change <output id="priceValue">0%</output></label><input id="priceChange" type="range" min="-30" max="50" value="0">
+            <label>Cost change <output id="costValue">0%</output></label><input id="costChange" type="range" min="-30" max="50" value="0">
+            <label>Extra discount <output id="discountValue">0%</output></label><input id="discountChange" type="range" min="-20" max="40" value="0">
+            <button id="runScenario" type="button">Run scenario</button>
+          </div>
+          <div><div id="scenarioResults" class="metrics scenario-metrics"></div><div class="panel wide"><div id="scenarioChart"></div></div></div>
+        </div>
+        <div class="panel wide"><div class="section-heading"><h3>Forecast confidence &amp; backtest</h3><button id="runBacktest" type="button">Run backtest</button></div><div id="backtestSummary" class="quality-grid"></div><div id="backtestChart"></div></div>
+      </div>
+
+      <div class="platform-pane" data-platform-pane="builder">
+        <div class="panel"><h3>Natural-language chart builder</h3><div class="prompt-row"><input id="chartPrompt" placeholder="Show monthly profit as a line chart"><button id="buildChart" type="button">Build chart</button></div><p id="chartExplanation" class="muted"></p><div id="customChart"></div></div>
+      </div>
+
+      <div class="platform-pane" data-platform-pane="operations">
+        <div class="chart-grid">
+          <div class="panel"><h3>Metric alerts</h3><div class="form-grid"><input id="alertName" placeholder="Alert name"><select id="alertMetric"><option value="margin">Profit margin</option><option value="sales">Sales</option><option value="profit">Profit</option><option value="discount">Average discount</option></select><select id="alertOperator"><option value="below">Below</option><option value="above">Above</option></select><input id="alertThreshold" type="number" step="0.01" placeholder="Threshold"></div><button id="createAlert" type="button">Create alert</button><button id="evaluateAlerts" type="button" class="secondary outlined">Evaluate now</button><div id="alertList"></div></div>
+          <div class="panel"><h3>Decision action tracker</h3><div class="form-grid"><input id="actionName" placeholder="Action"><input id="actionOwner" placeholder="Owner"><input id="actionDue" type="date"><input id="actionImpact" placeholder="Expected impact"></div><button id="createAction" type="button">Add action</button><div id="actionList"></div></div>
+        </div>
+        <div class="panel wide"><h3>Scheduled executive reports</h3><div class="prompt-row"><input id="scheduleName" placeholder="Monthly board report"><select id="scheduleFrequency"><option>Weekly</option><option>Monthly</option><option>Quarterly</option></select><button id="createSchedule" type="button">Save schedule</button></div><div id="scheduleList"></div></div>
+      </div>
+
+      <div class="platform-pane" data-platform-pane="governance">
+        <div class="chart-grid">
+          <div class="panel"><h3>Data preparation studio</h3><p>Apply reusable safe cleaning rules to the active dataset.</p><label class="check"><input id="removeDuplicates" type="checkbox" checked> Remove duplicate rows</label><label class="check"><input id="fillNumeric" type="checkbox"> Fill missing numeric values with the median</label><button id="cleanDataset" type="button">Apply cleaning</button><div id="cleaningResult" class="status-line"></div></div>
+          <div class="panel"><h3>Database connector</h3><p>Read up to 100,000 rows from a SQLite database inside this project.</p><div class="form-grid"><input id="databasePath" placeholder="C:\path\inside\project\data.db"><input id="databaseTable" placeholder="Table name"></div><button id="connectDatabase" type="button">Connect &amp; analyze</button></div>
+        </div>
+        <div class="panel wide"><h3>Semantic metric layer</h3><p>Canonical definitions used across the workspace.</p><div id="metricList"></div><div class="prompt-row"><input id="metricName" placeholder="Metric name"><input id="metricFormula" placeholder="Formula, e.g. Profit / Sales"><select id="metricFormat"><option value="currency">Currency</option><option value="percent">Percent</option><option value="number">Number</option></select><button id="addMetric" type="button">Add metric</button></div></div>
+      </div>
+      <div id="platformStatus" class="status-line" aria-live="polite"></div>
     </section>
 
     <section id="exports">
@@ -165,5 +242,6 @@
   </main>
 
   <script src="/app.js"></script>
+  <script src="/platform.js"></script>
 </body>
 </html>

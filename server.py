@@ -1,4 +1,6 @@
 import sys
+import re
+import sqlite3
 from pathlib import Path
 
 import numpy as np
@@ -20,12 +22,16 @@ from prediction import predict_sales
 from report_generator import generate_pdf_report
 from schema_engine import normalize_business_dataset
 from stock_analysis import analyze_stock
+from platform_store import add_record, delete_record, get_record, get_setting, init_store, list_records, set_setting, update_record
 
 
 app = Flask(__name__, static_folder="frontend", static_url_path="")
 app.config["MAX_CONTENT_LENGTH"] = 24 * 1024 * 1024
+init_store()
 
 DATA_PATH = ROOT_DIR / "data" / "Sample - Superstore.csv"
+SESSION_DATA_PATH = ROOT_DIR / "data" / ".active_dataset.pkl"
+SESSION_META_PATH = ROOT_DIR / "data" / ".active_dataset_source.txt"
 ACTIVE_DATASET = {"df": None, "source": None}
 REQUIRED_COLUMNS = [
     "Order ID",
@@ -36,6 +42,27 @@ REQUIRED_COLUMNS = [
     "Profit",
     "Discount",
 ]
+
+
+def persist_active_dataset(df=None, source=None):
+    if df is None:
+        SESSION_DATA_PATH.unlink(missing_ok=True)
+        SESSION_META_PATH.unlink(missing_ok=True)
+        return
+    df.to_pickle(SESSION_DATA_PATH)
+    SESSION_META_PATH.write_text(str(source or "Saved dataset"), encoding="utf-8")
+
+
+def restore_active_dataset():
+    if SESSION_DATA_PATH.exists():
+        try:
+            ACTIVE_DATASET["df"] = pd.read_pickle(SESSION_DATA_PATH)
+            ACTIVE_DATASET["source"] = SESSION_META_PATH.read_text(encoding="utf-8") if SESSION_META_PATH.exists() else "Saved dataset"
+        except Exception:
+            app.logger.exception("Could not restore the saved local dataset")
+
+
+restore_active_dataset()
 
 
 def read_dataset(source, filename=None):
@@ -62,6 +89,9 @@ def prepare_dataset(df):
     prepared["Sales"] = pd.to_numeric(prepared["Sales"], errors="coerce").fillna(0)
     prepared["Profit"] = pd.to_numeric(prepared["Profit"], errors="coerce").fillna(0)
     prepared["Discount"] = pd.to_numeric(prepared["Discount"], errors="coerce").fillna(0)
+    prepared["Quantity"] = pd.to_numeric(prepared.get("Quantity", 1), errors="coerce").fillna(0)
+    if "Inventory" in prepared.columns:
+        prepared["Inventory"] = pd.to_numeric(prepared["Inventory"], errors="coerce").fillna(0)
     return prepared.dropna(subset=["Order Date"])
 
 
@@ -157,6 +187,7 @@ def empty_payload():
         "discountSensitivity": [],
         "opportunities": [],
         "forecastTable": [],
+        "demandPlan": {"totals": {}, "products": [], "sectors": [], "quantityIsEstimated": False},
         "preview": [],
     }
 
@@ -466,6 +497,75 @@ def risk_overview(df):
     }
 
 
+def demand_plan(df, quantity_is_estimated=False):
+    """Forecast next-month product demand and translate it into inventory actions."""
+    product_col = "Product Name" if "Product Name" in df.columns else "Category"
+    data = df.copy()
+    data[product_col] = safe_column(data, product_col, "Unknown product")
+    data["Quantity"] = pd.to_numeric(data.get("Quantity", 1), errors="coerce").fillna(0).clip(lower=0)
+    data["Month"] = data["Order Date"].dt.to_period("M")
+    last_month = data["Month"].max()
+    next_month = str(last_month + 1)
+    plans = []
+    # Detailed SKU planning is capped to the most commercially material items so
+    # large catalogues remain interactive. Sector totals cover those priority SKUs.
+    priority_products = data.groupby(product_col)["Sales"].sum().nlargest(200).index
+    planning_data = data[data[product_col].isin(priority_products)]
+    for product, rows in planning_data.groupby(product_col):
+        monthly = rows.groupby("Month").agg(Units=("Quantity", "sum"), Revenue=("Sales", "sum"), Profit=("Profit", "sum")).sort_index()
+        if monthly.empty:
+            continue
+        full_index = pd.period_range(monthly.index.min(), last_month, freq="M")
+        units = monthly["Units"].reindex(full_index, fill_value=0).astype(float)
+        recent = units.tail(min(6, len(units)))
+        if len(recent) >= 2:
+            slope = float(np.polyfit(np.arange(len(recent)), recent.values, 1)[0])
+            baseline = float(recent.tail(min(3, len(recent))).mean())
+            predicted_units = max(0, baseline + slope * 0.55)
+        else:
+            slope, predicted_units = 0.0, float(recent.iloc[-1])
+        variability = float(recent.std(ddof=0)) if len(recent) > 1 else predicted_units * 0.15
+        safety_stock = max(0, 1.28 * variability)
+        recommended_stock = int(np.ceil(predicted_units + safety_stock))
+        current_stock = float(rows["Inventory"].iloc[-1]) if "Inventory" in rows.columns else 0.0
+        stock_to_add = max(0, int(np.ceil(recommended_stock - current_stock)))
+        total_units = float(rows["Quantity"].sum())
+        revenue_per_unit = float(rows["Sales"].sum()) / total_units if total_units else 0
+        profit_per_unit = float(rows["Profit"].sum()) / total_units if total_units else 0
+        growth = slope / max(float(recent.mean()), 1)
+        history_score = min(1, len(units) / 12)
+        noise = variability / max(float(recent.mean()), 1)
+        confidence = int(np.clip(45 + history_score * 40 - noise * 25, 25, 92))
+        category = str(rows["Category"].mode().iloc[0]) if "Category" in rows and not rows["Category"].mode().empty else "Uncategorized"
+        plans.append({
+            "product": str(product), "sector": category, "forecastMonth": next_month,
+            "predictedUnits": int(round(predicted_units)), "safetyStock": int(np.ceil(safety_stock)),
+            "recommendedStock": recommended_stock, "currentStock": int(round(current_stock)),
+            "stockToAdd": stock_to_add, "predictedRevenue": round(predicted_units * revenue_per_unit, 2),
+            "predictedProfit": round(predicted_units * profit_per_unit, 2), "growthRate": round(growth * 100, 1),
+            "confidence": confidence,
+            "action": "Increase production" if growth >= 0.03 else "Reduce production" if growth <= -0.08 else "Maintain production",
+            "stockBasis": "current inventory supplied" if "Inventory" in rows.columns else "no current inventory supplied",
+        })
+    plans.sort(key=lambda item: (item["action"] == "Increase production", item["growthRate"], item["predictedRevenue"]), reverse=True)
+    sector_rows = []
+    for sector in sorted({item["sector"] for item in plans}):
+        items = [item for item in plans if item["sector"] == sector]
+        sector_rows.append({
+            "sector": sector, "stockToAdd": sum(i["stockToAdd"] for i in items),
+            "predictedRevenue": round(sum(i["predictedRevenue"] for i in items), 2),
+            "predictedProfit": round(sum(i["predictedProfit"] for i in items), 2),
+            "growthRate": round(np.average([i["growthRate"] for i in items], weights=[max(i["predictedRevenue"], 1) for i in items]), 1),
+        })
+    sector_rows.sort(key=lambda item: item["growthRate"], reverse=True)
+    totals = {
+        "forecastMonth": next_month, "predictedUnits": sum(i["predictedUnits"] for i in plans),
+        "stockToAdd": sum(i["stockToAdd"] for i in plans), "predictedRevenue": round(sum(i["predictedRevenue"] for i in plans), 2),
+        "predictedProfit": round(sum(i["predictedProfit"] for i in plans), 2),
+    }
+    return {"totals": totals, "products": plans[:50], "sectors": sector_rows, "quantityIsEstimated": quantity_is_estimated}
+
+
 def analysis_payload(raw_df, source_name, payload=None):
     try:
         raw_df, column_mapping, schema_warnings = normalize_business_dataset(raw_df)
@@ -473,6 +573,7 @@ def analysis_payload(raw_df, source_name, payload=None):
         return {"error": str(exc)}, 400
 
     df = prepare_dataset(raw_df)
+    df.attrs["column_mapping"] = column_mapping
     if df.empty:
         return {"error": "No valid dated rows were found in the dataset."}, 400
 
@@ -486,6 +587,10 @@ def analysis_payload(raw_df, source_name, payload=None):
     discount_labels, discount_values = average_records(filtered, "Category", "Discount")
     month_labels, month_values = monthly_records(filtered)
     monthly_sales, forecast = predict_sales(filtered.copy())
+    forecast_margin = float(filtered["Profit"].sum() / filtered["Sales"].sum()) if filtered["Sales"].sum() else 0
+    if not forecast.empty:
+        forecast["Predicted Revenue"] = forecast["Predicted Sales"]
+        forecast["Predicted Profit"] = forecast["Predicted Revenue"] * forecast_margin
 
     return {
         "source": source_name,
@@ -522,6 +627,7 @@ def analysis_payload(raw_df, source_name, payload=None):
         "discountSensitivity": discount_sensitivity(filtered),
         "opportunities": opportunity_map(filtered),
         "forecastTable": forecast.round(2).to_dict(orient="records"),
+        "demandPlan": demand_plan(filtered, "Quantity" not in column_mapping),
         "preview": filtered.head(25).fillna("").to_dict(orient="records"),
     }, 200
 
@@ -544,6 +650,7 @@ def api_analysis():
 def api_reset():
     ACTIVE_DATASET["df"] = None
     ACTIVE_DATASET["source"] = None
+    persist_active_dataset()
     return jsonify(empty_payload())
 
 
@@ -560,6 +667,7 @@ def api_upload():
     if status == 200:
         ACTIVE_DATASET["df"] = raw_df.copy()
         ACTIVE_DATASET["source"] = source_name
+        persist_active_dataset(raw_df, source_name)
     return jsonify(payload), status
 
 
@@ -572,6 +680,7 @@ def api_demo():
     if status == 200:
         ACTIVE_DATASET["df"] = raw_df.copy()
         ACTIVE_DATASET["source"] = DATA_PATH.name
+        persist_active_dataset(raw_df, DATA_PATH.name)
     return jsonify(payload), status
 
 
@@ -588,7 +697,9 @@ def api_ask():
     df = prepare_dataset(raw_df)
     filtered, *_ = filter_dataset(df, body)
     answer = ask_ai(question, filtered)
-    return jsonify({"answer": answer})
+    citations = evidence_for_question(question, filtered)
+    add_record("history", question[:80], {"type": "AI question", "question": question, "answer": answer[:500], "citations": citations})
+    return jsonify({"answer": answer, "citations": citations})
 
 
 @app.route("/api/stocks/analyze", methods=["POST"])
@@ -639,6 +750,252 @@ def export_report():
         forecast=forecast,
     )
     return send_file(pdf_path, as_attachment=True, download_name="AI_Business_Report.pdf")
+
+
+def plain_metrics(df):
+    sales = float(df["Sales"].sum())
+    profit = float(df["Profit"].sum())
+    return {
+        "sales": sales,
+        "profit": profit,
+        "margin": profit / sales if sales else 0,
+        "discount": float(df["Discount"].mean()) if len(df) else 0,
+        "orders": int(df["Order ID"].nunique()),
+        "rows": int(len(df)),
+    }
+
+
+def evidence_for_question(question, df):
+    """Return compact, deterministic evidence alongside generative answers."""
+    metrics = plain_metrics(df)
+    evidence = [
+        {"label": "Rows analyzed", "value": f"{metrics['rows']:,}", "source": "Filtered dataset"},
+        {"label": "Total sales", "value": money(metrics["sales"]), "source": "SUM(Sales)"},
+        {"label": "Total profit", "value": money(metrics["profit"]), "source": "SUM(Profit)"},
+        {"label": "Profit margin", "value": percent(metrics["margin"]), "source": "SUM(Profit) / SUM(Sales)"},
+    ]
+    lowered = question.lower()
+    if "region" in lowered:
+        row = df.groupby("Region")["Profit"].sum().sort_values().reset_index().iloc[0]
+        evidence.append({"label": "Lowest-profit region", "value": f"{row['Region']} ({money(row['Profit'])})", "source": "Profit grouped by Region"})
+    if "category" in lowered:
+        row = df.groupby("Category")["Sales"].sum().sort_values(ascending=False).reset_index().iloc[0]
+        evidence.append({"label": "Top category", "value": f"{row['Category']} ({money(row['Sales'])})", "source": "Sales grouped by Category"})
+    return evidence
+
+
+def active_filtered(body=None):
+    raw_df, _ = dataset_from_request()
+    if raw_df is None:
+        raise ValueError("Import a dataset first.")
+    df = prepare_dataset(raw_df)
+    filtered, *_ = filter_dataset(df, body or {})
+    return filtered
+
+
+def forecast_diagnostics(df):
+    monthly, _ = predict_sales(df.copy())
+    values = monthly["Sales"].astype(float).reset_index(drop=True)
+    if len(values) < 7:
+        return {"status": "Needs at least 7 months", "mae": None, "mape": None, "accuracy": None, "actual": [], "predicted": []}
+    actual, predicted = [], []
+    start = max(3, len(values) - 6)
+    for index in range(start, len(values)):
+        history = values.iloc[:index]
+        window = min(3, len(history))
+        predicted.append(float(history.iloc[-window:].mean()))
+        actual.append(float(values.iloc[index]))
+    errors = np.abs(np.array(actual) - np.array(predicted))
+    mape = float(np.mean(errors / np.maximum(np.abs(actual), 1)) * 100)
+    return {
+        "status": "Backtested",
+        "mae": round(float(errors.mean()), 2),
+        "mape": round(mape, 1),
+        "accuracy": round(max(0, 100 - mape), 1),
+        "actual": [round(v, 2) for v in actual],
+        "predicted": [round(v, 2) for v in predicted],
+        "labels": monthly["Order Date"].astype(str).tolist()[-len(actual):],
+        "method": "Rolling three-month holdout benchmark",
+    }
+
+
+@app.route("/api/platform/bootstrap")
+def platform_bootstrap():
+    kinds = ["dashboard", "alert", "action", "schedule", "history", "connection"]
+    return jsonify({
+        "user": get_setting("current_user"),
+        "semanticMetrics": get_setting("semantic_metrics", []),
+        **{f"{kind}s": list_records(kind) for kind in kinds},
+    })
+
+
+@app.route("/api/platform/user", methods=["PUT"])
+def platform_user():
+    body = request.get_json(silent=True) or {}
+    role = body.get("role", "Executive")
+    if role not in {"Admin", "Analyst", "Executive"}:
+        return jsonify({"error": "Role must be Admin, Analyst, or Executive."}), 400
+    return jsonify(set_setting("current_user", {"name": body.get("name", "Local User"), "role": role, "workspace": body.get("workspace", "Executive Workspace")}))
+
+
+@app.route("/api/platform/records/<kind>", methods=["GET", "POST"])
+def platform_records(kind):
+    allowed = {"dashboard", "alert", "action", "schedule", "history", "connection"}
+    if kind not in allowed:
+        return jsonify({"error": "Unknown record type."}), 404
+    if request.method == "GET":
+        return jsonify(list_records(kind))
+    body = request.get_json(silent=True) or {}
+    name = str(body.get("name", "")).strip()
+    if not name:
+        return jsonify({"error": "Name is required."}), 400
+    return jsonify(add_record(kind, name, body)), 201
+
+
+@app.route("/api/platform/records/<kind>/<int:record_id>", methods=["PUT", "DELETE"])
+def platform_record(kind, record_id):
+    record = get_record(record_id)
+    if not record or record["kind"] != kind:
+        return jsonify({"error": "Record not found."}), 404
+    if request.method == "DELETE":
+        delete_record(record_id)
+        return jsonify({"deleted": True})
+    return jsonify(update_record(record_id, request.get_json(silent=True) or {}))
+
+
+@app.route("/api/platform/dashboards/<int:record_id>/load", methods=["POST"])
+def load_dashboard(record_id):
+    record = get_record(record_id)
+    if not record or record["kind"] != "dashboard":
+        return jsonify({"error": "Dashboard not found."}), 404
+    raw_df, source = dataset_from_request()
+    if raw_df is None:
+        return jsonify({"error": "Load the dashboard's dataset first."}), 400
+    payload, status = analysis_payload(raw_df, source, record["payload"])
+    return jsonify(payload), status
+
+
+@app.route("/api/platform/scenario", methods=["POST"])
+def platform_scenario():
+    body = request.get_json(silent=True) or {}
+    try:
+        df = active_filtered(body)
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    baseline = plain_metrics(df)
+    volume = float(body.get("volumeChange", 0)) / 100
+    price = float(body.get("priceChange", 0)) / 100
+    cost = float(body.get("costChange", 0)) / 100
+    discount = float(body.get("discountChange", 0)) / 100
+    projected_sales = baseline["sales"] * (1 + volume) * (1 + price) * (1 - discount)
+    baseline_cost = baseline["sales"] - baseline["profit"]
+    projected_profit = projected_sales - baseline_cost * (1 + volume) * (1 + cost)
+    return jsonify({"baseline": baseline, "projected": {"sales": projected_sales, "profit": projected_profit, "margin": projected_profit / projected_sales if projected_sales else 0}, "inputs": body})
+
+
+@app.route("/api/platform/forecast-diagnostics")
+def platform_forecast_diagnostics():
+    try:
+        return jsonify(forecast_diagnostics(active_filtered()))
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+
+
+@app.route("/api/platform/chart", methods=["POST"])
+def platform_chart():
+    body = request.get_json(silent=True) or {}
+    prompt = str(body.get("prompt", "")).strip()
+    if not prompt:
+        return jsonify({"error": "Describe the chart you want."}), 400
+    try:
+        df = active_filtered(body)
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    lowered = prompt.lower()
+    dimension = next((col for key, col in [("region", "Region"), ("category", "Category"), ("segment", "Segment"), ("product", "Product Name"), ("month", "Order Date")] if key in lowered and col in df.columns), "Category")
+    measure = "Profit" if "profit" in lowered or "margin" in lowered else "Sales"
+    chart_type = "line" if "line" in lowered or dimension == "Order Date" else "pie" if "pie" in lowered else "bar"
+    if dimension == "Order Date":
+        grouped = df.groupby(df[dimension].dt.to_period("M"))[measure].sum().sort_index()
+    else:
+        grouped = df.groupby(dimension)[measure].sum().sort_values(ascending=False).head(20)
+    add_record("history", prompt[:80], {"type": "Generated chart", "prompt": prompt})
+    return jsonify({"title": f"{measure} by {dimension}", "type": chart_type, "labels": [str(v) for v in grouped.index], "values": grouped.round(2).tolist(), "explanation": f"Interpreted '{prompt}' as SUM({measure}) grouped by {dimension}."})
+
+
+@app.route("/api/platform/alerts/evaluate", methods=["POST"])
+def evaluate_alerts():
+    try:
+        metrics = plain_metrics(active_filtered())
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    evaluated = []
+    for record in list_records("alert"):
+        rule = record["payload"]
+        value = float(metrics.get(rule.get("metric"), 0))
+        threshold = float(rule.get("threshold", 0))
+        triggered = value < threshold if rule.get("operator") == "below" else value > threshold
+        evaluated.append({**record, "currentValue": value, "triggered": triggered})
+    return jsonify(evaluated)
+
+
+@app.route("/api/platform/metrics", methods=["GET", "PUT"])
+def platform_metrics():
+    if request.method == "GET":
+        return jsonify(get_setting("semantic_metrics", []))
+    metrics = request.get_json(silent=True) or []
+    if not isinstance(metrics, list):
+        return jsonify({"error": "Metrics must be a list."}), 400
+    return jsonify(set_setting("semantic_metrics", metrics))
+
+
+@app.route("/api/platform/clean", methods=["POST"])
+def platform_clean():
+    body = request.get_json(silent=True) or {}
+    raw_df, source = dataset_from_request()
+    if raw_df is None:
+        return jsonify({"error": "Import a dataset first."}), 400
+    cleaned = raw_df.copy()
+    before = len(cleaned)
+    if body.get("removeDuplicates", True):
+        cleaned = cleaned.drop_duplicates()
+    if body.get("fillNumeric", False):
+        for column in cleaned.select_dtypes(include="number").columns:
+            cleaned[column] = cleaned[column].fillna(cleaned[column].median())
+    ACTIVE_DATASET.update({"df": cleaned, "source": f"Cleaned {source}"})
+    persist_active_dataset(cleaned, ACTIVE_DATASET["source"])
+    payload, status = analysis_payload(cleaned, ACTIVE_DATASET["source"])
+    if status == 200:
+        payload["cleaningSummary"] = {"rowsBefore": before, "rowsAfter": len(cleaned), "duplicatesRemoved": before - len(cleaned)}
+        add_record("history", f"Cleaned {source}", {"type": "Data preparation", **payload["cleaningSummary"]})
+    return jsonify(payload), status
+
+
+@app.route("/api/platform/connect", methods=["POST"])
+def platform_connect():
+    body = request.get_json(silent=True) or {}
+    kind = body.get("type", "sqlite")
+    if kind != "sqlite":
+        return jsonify({"error": "This local build enables SQLite directly. PostgreSQL can be enabled by installing its driver and configuring a server-side connection."}), 400
+    database = Path(str(body.get("database", ""))).resolve()
+    try:
+        database.relative_to(ROOT_DIR)
+    except ValueError:
+        return jsonify({"error": "For safety, the SQLite database must be inside this project folder."}), 400
+    table = str(body.get("table", ""))
+    if not table or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", table):
+        return jsonify({"error": "Enter a valid table name."}), 400
+    try:
+        with sqlite3.connect(database) as db:
+            raw_df = pd.read_sql_query(f'SELECT * FROM "{table}" LIMIT 100000', db)
+        payload, status = analysis_payload(raw_df, f"{database.name}:{table}")
+        if status == 200:
+            ACTIVE_DATASET.update({"df": raw_df, "source": f"{database.name}:{table}"})
+            persist_active_dataset(raw_df, ACTIVE_DATASET["source"])
+            add_record("connection", f"{database.name}:{table}", {"type": "sqlite", "database": str(database), "table": table})
+        return jsonify(payload), status
+    except Exception as exc:
+        return jsonify({"error": f"Connection failed: {exc}"}), 400
 
 
 if __name__ == "__main__":
