@@ -17,12 +17,13 @@ APP_DIR = ROOT_DIR / "app"
 if str(APP_DIR) not in sys.path:
     sys.path.insert(0, str(APP_DIR))
 
-from llm_engine import ask_ai
 from prediction import predict_sales
 from report_generator import generate_pdf_report
 from schema_engine import normalize_business_dataset
 from stock_analysis import analyze_stock
 from platform_store import add_record, delete_record, get_record, get_setting, init_store, list_records, set_setting, update_record
+from aura import AuraOrchestrator
+from aura.providers import GeminiEvidenceProvider
 
 
 app = Flask(__name__, static_folder="frontend", static_url_path="")
@@ -33,6 +34,7 @@ DATA_PATH = ROOT_DIR / "data" / "Sample - Superstore.csv"
 SESSION_DATA_PATH = ROOT_DIR / "data" / ".active_dataset.pkl"
 SESSION_META_PATH = ROOT_DIR / "data" / ".active_dataset_source.txt"
 ACTIVE_DATASET = {"df": None, "source": None}
+AURA = AuraOrchestrator()
 REQUIRED_COLUMNS = [
     "Order ID",
     "Order Date",
@@ -694,12 +696,50 @@ def api_ask():
     raw_df, _ = dataset_from_request()
     if raw_df is None:
         return jsonify({"error": "Import a CSV before asking AI questions."}), 400
-    df = prepare_dataset(raw_df)
-    filtered, *_ = filter_dataset(df, body)
-    answer = ask_ai(question, filtered)
-    citations = evidence_for_question(question, filtered)
-    add_record("history", question[:80], {"type": "AI question", "question": question, "answer": answer[:500], "citations": citations})
-    return jsonify({"answer": answer, "citations": citations})
+    # AURA queries the original frame so unfamiliar, non-sales schemas remain analyzable.
+    result = AURA.answer(question, raw_df, str(ACTIVE_DATASET.get("source") or "active"))
+    if result["status"] == "OK":
+        narrative = GeminiEvidenceProvider().explain(question, result["evidence"])
+        if narrative:
+            result["answer"] = narrative
+    citations = [{"label": "AURA evidence", "value": item["evidence_id"], "source": item["method"]} for item in result["evidence"]]
+    add_record("history", question[:80], {"type": "AURA verified question", "question": question, "answer": result["answer"][:500], "evidence": result["evidence"], "plan": result["plan"]})
+    return jsonify({"answer": result["answer"], "citations": citations, "status": result["status"], "plan": result["plan"], "evidence": result["evidence"]})
+
+
+@app.route("/api/aura/inspect")
+def aura_inspect():
+    raw_df, source = dataset_from_request()
+    if raw_df is None:
+        return jsonify({"error": "Import a dataset first."}), 400
+    corrections = get_setting(f"aura_schema:{source}", {})
+    return jsonify(AURA.inspect(raw_df, str(source), corrections))
+
+
+@app.route("/api/aura/schema", methods=["PUT"])
+def aura_schema_corrections():
+    raw_df, source = dataset_from_request()
+    if raw_df is None:
+        return jsonify({"error": "Import a dataset first."}), 400
+    corrections = (request.get_json(silent=True) or {}).get("corrections", {})
+    if not isinstance(corrections, dict) or any(c not in raw_df.columns for c in corrections):
+        return jsonify({"error": "Corrections must map existing columns to roles."}), 400
+    set_setting(f"aura_schema:{source}", corrections)
+    return jsonify({"saved": True, "semantic_schema": [field.__dict__ for field in AURA.schema.infer(raw_df, corrections)]})
+
+
+@app.route("/api/aura/ml", methods=["POST"])
+def aura_ml():
+    raw_df, source = dataset_from_request()
+    target = str((request.get_json(silent=True) or {}).get("target", ""))
+    if raw_df is None:
+        return jsonify({"error": "Import a dataset first."}), 400
+    try:
+        run = AURA.ml.train(raw_df, target)
+        add_record("ml_run", target, run)
+        return jsonify(run)
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
 
 
 @app.route("/api/stocks/analyze", methods=["POST"])

@@ -5,6 +5,7 @@ __pycache__/
 .env
 outputs/*.log
 outputs/*.err
+outputs/experiments/
 .codex-server*.log
 .codex-server.pid
 .codex-local-server*.log
