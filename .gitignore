@@ -3,6 +3,8 @@ __pycache__/
 *.pyc 
 .ipynb_checkpoints/
 .env
+.env.*
+!.env.example
 outputs/*.log
 outputs/*.err
 outputs/experiments/

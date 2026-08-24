@@ -1,52 +1,20 @@
-"""Backward-compatible workspace API backed by SQLAlchemy."""
+"""Compatibility adapter: existing workspace endpoints now persist to MongoDB."""
 from __future__ import annotations
 from datetime import datetime, timezone
-from sqlalchemy import select
-from persistence.database import get_session, init_database
-from persistence.models import LegacyRecord, Setting
+from pymongo import DESCENDING
+from persistence.mongo import initialize, get_database
 
 def now(): return datetime.now(timezone.utc).isoformat(timespec="seconds")
-
-def _record(row): return {"id":row.id,"kind":row.kind,"name":row.name,"payload":row.payload,"created_at":row.created_at}
-
-def init_store():
-    init_database()
-    defaults={"current_user":{"name":"Bharath","role":"Admin","workspace":"Executive Workspace"},"semantic_metrics":[{"name":"Net Revenue","column":"Sales","aggregation":"sum","format":"currency"},{"name":"Gross Profit","column":"Profit","aggregation":"sum","format":"currency"},{"name":"Profit Margin","formula":"Profit / Sales","format":"percent"}]}
-    with get_session() as db:
-        for key,value in defaults.items():
-            if not db.get(Setting,key): db.add(Setting(key=key,value=value))
-        db.commit()
-
-def list_records(kind):
-    with get_session() as db: return [_record(r) for r in db.scalars(select(LegacyRecord).where(LegacyRecord.kind==kind).order_by(LegacyRecord.id.desc())).all()]
-
+def init_store(): initialize(); db=get_database(); db.settings.update_one({"key":"current_user"},{"$setOnInsert":{"key":"current_user","value":{"name":"Bharath","role":"Admin","workspace":"Executive Workspace"}}},upsert=True); db.settings.update_one({"key":"semantic_metrics"},{"$setOnInsert":{"key":"semantic_metrics","value":[]}},upsert=True)
+def _record(row): return {"id":row["id"],"kind":row["kind"],"name":row["name"],"payload":row["payload"],"created_at":row["created_at"]}
+def list_records(kind): return [_record(r) for r in get_database().legacy_records.find({"kind":kind}).sort("id",DESCENDING)]
 def add_record(kind,name,payload):
-    with get_session() as db:
-        row=LegacyRecord(kind=kind,name=name,payload=payload,created_at=now()); db.add(row); db.commit(); db.refresh(row); return _record(row)
-
+    db=get_database(); next_id=db.counters.find_one_and_update({"key":"legacy_records"},{"$inc":{"value":1}},upsert=True,return_document=True)["value"]; row={"id":next_id,"kind":kind,"name":name,"payload":payload,"created_at":now()}; db.legacy_records.insert_one(row); return _record(row)
 def get_record(record_id):
-    with get_session() as db:
-        row=db.get(LegacyRecord,record_id); return _record(row) if row else None
-
+    row=get_database().legacy_records.find_one({"id":record_id}); return _record(row) if row else None
 def update_record(record_id,payload):
-    with get_session() as db:
-        row=db.get(LegacyRecord,record_id)
-        if not row: return None
-        row.payload={**row.payload,**payload}; row.name=str(payload.get("name",row.name)); db.commit(); db.refresh(row); return _record(row)
-
-def delete_record(record_id):
-    with get_session() as db:
-        row=db.get(LegacyRecord,record_id)
-        if not row: return False
-        db.delete(row); db.commit(); return True
-
+    db=get_database(); row=db.legacy_records.find_one_and_update({"id":record_id},{"$set":{"payload":{**(get_record(record_id) or {"payload":{}})["payload"],**payload},"name":str(payload.get("name",(get_record(record_id) or {"name":""})["name"]))}},return_document=True); return _record(row) if row else None
+def delete_record(record_id): return get_database().legacy_records.delete_one({"id":record_id}).deleted_count > 0
 def get_setting(key,default=None):
-    with get_session() as db:
-        row=db.get(Setting,key); return row.value if row else default
-
-def set_setting(key,value):
-    with get_session() as db:
-        row=db.get(Setting,key)
-        if row: row.value=value
-        else: db.add(Setting(key=key,value=value))
-        db.commit(); return value
+    row=get_database().settings.find_one({"key":key}); return row["value"] if row else default
+def set_setting(key,value): get_database().settings.update_one({"key":key},{"$set":{"value":value}},upsert=True); return value

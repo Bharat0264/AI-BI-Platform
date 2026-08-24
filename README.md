@@ -66,4 +66,4 @@ The existing Render/Waitress configuration remains compatible. Configure `GEMINI
 
 ## Persistence
 
-Local development remains compatible with SQLite. Production uses `DATABASE_URL` with PostgreSQL and SQLAlchemy. Copy `.env.example`, set a secret-backed URL, then run `python -m alembic upgrade head`. See [persistence architecture](docs/PERSISTENCE_ARCHITECTURE.md) for the optional legacy-import and migration workflow.
+MongoDB is AURA-BI's primary persistent database. Copy `.env.example`, set secret-managed `MONGODB_URI` and `MONGODB_DATABASE`, then run `python scripts/init_mongodb.py`. See [persistence architecture](docs/PERSISTENCE_ARCHITECTURE.md) for the optional legacy SQLite-import workflow.

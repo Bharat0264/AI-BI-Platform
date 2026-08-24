@@ -15,7 +15,7 @@ The repository is a Flask 3.1 application serving a responsive vanilla HTML/CSS/
 | Gemini Q&A | Present, but sends a raw data sample | Replace endpoint flow with evidence-first provider abstraction. |
 | Voice | Browser speech recognition/TTS UI | Preserve; it continues to call `/api/ask`. |
 | PDF reporting | Working ReportLab report | Preserve; future evidence records can populate it. |
-| Persistence | SQLite records/settings | Reuse for workspace metadata and semantic corrections; PostgreSQL/Alembic remains an optional production migration. |
+| Persistence | MongoDB/PyMongo collections with legacy SQLite import utility | Primary production persistence; source data and generated files remain external references. |
 | Tests | No focused automated suite found | Add deterministic pytest coverage. |
 
 ## Reuse and risks

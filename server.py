@@ -25,6 +25,7 @@ from platform_store import add_record, delete_record, get_record, get_setting, i
 from aura import AuraOrchestrator
 from aura.providers import GeminiEvidenceProvider
 from persistence import AuraRepository
+from persistence.mongo import ping_database
 
 
 app = Flask(__name__, static_folder="frontend", static_url_path="")
@@ -648,6 +649,15 @@ def index():
     return send_from_directory(app.static_folder, "index.html")
 
 
+@app.route("/api/health")
+def api_health():
+    try:
+        ping_database()
+        return jsonify({"status": "ready", "persistence": "mongodb"})
+    except Exception:
+        return jsonify({"status": "not_ready", "persistence": "mongodb"}), 503
+
+
 @app.route("/api/analysis", methods=["GET"])
 def api_analysis():
     raw_df, source_name = dataset_from_request()
@@ -1080,7 +1090,7 @@ def platform_connect():
     body = request.get_json(silent=True) or {}
     kind = body.get("type", "sqlite")
     if kind != "sqlite":
-        return jsonify({"error": "This local build enables SQLite directly. PostgreSQL can be enabled by installing its driver and configuring a server-side connection."}), 400
+        return jsonify({"error": "This connector imports SQLite source data only. AURA-BI persistence is MongoDB-backed."}), 400
     database = Path(str(body.get("database", ""))).resolve()
     try:
         database.relative_to(ROOT_DIR)

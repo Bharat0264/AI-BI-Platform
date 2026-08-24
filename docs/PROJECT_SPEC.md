@@ -2,7 +2,7 @@
 
 ## Persistence
 
-The production persistence target is PostgreSQL through SQLAlchemy and Alembic. Workspace is the ownership boundary for datasets and their analytical artifacts. SQLite is maintained as a local/test-compatible backend; source files and model artifacts remain external references.
+MongoDB through PyMongo is the production persistence target. Workspace is the ownership boundary for datasets and their analytical artifacts. Legacy SQLite is retained only as an explicit import source; source files and model artifacts remain external references.
 
 **Research position:** *AURA-BI: A Self-Adaptive Multi-Agent Framework for Autonomous Business Intelligence over Heterogeneous Enterprise Data.*
 

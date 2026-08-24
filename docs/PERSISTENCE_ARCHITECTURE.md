@@ -1,18 +1,23 @@
-# Persistence Architecture
+# MongoDB Persistence Architecture
 
-## Audit and migration
+## Current architecture
 
-Phase 2 stored workspace settings and generic UI records in `data/platform.db` using raw SQLite. Active data is preserved as a local pickle; reports and models are files, not database blobs. Semantic corrections, run history, AI history, and investigations were JSON payloads in `records`.
+AURA-BI uses PyMongo and MongoDB as its primary persistent database. A single managed `MongoClient` is configured through `MONGODB_URI` and `MONGODB_DATABASE`; startup pings MongoDB, ensures indexes, and records schema version 1 in `schema_versions`. The application exposes stable UUID-style application IDs rather than Mongo ObjectIds.
 
-Phase 3 retains the compatible `platform_store` API but backs it with SQLAlchemy. `DATABASE_URL` selects PostgreSQL (`postgresql+psycopg://...`) or, by default, the existing SQLite database. The normalized schema adds workspace, dataset/profile, semantic-column, analytics-run/evidence, ML-run, anomaly-investigation, AI-query, and report entities. Source files and model artifacts remain filesystem references.
+Collections: `workspaces`, `datasets`, `dataset_profiles`, `semantic_schemas`, `analytics_runs`, `analytics_evidence`, `ml_runs`, `anomaly_investigations`, `ai_queries`, `reports`, and `schema_versions`. Legacy workspace records/settings are mapped into `legacy_records` and `settings` for API compatibility.
+
+MongoDB fits AURA-BI because profiles, semantic metadata, evidence results, root-cause slices, and ML configurations have valid but variable nested shapes. This is a workload fit, not a claim that MongoDB is universally superior to relational databases. Uploaded data, model artifacts, and PDFs remain file references rather than database blobs.
 
 ## Operations
 
 ```powershell
-$env:DATABASE_URL = "postgresql+psycopg://USER:PASSWORD@HOST:5432/aura_bi"
-python -m alembic upgrade head
+$env:MONGODB_URI = "mongodb+srv://USER:PASSWORD@HOST/"
+$env:MONGODB_DATABASE = "aura_bi"
+python scripts/init_mongodb.py
 python server.py
 python -m pytest tests -q
 ```
 
-Use `python scripts/migrate_sqlite_to_postgres.py data/platform.db --dry-run` before an optional import. The utility only copies legacy records/settings, skips existing IDs, and never runs automatically. Test migrations against an isolated URL; never run downgrade against an unknown production database.
+Run `python scripts/migrate_sqlite_to_mongodb.py data/platform.db --dry-run` before an optional legacy import. It safely reads the old SQLite records/settings, preserves IDs where possible, skips duplicates, and never runs automatically.
+
+The SQLAlchemy/PostgreSQL/Alembic implementation was an intermediate development architecture and was replaced before production data migration.

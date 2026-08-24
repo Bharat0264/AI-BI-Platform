@@ -1,5 +1,7 @@
 # Architecture
 
-Persistence is accessed through SQLAlchemy repositories. PostgreSQL is selected with `DATABASE_URL`; the existing SQLite database remains the local compatibility default. Alembic migrations and the normalized AURA artifact schema are documented in `docs/PERSISTENCE_ARCHITECTURE.md`.
+AURA-BI retains the Flask and vanilla-JavaScript product shell. Deterministic AURA services perform schema understanding, KPI discovery, analytical planning, visualization selection, AutoML, anomaly investigation, and evidence creation before optional LLM narration.
 
-AURA-BI keeps the Flask/vanilla-JS product shell. `aura/` is the application-service layer: schema/profile → KPI/planner/visualization/anomaly/ML → `AnalyticsEvidence` → optional Gemini evidence narration. Existing sales dashboard and forecast services remain available in `app/`; `/api/ask` uses AURA’s evidence-first route. The UI exposes Data Intelligence, Analytics, AutoML, Anomaly Intelligence, AI Analyst, Reports, and Research within the existing sidebar shell. SQLite persists schema corrections and run history. `/api/aura/analytics`, `/api/aura/root-cause`, and `/api/aura/history` exchange structured evidence with those workspaces.
+Persistence is accessed through PyMongo repositories. MongoDB is configured with `MONGODB_URI` and `MONGODB_DATABASE`; a single managed client pings at startup, creates required indexes, and records an idempotent schema version. Workspace is the ownership boundary for datasets, semantic corrections, analytics runs, evidence, ML runs, investigations, AI queries, and reports. Files remain external references.
+
+Legacy SQLite is import-only through an explicit utility. The intermediate SQLAlchemy/PostgreSQL/Alembic layer was replaced before production migration.
