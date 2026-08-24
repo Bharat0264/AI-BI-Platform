@@ -67,3 +67,5 @@ The existing Render/Waitress configuration remains compatible. Configure `GEMINI
 ## Persistence
 
 MongoDB is AURA-BI's primary persistent database. Copy `.env.example`, set secret-managed `MONGODB_URI` and `MONGODB_DATABASE`, then run `python scripts/init_mongodb.py`. See [persistence architecture](docs/PERSISTENCE_ARCHITECTURE.md) for the optional legacy SQLite-import workflow.
+
+For Render + MongoDB Atlas deployments, allow the Render service's outbound network in Atlas Network Access and use the Atlas Driver URI exactly (percent-encoding reserved password characters). AURA-BI validates Atlas TLS certificates with Certifi; do not disable certificate validation. See the deployment troubleshooting notes in [persistence architecture](docs/PERSISTENCE_ARCHITECTURE.md).

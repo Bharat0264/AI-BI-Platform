@@ -2,12 +2,21 @@
 from __future__ import annotations
 import os
 from datetime import datetime, timezone
+import certifi
 from dotenv import load_dotenv
 from pymongo import ASCENDING, MongoClient
-from pymongo.errors import PyMongoError
 
 load_dotenv()
 _client = None
+
+
+def _timeout(name: str, default: int) -> int:
+    """Return a bounded Mongo timeout without accepting invalid environment input."""
+    try:
+        return max(1000, int(os.getenv(name, default)))
+    except (TypeError, ValueError):
+        return default
+
 
 def get_client():
     global _client
@@ -15,7 +24,18 @@ def get_client():
         uri=os.getenv("MONGODB_URI")
         if not uri: raise RuntimeError("MongoDB persistence requires MONGODB_URI.")
         try:
-            _client=MongoClient(uri, serverSelectionTimeoutMS=5000, connectTimeoutMS=5000, appname="aura-bi")
+            # Atlas uses TLS for mongodb+srv URIs. Supplying Certifi's CA bundle
+            # avoids relying on the PaaS image's certificate store while retaining
+            # full certificate validation.
+            _client=MongoClient(
+                uri,
+                tls=True,
+                tlsCAFile=certifi.where(),
+                serverSelectionTimeoutMS=_timeout("MONGODB_SERVER_SELECTION_TIMEOUT_MS", 15000),
+                connectTimeoutMS=_timeout("MONGODB_CONNECT_TIMEOUT_MS", 10000),
+                socketTimeoutMS=_timeout("MONGODB_SOCKET_TIMEOUT_MS", 20000),
+                appname="aura-bi",
+            )
         except Exception as exc:
             raise RuntimeError("MongoDB connection configuration is invalid or unavailable.") from exc
     return _client

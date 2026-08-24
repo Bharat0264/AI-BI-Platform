@@ -12,3 +12,4 @@ google-generativeai
 python-dotenv
 reportlab
 pymongo>=4.10,<5
+certifi>=2024.8.30

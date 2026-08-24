@@ -21,3 +21,15 @@ python -m pytest tests -q
 Run `python scripts/migrate_sqlite_to_mongodb.py data/platform.db --dry-run` before an optional legacy import. It safely reads the old SQLite records/settings, preserves IDs where possible, skips duplicates, and never runs automatically.
 
 The SQLAlchemy/PostgreSQL/Alembic implementation was an intermediate development architecture and was replaced before production data migration.
+
+## Render and Atlas TLS troubleshooting
+
+Configure `MONGODB_URI` with Atlas's driver connection string and `MONGODB_DATABASE` in Render's secret environment settings. The client uses Certifi's CA bundle and keeps TLS certificate validation enabled. Do not set `tlsAllowInvalidCertificates=true` to work around connection errors.
+
+An Atlas TLS handshake error is normally an environment/connectivity issue rather than an application-data issue. Before redeploying, verify:
+
+- Atlas **Network Access** permits the Render service's outbound IP range. On Render plans with dynamic egress, a temporary `0.0.0.0/0` Atlas rule may be required for diagnosis; restrict it or use static egress/private connectivity for production.
+- The value contains no surrounding quotes or line breaks, and any reserved password characters are percent-encoded.
+- The Atlas cluster is running and the URI was copied from **Connect → Drivers** for that cluster.
+
+Optional timeout environment variables are in milliseconds: `MONGODB_SERVER_SELECTION_TIMEOUT_MS` (default `15000`), `MONGODB_CONNECT_TIMEOUT_MS` (default `10000`), and `MONGODB_SOCKET_TIMEOUT_MS` (default `20000`).
