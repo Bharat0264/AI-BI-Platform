@@ -1,5 +1,9 @@
 # AURA-BI — Autonomous Unified Reasoning & Analytics for Business Intelligence
 
+## Persistence
+
+The production persistence target is PostgreSQL through SQLAlchemy and Alembic. Workspace is the ownership boundary for datasets and their analytical artifacts. SQLite is maintained as a local/test-compatible backend; source files and model artifacts remain external references.
+
 **Research position:** *AURA-BI: A Self-Adaptive Multi-Agent Framework for Autonomous Business Intelligence over Heterogeneous Enterprise Data.*
 
 ## Problem and questions

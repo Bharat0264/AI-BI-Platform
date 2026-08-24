@@ -24,6 +24,7 @@ from stock_analysis import analyze_stock
 from platform_store import add_record, delete_record, get_record, get_setting, init_store, list_records, set_setting, update_record
 from aura import AuraOrchestrator
 from aura.providers import GeminiEvidenceProvider
+from persistence import AuraRepository
 
 
 app = Flask(__name__, static_folder="frontend", static_url_path="")
@@ -35,6 +36,7 @@ SESSION_DATA_PATH = ROOT_DIR / "data" / ".active_dataset.pkl"
 SESSION_META_PATH = ROOT_DIR / "data" / ".active_dataset_source.txt"
 ACTIVE_DATASET = {"df": None, "source": None}
 AURA = AuraOrchestrator()
+PERSISTENCE = AuraRepository()
 REQUIRED_COLUMNS = [
     "Order ID",
     "Order Date",
@@ -53,6 +55,13 @@ def persist_active_dataset(df=None, source=None):
         return
     df.to_pickle(SESSION_DATA_PATH)
     SESSION_META_PATH.write_text(str(source or "Saved dataset"), encoding="utf-8")
+
+
+def aura_context(df, source):
+    """Resolve normalized persistence ownership without changing route contracts."""
+    workspace_id = PERSISTENCE.workspace(get_setting("current_user", {}).get("workspace", "Executive Workspace"))
+    dataset_id = PERSISTENCE.dataset(workspace_id, str(source or "active"), df, SESSION_DATA_PATH)
+    return workspace_id, dataset_id
 
 
 def restore_active_dataset():
@@ -698,10 +707,15 @@ def api_ask():
         return jsonify({"error": "Import a CSV before asking AI questions."}), 400
     # AURA queries the original frame so unfamiliar, non-sales schemas remain analyzable.
     result = AURA.answer(question, raw_df, str(ACTIVE_DATASET.get("source") or "active"))
+    narrative = None
     if result["status"] == "OK":
         narrative = GeminiEvidenceProvider().explain(question, result["evidence"])
         if narrative:
             result["answer"] = narrative
+    workspace_id, dataset_id = aura_context(raw_df, ACTIVE_DATASET.get("source"))
+    for item in result["evidence"]:
+        PERSISTENCE.evidence(workspace_id, dataset_id, item)
+    PERSISTENCE.query(workspace_id, dataset_id, question, result, "Gemini" if narrative else None)
     citations = [{"label": "AURA evidence", "value": item["evidence_id"], "source": item["method"]} for item in result["evidence"]]
     add_record("history", question[:80], {"type": "AURA verified question", "question": question, "answer": result["answer"][:500], "evidence": result["evidence"], "plan": result["plan"]})
     return jsonify({"answer": result["answer"], "citations": citations, "status": result["status"], "plan": result["plan"], "evidence": result["evidence"]})
@@ -712,8 +726,11 @@ def aura_inspect():
     raw_df, source = dataset_from_request()
     if raw_df is None:
         return jsonify({"error": "Import a dataset first."}), 400
-    corrections = get_setting(f"aura_schema:{source}", {})
-    return jsonify(AURA.inspect(raw_df, str(source), corrections))
+    workspace_id, dataset_id = aura_context(raw_df, source)
+    corrections = {**get_setting(f"aura_schema:{source}", {}), **PERSISTENCE.corrections(dataset_id)}
+    inspection = AURA.inspect(raw_df, str(source), corrections)
+    PERSISTENCE.save_inspection(dataset_id, inspection)
+    return jsonify(inspection)
 
 
 @app.route("/api/aura/schema", methods=["PUT"])
@@ -726,6 +743,8 @@ def aura_schema_corrections():
         return jsonify({"error": "Corrections must map existing columns to roles."}), 400
     saved = {**get_setting(f"aura_schema:{source}", {}), **corrections}
     set_setting(f"aura_schema:{source}", saved)
+    _, dataset_id = aura_context(raw_df, source)
+    PERSISTENCE.correct_semantics(dataset_id, corrections)
     return jsonify({"saved": True, "semantic_schema": [field.__dict__ for field in AURA.schema.infer(raw_df, saved)]})
 
 
@@ -737,6 +756,8 @@ def aura_ml():
         return jsonify({"error": "Import a dataset first."}), 400
     try:
         run = AURA.ml.train(raw_df, target)
+        workspace_id, dataset_id = aura_context(raw_df, source)
+        PERSISTENCE.ml(workspace_id, dataset_id, target, run)
         add_record("ml_run", target, run)
         return jsonify(run)
     except ValueError as exc:
@@ -751,6 +772,8 @@ def aura_analytics():
         return jsonify({"error": "Import a dataset first."}), 400
     try:
         run = AURA.run_analysis(str(body.get("objective", "descriptive statistics")), raw_df, str(source), body.get("dimension"), body.get("measure"))
+        workspace_id, dataset_id = aura_context(raw_df, source)
+        PERSISTENCE.analytics(workspace_id, dataset_id, str(body.get("objective", "Analytics")), run)
         add_record("analytics_run", str(body.get("objective", "Analytics"))[:80], run)
         return jsonify(run)
     except ValueError as exc:
@@ -766,6 +789,8 @@ def aura_root_cause():
     if not evidence:
         return jsonify({"status": "INSUFFICIENT DATA", "answer": narrative, "evidence": None})
     payload = evidence.__dict__
+    workspace_id, dataset_id = aura_context(raw_df, source)
+    PERSISTENCE.investigation(workspace_id, dataset_id, payload)
     add_record("anomaly_investigation", "Latest period investigation", {"answer": narrative, "evidence": payload})
     return jsonify({"status": "OK", "answer": narrative, "evidence": payload})
 
@@ -825,6 +850,9 @@ def export_report():
         forecast=forecast,
         evidence=evidence_records,
     )
+    workspace_id, dataset_id = aura_context(raw_df, ACTIVE_DATASET.get("source"))
+    evidence_ids = [item.get("evidence_id") for record in evidence_records for item in (record if isinstance(record, list) else [record]) if isinstance(item, dict) and item.get("evidence_id")]
+    PERSISTENCE.report(workspace_id, dataset_id, evidence_ids, pdf_path)
     return send_file(pdf_path, as_attachment=True, download_name="AI_Business_Report.pdf")
 
 

@@ -63,3 +63,7 @@ See [architecture](docs/ARCHITECTURE.md), [project specification](docs/PROJECT_S
 ## Deployment
 
 The existing Render/Waitress configuration remains compatible. Configure `GEMINI_API_KEY` only when optional evidence narration is required.
+
+## Persistence
+
+Local development remains compatible with SQLite. Production uses `DATABASE_URL` with PostgreSQL and SQLAlchemy. Copy `.env.example`, set a secret-backed URL, then run `python -m alembic upgrade head`. See [persistence architecture](docs/PERSISTENCE_ARCHITECTURE.md) for the optional legacy-import and migration workflow.

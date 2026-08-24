@@ -12,4 +12,6 @@ outputs/experiments/
 data/platform.db
 data/.active_dataset.pkl
 data/.active_dataset_source.txt
+data/*.db
+models/artifacts/
 
