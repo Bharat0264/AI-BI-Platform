@@ -26,6 +26,10 @@ AURA-BI performs autonomous analytics, not causal decision intelligence. Correla
 
 `data → semantic → analytics/visualization/ml/anomaly → evidence → provider-backed explanation`. Specialized Data, Analyst, ML, Anomaly, Visualization and Report services exchange structured Python dataclasses; the Orchestrator selects deterministic work first. A provider abstraction may use Gemini only to phrase computed evidence and may never replace computation.
 
+## Phase 2 product workflows
+
+The existing Flask/vanilla-JS UI exposes Data Intelligence (profile, role corrections, KPIs), Analytics (structured execution and evidence), AutoML (target-confirmed training and run history), Anomaly Intelligence (latest-period contribution decomposition), AI Analyst (plan/evidence details), Reports (evidence register), and Research (accurately scoped benchmark status).
+
 ## Evaluation
 
 AURABench uses synthetic retail, e-commerce, inventory, marketing, finance, and churn families with role/KPI/task/anomaly ground truth. Metrics include role accuracy/macro-F1, task accuracy, KPI precision/recall/F1, numerical correctness/unsupported-claim rate/answerability, model performance, anomaly F1/root-cause ranking, and chart-selection accuracy. Baselines: B0 static/manual, B1 direct LLM context, B2 semantics without planner, B3 full AURA-BI, plus component ablations.

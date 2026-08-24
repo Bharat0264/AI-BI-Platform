@@ -19,3 +19,16 @@ def test_verified_answer_and_insufficient_data():
 
 def test_ml_task_inference():
     assert AuraOrchestrator().ml.infer_task(frame(), "Revenue") == "regression"
+
+def test_root_cause_decline_is_evidence_grounded():
+    df = pd.DataFrame({"Order ID": range(12), "Order Date": pd.date_range("2025-01-01", periods=12, freq="MS"), "Revenue": [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 50], "Region": ["North"] * 11 + ["South"]})
+    aura = AuraOrchestrator(); evidence, answer = aura.anomalies.root_cause(df, aura.schema.infer(df))
+    assert evidence.result["premise_verified"] is True
+    assert evidence.uncertainty["causal_claim"] is False
+
+def test_automl_rejects_missing_target():
+    try:
+        AuraOrchestrator().ml.train(frame(), "missing")
+    except ValueError:
+        return
+    assert False, "Expected validation error"

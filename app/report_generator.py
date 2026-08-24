@@ -97,7 +97,7 @@ def _build_styles():
     return styles
 
 
-def generate_pdf_report(report_text, metrics=None, insights=None, anomalies=None, forecast=None):
+def generate_pdf_report(report_text, metrics=None, insights=None, anomalies=None, forecast=None, evidence=None):
     reports_dir = Path(__file__).resolve().parents[1] / "outputs" / "reports"
     reports_dir.mkdir(parents=True, exist_ok=True)
 
@@ -172,6 +172,15 @@ def generate_pdf_report(report_text, metrics=None, insights=None, anomalies=None
             )
         story.append(_section("Six-Month Sales Forecast", styles))
         story.append(_table(rows, widths=[1.8 * inch, 1.8 * inch, 1.7 * inch, 1.8 * inch]))
+
+    if evidence:
+        rows = [["Evidence ID", "Analysis", "Method"]]
+        for item in evidence[:10]:
+            if isinstance(item, list):
+                item = item[0] if item else {}
+            rows.append([_clean_text(item.get("evidence_id", "Stored evidence")), _clean_text(item.get("analysis_type", "Analytics")), _clean_text(item.get("method", "Computed evidence"))])
+        story.append(_section("Analytical Evidence Register", styles))
+        story.append(_table(rows, widths=[2.2 * inch, 2.2 * inch, 2.7 * inch]))
 
     story.append(_section("AI Executive Narrative", styles))
     for block in str(report_text).split("\n\n"):

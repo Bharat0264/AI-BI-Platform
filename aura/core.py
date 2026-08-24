@@ -9,13 +9,13 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import IsolationForest, RandomForestClassifier, RandomForestRegressor
 from sklearn.linear_model import LinearRegression, LogisticRegression
-from sklearn.metrics import accuracy_score, mean_absolute_error, r2_score
+from sklearn.metrics import accuracy_score, mean_absolute_error, r2_score, mean_squared_error, precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
 
 
 ROLE_TERMS = {
-    "identifier": ("id", "uuid", "code", "number", "invoice", "order"),
     "date/time": ("date", "time", "month", "year", "timestamp"),
+    "identifier": ("id", "uuid", "code", "number", "invoice", "order"),
     "revenue": ("revenue", "sales", "gmv", "turnover", "amount", "merchandise value"),
     "profit": ("profit", "margin", "earnings", "income"),
     "cost": ("cost", "cogs", "expense", "spend"),
@@ -134,6 +134,34 @@ class AnomalyEngine:
         count = int((labels == -1).sum())
         return AnalyticsEvidence.create(dataset_id, "anomaly investigation", numeric, "Isolation Forest; diagnostic only", {"anomalous_records": count, "affected_columns": numeric}, uncertainty={"causal_claim": False})
 
+    def root_cause(self, df, fields, dataset_id="active"):
+        roles={f.semantic_role:f.column for f in fields}; measure=roles.get("revenue") or roles.get("profit")
+        date_col=roles.get("date/time")
+        if not measure or not date_col:
+            return None, "INSUFFICIENT DATA: a date/time field and revenue or profit field are required."
+        work=df.copy(); work["_date"]=pd.to_datetime(work[date_col],errors="coerce"); work["_value"]=pd.to_numeric(work[measure],errors="coerce").fillna(0)
+        work=work.dropna(subset=["_date"])
+        if work.empty: return None, "INSUFFICIENT DATA: date values could not be interpreted."
+        work["_period"]=work["_date"].dt.to_period("M")
+        totals=work.groupby("_period")["_value"].sum().sort_index()
+        if len(totals)<2: return None, "INSUFFICIENT DATA: at least two monthly periods are required."
+        current,previous=totals.iloc[-1],totals.iloc[-2]; delta=float(current-previous); pct=float(delta/previous) if previous else None
+        if delta >= 0:
+            result={"measure":measure,"current_period":str(totals.index[-1]),"comparison_period":str(totals.index[-2]),"change":delta,"change_percent":pct,"premise_verified":False,"contributors":[]}
+            return AnalyticsEvidence.create(dataset_id,"root-cause investigation",[measure,date_col],"period comparison; diagnostic only",result,uncertainty={"causal_claim":False}), "No decrease was observed in the latest complete comparison period."
+        contributors=[]
+        for role in ("region","category","product","customer","channel"):
+            column=roles.get(role)
+            if not column: continue
+            pivot=work[work["_period"].isin(totals.index[-2:])].groupby(["_period",column])["_value"].sum().unstack(fill_value=0)
+            diff=(pivot.reindex(totals.index[-2:],fill_value=0).iloc[-1]-pivot.reindex(totals.index[-2:],fill_value=0).iloc[-2]).sort_values()
+            for item,value in diff.head(3).items():
+                if value < 0: contributors.append({"dimension":column,"segment":str(item),"change":float(value),"share_of_total_change":float(abs(value/delta))})
+        contributors=sorted(contributors,key=lambda x:x["change"])[:8]
+        result={"measure":measure,"current_period":str(totals.index[-1]),"comparison_period":str(totals.index[-2]),"change":delta,"change_percent":pct,"premise_verified":True,"contributors":contributors}
+        evidence=AnalyticsEvidence.create(dataset_id,"root-cause investigation",[measure,date_col]+[x["dimension"] for x in contributors],"monthly contribution decomposition; diagnostic association only",result,uncertainty={"causal_claim":False})
+        return evidence, f"Verified {measure} decreased by {abs(pct or 0):.1%}. Ranked segments are associated with, and explain part of, the observed difference; they are not causal effects."
+
 class AutoMLEngine:
     def infer_task(self, df, target):
         if target not in df: return "invalid"
@@ -147,7 +175,11 @@ class AutoMLEngine:
         Xtr,Xte,ytr,yte=train_test_split(x,y,test_size=.25,random_state=42)
         model = RandomForestRegressor(n_estimators=80,random_state=42) if task=="regression" else RandomForestClassifier(n_estimators=80,random_state=42)
         model.fit(Xtr,ytr); pred=model.predict(Xte)
-        metrics={"mae":float(mean_absolute_error(yte,pred)),"r2":float(r2_score(yte,pred))} if task=="regression" else {"accuracy":float(accuracy_score(yte,pred))}
+        if task=="regression":
+            metrics={"mae":float(mean_absolute_error(yte,pred)),"rmse":float(mean_squared_error(yte,pred)**.5),"r2":float(r2_score(yte,pred))}
+        else:
+            precision,recall,f1,_=precision_recall_fscore_support(yte,pred,average="weighted",zero_division=0)
+            metrics={"accuracy":float(accuracy_score(yte,pred)),"precision":float(precision),"recall":float(recall),"f1":float(f1)}
         return {"task":task,"model":"RandomForest","metrics":metrics,"feature_importance":dict(sorted(zip(x.columns,model.feature_importances_),key=lambda z:z[1],reverse=True)[:10]),"causal_claim":False}
 
 class AuraOrchestrator:
@@ -171,3 +203,14 @@ class AuraOrchestrator:
         text=f"Verified result: {col} totals {result['sum']:,.2f} across {result['rows']:,} rows."
         if "ranking" in result: text += f" Breakdown by {result['grouped_by']} is included in evidence {evidence.evidence_id}."
         return {"status":"OK","answer":text,"plan":plan,"evidence":[asdict(evidence)]}
+
+    def run_analysis(self, objective, df, dataset_id="active", dimension=None, measure=None):
+        fields=self.schema.infer(df); roles={f.semantic_role:f.column for f in fields}; plan=self.planner.plan(objective,fields)
+        measure=measure or roles.get("revenue") or roles.get("profit") or next((f.column for f in fields if f.semantic_role=="generic numerical"),None)
+        if not measure or measure not in df: raise ValueError("Choose a numeric measure available in the dataset.")
+        values=pd.to_numeric(df[measure],errors="coerce"); result={"measure":measure,"rows":int(len(df)),"sum":float(values.sum()),"mean":float(values.mean())}; columns=[measure]
+        if dimension and dimension in df:
+            grouped=df.assign(_aura_value=values).groupby(dimension)["_aura_value"].sum().sort_values(ascending=False).head(25)
+            result["dimension"]=dimension; result["series"]={str(k):float(v) for k,v in grouped.items()}; columns.append(dimension)
+        evidence=AnalyticsEvidence.create(dataset_id,plan["analytical_task"],columns,"pandas aggregation",result,uncertainty={"causal_claim":False})
+        return {"plan":plan,"evidence":asdict(evidence),"visualization":{"chart_type":"bar" if dimension else "histogram","x":dimension,"y":measure,"reasoning":"Selected from the computed dimension and measure."}}

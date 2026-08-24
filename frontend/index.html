@@ -3,16 +3,21 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AI BI Platform</title>
+  <title>AURA-BI</title>
   <link rel="stylesheet" href="/styles.css">
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 </head>
 <body>
   <aside class="sidebar">
-    <div class="brand">AI BI Platform</div>
-    <div class="caption">Frontend + backend analytics suite</div>
+    <div class="brand">AURA-BI</div>
+    <div class="caption">Autonomous Unified Reasoning &amp; Analytics</div>
     <nav>
       <a href="#overview" class="active">Executive</a>
+      <a href="#data-intelligence">Data Intelligence</a>
+      <a href="#aura-analytics">Analytics</a>
+      <a href="#automl">AutoML</a>
+      <a href="#anomaly-intelligence">Anomaly Intelligence</a>
+      <a href="#research">Research</a>
       <a href="#dashboard">Dashboard</a>
       <a href="#risk">Risk Center</a>
       <a href="#segments">Segments</a>
@@ -38,7 +43,7 @@
   <main>
     <section class="hero">
       <div class="eyebrow">Enterprise analytics command center</div>
-      <h1>AI Business Intelligence Platform</h1>
+      <h1>AURA-BI</h1>
       <p>Analyze business data, measure profit quality, detect risk exposure, forecast sales, ask AI questions, and generate board-ready reports from one full-stack website.</p>
       <form id="uploadForm" class="upload">
         <input type="file" id="datasetFile" accept=".csv,.xlsx,.xls,.json">
@@ -151,7 +156,7 @@
     </section>
 
     <section id="assistant">
-      <h2>AI Assistant</h2>
+      <h2>AI Analyst</h2>
       <div class="panel assistant">
         <textarea id="question" placeholder="Ask a business question..."></textarea>
         <div class="assistant-actions">
@@ -163,8 +168,37 @@
         <div class="voice-status" id="voiceStatus" aria-live="polite">Voice assistant ready.</div>
         <pre id="answer"></pre>
         <div id="answerCitations" class="evidence-grid"></div>
+        <details id="aiEvidence"><summary>View Evidence</summary><pre id="aiEvidenceDetail"></pre></details>
       </div>
     </section>
+
+    <section id="data-intelligence" class="aura-section">
+      <div class="section-heading"><div><div class="eyebrow">AURA schema engine</div><h2>Data Intelligence</h2></div><button id="refreshAura" type="button">Refresh intelligence</button></div>
+      <div id="auraDatasetOverview" class="quality-grid"><p class="muted">Upload a dataset to inspect its semantics and quality.</p></div>
+      <div class="panel table-wrap"><h3>Semantic Schema</h3><table id="semanticTable"></table></div>
+      <div class="panel"><h3>Discovered KPIs</h3><div id="auraKpis" class="card-grid"></div></div>
+      <div class="panel"><h3>Data-quality warnings</h3><div id="auraWarnings" class="muted">No dataset inspected.</div></div>
+    </section>
+
+    <section id="aura-analytics" class="aura-section">
+      <h2>Analytics Workspace</h2><p class="muted">Run deterministic analysis and inspect its generated evidence.</p>
+      <div class="panel"><div class="form-grid"><input id="analyticsObjective" placeholder="Objective, e.g. rank revenue by region"><select id="analyticsMeasure"></select><select id="analyticsDimension"></select></div><button id="runAnalytics" type="button">Run analysis</button><div id="analyticsStatus" class="status-line"></div></div>
+      <div class="panel wide"><div id="auraAnalysisChart"></div><p id="chartReason" class="muted"></p><details><summary>View Evidence</summary><pre id="analyticsEvidence"></pre></details></div>
+    </section>
+
+    <section id="automl" class="aura-section">
+      <h2>AutoML Lab</h2><p class="muted">Train only after selecting a target. Feature importance describes model behaviour, not causality.</p>
+      <div class="panel"><div class="prompt-row"><select id="mlTarget"></select><button id="trainModel" type="button">Train guarded model</button></div><div id="mlStatus" class="status-line"></div><div id="mlResults" class="quality-grid"></div></div>
+      <div class="panel table-wrap"><h3>Recent model runs</h3><table id="mlHistory"></table></div>
+    </section>
+
+    <section id="anomaly-intelligence" class="aura-section">
+      <h2>Anomaly Intelligence</h2><p class="muted">Investigate the latest monthly change. Contributions are associated with the difference and are not causal effects.</p>
+      <div class="panel"><button id="runRootCause" type="button">Investigate latest decrease</button><div id="rootCauseStatus" class="status-line"></div><div id="rootCauseContributors" class="card-grid"></div><details><summary>View Evidence</summary><pre id="rootCauseEvidence"></pre></details></div>
+    </section>
+
+    <section id="research" class="aura-section">
+      <h2>AURA-BI Research</h2><div class="card-grid"><article class="card"><div class="card-kicker">Research problem</div><p>Can an adaptive system understand heterogeneous enterprise data and generate verified business intelligence with minimal manual configuration?</p></article><article class="card"><div class="card-kicker">Contributions</div><p>Semantic schema engine, analytics planner, KPI discovery, guarded AutoML, anomaly investigation, evidence-grounded analytics, and adaptive visualization.</p></article><article class="card"><div class="card-kicker">AURABench status</div><p>Starter synthetic family and smoke runner are available. No benchmark claims are displayed until experiments are executed.</p></article></div></section>
 
     <section id="decision-room">
       <div class="section-heading">

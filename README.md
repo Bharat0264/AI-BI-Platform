@@ -18,6 +18,7 @@ AURA-BI is an evidence-first business intelligence platform that understands unf
 - Isolation Forest diagnostic anomaly evidence and guarded supervised AutoML with reproducible splits, metrics, and feature importance.
 - Existing executive dashboard, filters, Plotly charts, six-month forecast/planning, browser voice interface, PDF report, saved dashboards, alerts, actions, schedules, and stock-analysis tools.
 - AURABench starter synthetic retail generator and reproducible experiment smoke runner.
+- Phase 2 workspaces for Data Intelligence, Analytics, AutoML, Anomaly Intelligence, AI Analyst evidence, and research status, all inside the existing UI.
 
 ## Architecture
 
@@ -48,6 +49,8 @@ Run checks:
 python -m pytest tests -q
 python experiments/run_all.py --seed 42
 ```
+
+For test tooling, install `requirements-dev.txt` and run `python -m pytest tests -q`.
 
 ## Research boundaries
 

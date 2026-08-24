@@ -724,8 +724,9 @@ def aura_schema_corrections():
     corrections = (request.get_json(silent=True) or {}).get("corrections", {})
     if not isinstance(corrections, dict) or any(c not in raw_df.columns for c in corrections):
         return jsonify({"error": "Corrections must map existing columns to roles."}), 400
-    set_setting(f"aura_schema:{source}", corrections)
-    return jsonify({"saved": True, "semantic_schema": [field.__dict__ for field in AURA.schema.infer(raw_df, corrections)]})
+    saved = {**get_setting(f"aura_schema:{source}", {}), **corrections}
+    set_setting(f"aura_schema:{source}", saved)
+    return jsonify({"saved": True, "semantic_schema": [field.__dict__ for field in AURA.schema.infer(raw_df, saved)]})
 
 
 @app.route("/api/aura/ml", methods=["POST"])
@@ -740,6 +741,39 @@ def aura_ml():
         return jsonify(run)
     except ValueError as exc:
         return jsonify({"error": str(exc)}), 400
+
+
+@app.route("/api/aura/analytics", methods=["POST"])
+def aura_analytics():
+    raw_df, source = dataset_from_request()
+    body = request.get_json(silent=True) or {}
+    if raw_df is None:
+        return jsonify({"error": "Import a dataset first."}), 400
+    try:
+        run = AURA.run_analysis(str(body.get("objective", "descriptive statistics")), raw_df, str(source), body.get("dimension"), body.get("measure"))
+        add_record("analytics_run", str(body.get("objective", "Analytics"))[:80], run)
+        return jsonify(run)
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+
+
+@app.route("/api/aura/root-cause", methods=["POST"])
+def aura_root_cause():
+    raw_df, source = dataset_from_request()
+    if raw_df is None:
+        return jsonify({"error": "Import a dataset first."}), 400
+    evidence, narrative = AURA.anomalies.root_cause(raw_df, AURA.schema.infer(raw_df), str(source))
+    if not evidence:
+        return jsonify({"status": "INSUFFICIENT DATA", "answer": narrative, "evidence": None})
+    payload = evidence.__dict__
+    add_record("anomaly_investigation", "Latest period investigation", {"answer": narrative, "evidence": payload})
+    return jsonify({"status": "OK", "answer": narrative, "evidence": payload})
+
+
+@app.route("/api/aura/history")
+def aura_history():
+    kinds = ["analytics_run", "ml_run", "anomaly_investigation", "history"]
+    return jsonify({kind: list_records(kind)[:20] for kind in kinds})
 
 
 @app.route("/api/stocks/analyze", methods=["POST"])
@@ -782,12 +816,14 @@ def export_report():
     _, forecast = predict_sales(filtered.copy())
     metrics = {item["label"]: item["value"] for item in kpis(filtered)}
     summary = executive_summary(filtered)
+    evidence_records = [r["payload"].get("evidence") for r in list_records("history")[:10] if r["payload"].get("evidence")]
     pdf_path = generate_pdf_report(
         "\n\n".join([f"{item['label']}: {item['detail']}" for item in summary]),
         metrics=metrics,
         insights=recommendations(filtered),
         anomalies=anomalies(filtered),
         forecast=forecast,
+        evidence=evidence_records,
     )
     return send_file(pdf_path, as_attachment=True, download_name="AI_Business_Report.pdf")
 

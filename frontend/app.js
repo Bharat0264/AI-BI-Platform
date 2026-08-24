@@ -370,6 +370,7 @@ function render(payload) {
   plotBar("discountChart", "Average Discount by Category", payload.charts.discountByCategory.labels, payload.charts.discountByCategory.values);
   plotLine("monthlyChart", "Monthly Sales Trend", payload.charts.monthlySales.labels, payload.charts.monthlySales.values);
   plotForecast(payload.charts.forecast);
+  loadAuraIntelligence().catch(() => {});
 }
 
 async function loadAnalysis() {
@@ -479,6 +480,7 @@ async function askBusinessQuestion({ speak = true } = {}) {
     document.getElementById("answer").textContent = payload.answer;
     const citations = payload.citations || [];
     document.getElementById("answerCitations").innerHTML = citations.map(item => `<article><span>${escapeHtml(item.label)}</span><strong>${escapeHtml(item.value)}</strong><small>${escapeHtml(item.source)}</small></article>`).join("");
+    document.getElementById("aiEvidenceDetail").textContent = JSON.stringify({ plan: payload.plan, evidence: payload.evidence }, null, 2);
     setVoiceStatus(speak ? "AI answer ready. Playing response..." : "AI answer ready.");
     if (speak) speakText(payload.answer);
   } catch (error) {
@@ -604,6 +606,62 @@ document.querySelectorAll("nav a").forEach((link) => {
     link.classList.add("active");
   });
 });
+
+function fillAuraSelectors(fields) {
+  const options = fields.map(f => `<option value="${escapeHtml(f.column)}">${escapeHtml(f.column)} (${escapeHtml(f.semantic_role)})</option>`).join("");
+  document.getElementById("analyticsMeasure").innerHTML = `<option value="">Auto-select measure</option>${options}`;
+  document.getElementById("analyticsDimension").innerHTML = `<option value="">No grouping</option>${options}`;
+  document.getElementById("mlTarget").innerHTML = `<option value="">Select target</option>${options}`;
+}
+
+async function loadAuraIntelligence() {
+  const data = await fetchJson("/api/aura/inspect");
+  const profile = data.profile || {}; const fields = data.semantic_schema || [];
+  const colProfile = profile.column_profile || {};
+  const missing = Object.values(colProfile).reduce((sum, item) => sum + (item.null_percent || 0), 0);
+  document.getElementById("auraDatasetOverview").innerHTML = [["Rows",profile.rows],["Columns",profile.columns],["Duplicates",profile.duplicates],["Missing %",missing.toFixed(1)]].map(([k,v]) => `<article class="card"><div class="metric-label">${k}</div><div class="metric-value">${escapeHtml(v)}</div></article>`).join("");
+  const roleOptions=["identifier","date/time","revenue","profit","cost","quantity","price","customer","product","category","region","location","channel","target/outcome","generic numerical","generic categorical"];
+  document.getElementById("semanticTable").innerHTML=`<thead><tr><th>Column</th><th>Detected Type</th><th>Semantic Role</th><th>Confidence</th><th>Reason</th><th>Correction</th></tr></thead><tbody>${fields.map(f=>`<tr><td>${escapeHtml(f.column)}</td><td>${escapeHtml(colProfile[f.column]?.dtype||"unknown")}</td><td>${escapeHtml(f.semantic_role)}</td><td>${Math.round(f.confidence*100)}%</td><td>${escapeHtml(f.reason)}</td><td><select data-role-column="${escapeHtml(f.column)}">${roleOptions.map(role=>`<option value="${role}" ${role===f.semantic_role?"selected":""}>${role}</option>`).join("")}</select></td></tr>`).join("")}</tbody>`;
+  document.querySelectorAll("[data-role-column]").forEach(select=>select.addEventListener("change",async()=>{ try { await fetchJson("/api/aura/schema",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({corrections:{[select.dataset.roleColumn]:select.value}})}); loadAuraIntelligence(); } catch(error) { document.getElementById("auraWarnings").textContent=error.message; } }));
+  document.getElementById("auraKpis").innerHTML = (data.kpis || []).map(k => `<article class="card"><div class="card-kicker">${escapeHtml(k.applicability_reason)}</div><h3>${escapeHtml(k.name)}: ${Number(k.computed_value).toLocaleString(undefined,{maximumFractionDigits:2})}</h3><p>${escapeHtml(k.formula)} · ${escapeHtml(k.source_columns.join(", "))}</p></article>`).join("") || `<p class="muted">No valid KPIs can be derived from this dataset.</p>`;
+  document.getElementById("auraWarnings").textContent = (profile.quality_warnings || []).join(" · ") || "No data-quality warnings found.";
+  fillAuraSelectors(fields);
+  loadAuraHistory().catch(() => {});
+}
+
+async function loadAuraHistory() {
+  const data = await fetchJson("/api/aura/history");
+  renderTable("mlHistory", (data.ml_run || []).map(r => ({Target:r.name,Task:r.payload.task,Model:r.payload.model,Metrics:JSON.stringify(r.payload.metrics),Created:r.created_at})));
+}
+
+async function runAuraAnalytics() {
+  const status=document.getElementById("analyticsStatus"); status.textContent="Computing verified analysis...";
+  try {
+    const data=await fetchJson("/api/aura/analytics",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({objective:document.getElementById("analyticsObjective").value || "descriptive statistics",measure:document.getElementById("analyticsMeasure").value || null,dimension:document.getElementById("analyticsDimension").value || null})});
+    const r=data.evidence.result; const series=r.series || {};
+    if (Object.keys(series).length) plotBar("auraAnalysisChart", `${r.measure} by ${r.dimension}`,Object.keys(series),Object.values(series));
+    else Plotly.newPlot("auraAnalysisChart",[{type:"histogram",x:[r.mean],marker:{color:colors[0]}}],chartLayout(`${r.measure} summary`),{displayModeBar:false,responsive:true});
+    document.getElementById("chartReason").textContent=data.visualization.reasoning;
+    document.getElementById("analyticsEvidence").textContent=JSON.stringify(data.evidence,null,2); status.textContent="Analysis complete; evidence saved to workspace.";
+  } catch(error) { status.textContent=error.message; status.classList.add("error"); }
+}
+
+async function trainAuraModel() {
+  const status=document.getElementById("mlStatus"), target=document.getElementById("mlTarget").value;
+  if (!target) { status.textContent="Select a target before training."; status.classList.add("error"); return; }
+  status.textContent="Training guarded model...";
+  try { const data=await fetchJson("/api/aura/ml",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({target})}); document.getElementById("mlResults").innerHTML=Object.entries(data.metrics).map(([k,v])=>`<article class="card"><div class="metric-label">${escapeHtml(k)}</div><div class="metric-value">${Number(v).toFixed(3)}</div></article>`).join("") + `<article class="card"><div class="metric-label">Model</div><div class="metric-value">${escapeHtml(data.model)}</div></article>`; status.textContent="Model run saved. Feature importance is predictive, not causal."; loadAuraHistory(); } catch(error) { status.textContent=error.message; status.classList.add("error"); }
+}
+
+async function runRootCause() {
+  const status=document.getElementById("rootCauseStatus"); status.textContent="Checking the latest period and decomposing observed change...";
+  try { const data=await fetchJson("/api/aura/root-cause",{method:"POST"}); status.textContent=data.answer; document.getElementById("rootCauseEvidence").textContent=JSON.stringify(data.evidence,null,2); const items=data.evidence?.result?.contributors || []; document.getElementById("rootCauseContributors").innerHTML=items.length ? items.map(x=>`<article class="card"><div class="card-kicker">${escapeHtml(x.dimension)}</div><h3>${escapeHtml(x.segment)}</h3><p>Change: ${Number(x.change).toLocaleString()} · ${Math.round(x.share_of_total_change*100)}% of observed difference</p></article>`).join("") : `<p class="muted">No ranked contributors are available for this comparison.</p>`; } catch(error) { status.textContent=error.message; status.classList.add("error"); }
+}
+
+document.getElementById("refreshAura").addEventListener("click", () => loadAuraIntelligence().catch(error => { document.getElementById("auraWarnings").textContent=error.message; }));
+document.getElementById("runAnalytics").addEventListener("click", runAuraAnalytics);
+document.getElementById("trainModel").addEventListener("click", trainAuraModel);
+document.getElementById("runRootCause").addEventListener("click", runRootCause);
 
 loadAnalysis().catch((error) => {
   document.getElementById("sourceLabel").textContent = error.message;
