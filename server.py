@@ -33,7 +33,7 @@ from persistence.mongo import get_database, ping_database
 
 
 app = Flask(__name__, static_folder="frontend", static_url_path="")
-app.config["MAX_CONTENT_LENGTH"] = 64 * 1024 * 1024
+app.config["MAX_CONTENT_LENGTH"] = 100 * 1024 * 1024
 init_store()
 
 DATA_PATH = ROOT_DIR / "data" / "Sample - Superstore.csv"
@@ -55,7 +55,7 @@ REQUIRED_COLUMNS = [
 
 @app.errorhandler(RequestEntityTooLarge)
 def upload_too_large(_error):
-    return jsonify({"error": "This file exceeds the 64 MB upload limit. Use a filtered/exported subset for larger files."}), 413
+    return jsonify({"error": "This file exceeds the 100 MB upload limit. Use a filtered/exported subset for larger files."}), 413
 
 
 def persist_active_dataset(df=None, source=None):
