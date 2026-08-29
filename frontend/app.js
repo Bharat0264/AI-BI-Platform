@@ -600,12 +600,45 @@ if (!browserSupportsVoiceInput()) {
   setVoiceStatus("Voice playback works here, but voice questions need Chrome or Edge support.", true);
 }
 
-document.querySelectorAll("nav a").forEach((link) => {
-  link.addEventListener("click", () => {
-    document.querySelectorAll("nav a").forEach((item) => item.classList.remove("active"));
-    link.classList.add("active");
+function showFeaturePage(pageId, { updateHash = false } = {}) {
+  const target = document.querySelector(`[data-page-content="${pageId}"]`);
+  if (!target) pageId = "overview";
+
+  document.querySelectorAll("[data-page-content]").forEach((page) => {
+    page.classList.toggle("active-page", page.dataset.pageContent === pageId);
+  });
+  document.querySelectorAll("nav a[data-page]").forEach((link) => {
+    const isActive = link.dataset.page === pageId;
+    link.classList.toggle("active", isActive);
+    link.setAttribute("aria-current", isActive ? "page" : "false");
+  });
+
+  if (updateHash && window.location.hash !== `#${pageId}`) {
+    window.location.hash = pageId;
+  }
+  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  // Plotly measures hidden containers as zero-width. Resize charts after their
+  // feature page becomes visible so charts remain usable when returning to it.
+  window.requestAnimationFrame(() => {
+    document.querySelectorAll("[data-page-content].active-page .js-plotly-plot").forEach((chart) => {
+      try { Plotly.Plots.resize(chart); } catch (_) { /* chart has not rendered yet */ }
+    });
+  });
+}
+
+document.querySelectorAll("nav a[data-page]").forEach((link) => {
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    showFeaturePage(link.dataset.page, { updateHash: true });
   });
 });
+
+window.addEventListener("hashchange", () => {
+  showFeaturePage(window.location.hash.slice(1) || "overview");
+});
+
+showFeaturePage(window.location.hash.slice(1) || "overview");
 
 function fillAuraSelectors(fields) {
   const options = fields.map(f => `<option value="${escapeHtml(f.column)}">${escapeHtml(f.column)} (${escapeHtml(f.semantic_role)})</option>`).join("");

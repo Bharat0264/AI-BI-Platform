@@ -12,22 +12,22 @@
     <div class="brand">AURA-BI</div>
     <div class="caption">Autonomous Unified Reasoning &amp; Analytics</div>
     <nav>
-      <a href="#overview" class="active">Executive</a>
-      <a href="#data-intelligence">Data Intelligence</a>
-      <a href="#aura-analytics">Analytics</a>
-      <a href="#automl">AutoML</a>
-      <a href="#anomaly-intelligence">Anomaly Intelligence</a>
-      <a href="#research">Research</a>
-      <a href="#dashboard">Dashboard</a>
-      <a href="#risk">Risk Center</a>
-      <a href="#segments">Segments</a>
-      <a href="#quality">Data Quality</a>
-      <a href="#forecast">Forecast</a>
-      <a href="#insights">Insights</a>
-      <a href="#assistant">AI Assistant</a>
-      <a href="#decision-room">Decision Room</a>
-      <a href="#stocks">Indian Stocks</a>
-      <a href="#exports">Exports</a>
+      <a href="#overview" data-page="overview" class="active">Executive</a>
+      <a href="#data-intelligence" data-page="data-intelligence">Data Intelligence</a>
+      <a href="#aura-analytics" data-page="aura-analytics">Analytics</a>
+      <a href="#automl" data-page="automl">AutoML</a>
+      <a href="#anomaly-intelligence" data-page="anomaly-intelligence">Anomaly Intelligence</a>
+      <a href="#research" data-page="research">Research</a>
+      <a href="#dashboard" data-page="dashboard">Dashboard</a>
+      <a href="#risk" data-page="risk">Risk Center</a>
+      <a href="#segments" data-page="segments">Segments</a>
+      <a href="#quality" data-page="quality">Data Quality</a>
+      <a href="#forecast" data-page="forecast">Forecast</a>
+      <a href="#insights" data-page="insights">Insights</a>
+      <a href="#assistant" data-page="assistant">AI Assistant</a>
+      <a href="#decision-room" data-page="decision-room">Decision Room</a>
+      <a href="#stocks" data-page="stocks">Indian Stocks</a>
+      <a href="#exports" data-page="exports">Exports</a>
     </nav>
     <form id="filterForm">
       <label>Region</label>
@@ -41,7 +41,7 @@
   </aside>
 
   <main>
-    <section class="hero">
+    <section class="hero executive-hero" data-page-content="overview">
       <div class="eyebrow">Enterprise analytics command center</div>
       <h1>AURA-BI</h1>
       <p>Analyze business data, measure profit quality, detect risk exposure, forecast sales, ask AI questions, and generate board-ready reports from one full-stack website.</p>
@@ -53,7 +53,7 @@
       </form>
     </section>
 
-    <section id="stocks">
+    <section id="stocks" data-page-content="stocks">
       <div class="eyebrow">NSE &amp; BSE market research</div>
       <h2>Indian Market Outlook</h2>
       <p>Select the instrument class first so company symbols never resolve to similarly named funds.</p>
@@ -80,7 +80,7 @@
       </div>
     </section>
 
-    <section id="overview">
+    <section id="overview" data-page-content="overview">
       <div class="metrics" id="metrics"></div>
       <div class="overview-grid">
         <div>
@@ -94,7 +94,7 @@
       </div>
     </section>
 
-    <section id="dashboard">
+    <section id="dashboard" data-page-content="dashboard">
       <h2>Performance Dashboard</h2>
       <div class="chart-grid">
         <div class="panel"><div id="categoryChart"></div></div>
@@ -107,7 +107,7 @@
       <div class="panel wide"><div id="monthlyChart"></div></div>
     </section>
 
-    <section id="risk">
+    <section id="risk" data-page-content="risk">
       <h2>Risk Command Center</h2>
       <div class="risk-grid">
         <div class="risk-score" id="riskOverview"></div>
@@ -117,7 +117,7 @@
       <div class="panel table-wrap"><table id="discountSensitivityTable"></table></div>
     </section>
 
-    <section id="segments">
+    <section id="segments" data-page-content="segments">
       <h2>Customer and Segment Performance</h2>
       <div class="chart-grid">
         <div class="panel table-wrap"><table id="segmentTable"></table></div>
@@ -125,13 +125,13 @@
       </div>
     </section>
 
-    <section id="quality">
+    <section id="quality" data-page-content="quality">
       <h2>Data Quality</h2>
       <div class="quality-grid" id="qualityCards"></div>
       <div class="panel table-wrap"><table id="previewTable"></table></div>
     </section>
 
-    <section id="forecast">
+    <section id="forecast" data-page-content="forecast">
       <h2>Forecast</h2>
       <div class="panel wide"><div id="forecastChart"></div></div>
       <div class="panel table-wrap"><table id="forecastTable"></table></div>
@@ -146,7 +146,7 @@
       </div>
     </section>
 
-    <section id="insights">
+    <section id="insights" data-page-content="insights">
       <h2>Autonomous Insights</h2>
       <div class="card-grid" id="insightCards"></div>
       <h2>Anomalies</h2>
@@ -155,7 +155,7 @@
       <div class="card-grid" id="opportunityCards"></div>
     </section>
 
-    <section id="assistant">
+    <section id="assistant" data-page-content="assistant">
       <h2>AI Analyst</h2>
       <div class="panel assistant">
         <textarea id="question" placeholder="Ask a business question..."></textarea>
@@ -172,7 +172,7 @@
       </div>
     </section>
 
-    <section id="data-intelligence" class="aura-section">
+    <section id="data-intelligence" class="aura-section" data-page-content="data-intelligence">
       <div class="section-heading"><div><div class="eyebrow">AURA schema engine</div><h2>Data Intelligence</h2></div><button id="refreshAura" type="button">Refresh intelligence</button></div>
       <div id="auraDatasetOverview" class="quality-grid"><p class="muted">Upload a dataset to inspect its semantics and quality.</p></div>
       <div class="panel table-wrap"><h3>Semantic Schema</h3><table id="semanticTable"></table></div>
@@ -180,27 +180,27 @@
       <div class="panel"><h3>Data-quality warnings</h3><div id="auraWarnings" class="muted">No dataset inspected.</div></div>
     </section>
 
-    <section id="aura-analytics" class="aura-section">
+    <section id="aura-analytics" class="aura-section" data-page-content="aura-analytics">
       <h2>Analytics Workspace</h2><p class="muted">Run deterministic analysis and inspect its generated evidence.</p>
       <div class="panel"><div class="form-grid"><input id="analyticsObjective" placeholder="Objective, e.g. rank revenue by region"><select id="analyticsMeasure"></select><select id="analyticsDimension"></select></div><button id="runAnalytics" type="button">Run analysis</button><div id="analyticsStatus" class="status-line"></div></div>
       <div class="panel wide"><div id="auraAnalysisChart"></div><p id="chartReason" class="muted"></p><details><summary>View Evidence</summary><pre id="analyticsEvidence"></pre></details></div>
     </section>
 
-    <section id="automl" class="aura-section">
+    <section id="automl" class="aura-section" data-page-content="automl">
       <h2>AutoML Lab</h2><p class="muted">Train only after selecting a target. Feature importance describes model behaviour, not causality.</p>
       <div class="panel"><div class="prompt-row"><select id="mlTarget"></select><button id="trainModel" type="button">Train guarded model</button></div><div id="mlStatus" class="status-line"></div><div id="mlResults" class="quality-grid"></div></div>
       <div class="panel table-wrap"><h3>Recent model runs</h3><table id="mlHistory"></table></div>
     </section>
 
-    <section id="anomaly-intelligence" class="aura-section">
+    <section id="anomaly-intelligence" class="aura-section" data-page-content="anomaly-intelligence">
       <h2>Anomaly Intelligence</h2><p class="muted">Investigate the latest monthly change. Contributions are associated with the difference and are not causal effects.</p>
       <div class="panel"><button id="runRootCause" type="button">Investigate latest decrease</button><div id="rootCauseStatus" class="status-line"></div><div id="rootCauseContributors" class="card-grid"></div><details><summary>View Evidence</summary><pre id="rootCauseEvidence"></pre></details></div>
     </section>
 
-    <section id="research" class="aura-section">
+    <section id="research" class="aura-section" data-page-content="research">
       <h2>AURA-BI Research</h2><div class="card-grid"><article class="card"><div class="card-kicker">Research problem</div><p>Can an adaptive system understand heterogeneous enterprise data and generate verified business intelligence with minimal manual configuration?</p></article><article class="card"><div class="card-kicker">Contributions</div><p>Semantic schema engine, analytics planner, KPI discovery, guarded AutoML, anomaly investigation, evidence-grounded analytics, and adaptive visualization.</p></article><article class="card"><div class="card-kicker">AURABench status</div><p>Starter synthetic family and smoke runner are available. No benchmark claims are displayed until experiments are executed.</p></article></div></section>
 
-    <section id="decision-room">
+    <section id="decision-room" data-page-content="decision-room">
       <div class="section-heading">
         <div><div class="eyebrow dark">From insight to execution</div><h2>AI Decision Room</h2></div>
         <div class="workspace-badge" id="workspaceBadge">Local workspace</div>
@@ -266,7 +266,7 @@
       <div id="platformStatus" class="status-line" aria-live="polite"></div>
     </section>
 
-    <section id="exports">
+    <section id="exports" data-page-content="exports">
       <h2>Export Center</h2>
       <div class="export-grid">
         <a class="button" href="/api/export/filtered">Download Filtered CSV</a>

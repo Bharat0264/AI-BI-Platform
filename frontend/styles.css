@@ -114,6 +114,17 @@ main {
 
 section { scroll-margin-top: 24px; margin-bottom: 34px; }
 
+/* Feature navigation behaves as separate application pages while preserving the
+   active dataset and in-page state for every workspace. */
+[data-page-content] { display: none; }
+[data-page-content].active-page { display: block; animation: page-enter .18s ease-out; }
+.executive-hero.active-page { margin-bottom: 34px; }
+
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .hero {
   color: white;
   background:
