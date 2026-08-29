@@ -8,10 +8,11 @@ ALIASES = {
     "Order Date": ["order date", "order_date", "date", "transaction date", "invoice date", "timestamp"],
     "Region": ["region", "market", "state", "country", "territory", "location", "city"],
     "Category": ["category", "product category", "department", "industry", "type", "product line"],
-    "Product Name": ["product name", "product", "item", "item name", "sku", "commodity", "crop"],
+    "Product Name": ["product name", "product", "item", "item name", "sku", "commodity", "crop", "description"],
     "Quantity": ["quantity", "qty", "units", "units sold", "volume", "demand"],
     "Inventory": ["inventory", "stock", "stock on hand", "on hand", "available stock", "closing stock"],
-    "Sales": ["sales", "revenue", "amount", "total", "turnover", "net sales", "price"],
+    "Sales": ["sales", "revenue", "amount", "total", "turnover", "net sales", "gross sales"],
+    "Unit Price": ["unit price", "unitprice", "price per unit", "selling price", "rate"],
     "Profit": ["profit", "net profit", "gross profit", "income", "margin", "earnings"],
     "Discount": ["discount", "discount rate", "discount percent", "markdown"],
 }
@@ -32,15 +33,25 @@ def normalize_business_dataset(df):
         for col in result.select_dtypes(include=["object"]).columns:
             if parse_business_dates(result[col]).notna().mean() >= .8:
                 mapping["Order Date"], used = col, used | {col}; break
+    warnings = []
     numeric = [c for c in result.columns if pd.to_numeric(result[c], errors="coerce").notna().mean() >= .8]
     if "Sales" not in mapping:
-        source = next((c for c in numeric if c not in used), None)
-        if source: mapping["Sales"], used = source, used | {source}
+        quantity_source = mapping.get("Quantity")
+        unit_price_source = mapping.get("Unit Price")
+        if quantity_source and unit_price_source:
+            result["Sales"] = pd.to_numeric(result[quantity_source], errors="coerce").fillna(0) * pd.to_numeric(result[unit_price_source], errors="coerce").fillna(0)
+            mapping["Sales"] = f"{quantity_source} * {unit_price_source}"
+            warnings.append("Sales derived from quantity multiplied by unit price.")
+        else:
+            # Never mistake invoice, order, customer, or other IDs for a financial measure.
+            source = next((c for c in numeric if c not in used and not re.search(r"\b(id|invoice|order|code|number)\b", _key(c))), None)
+            if source: mapping["Sales"], used = source, used | {source}
     if "Order Date" not in mapping or "Sales" not in mapping:
         raise ValueError("This does not look like a time-based business dataset. Include a date and numeric sales/revenue/amount column.")
     for target, source in mapping.items():
+        if target == "Sales" and " * " in source:
+            continue
         if target != source: result[target] = result[source]
-    warnings = []
     if "Profit" not in mapping:
         cost = next((c for c in result.columns if _key(c) in {"cost", "expenses", "total cost", "cogs"}), None)
         result["Profit"] = pd.to_numeric(result["Sales"], errors="coerce") - pd.to_numeric(result[cost], errors="coerce") if cost else 0.0

@@ -13,6 +13,7 @@ from flask import jsonify
 from flask import request
 from flask import send_file
 from flask import send_from_directory
+from werkzeug.exceptions import RequestEntityTooLarge
 from date_utils import parse_business_dates
 
 ROOT_DIR = Path(__file__).resolve().parent
@@ -32,7 +33,7 @@ from persistence.mongo import get_database, ping_database
 
 
 app = Flask(__name__, static_folder="frontend", static_url_path="")
-app.config["MAX_CONTENT_LENGTH"] = 24 * 1024 * 1024
+app.config["MAX_CONTENT_LENGTH"] = 64 * 1024 * 1024
 init_store()
 
 DATA_PATH = ROOT_DIR / "data" / "Sample - Superstore.csv"
@@ -50,6 +51,11 @@ REQUIRED_COLUMNS = [
     "Profit",
     "Discount",
 ]
+
+
+@app.errorhandler(RequestEntityTooLarge)
+def upload_too_large(_error):
+    return jsonify({"error": "This file exceeds the 64 MB upload limit. Use a filtered/exported subset for larger files."}), 413
 
 
 def persist_active_dataset(df=None, source=None):
