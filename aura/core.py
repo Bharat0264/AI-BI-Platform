@@ -232,13 +232,20 @@ class AuraOrchestrator:
         elif "profit" in roles: col=roles["profit"]
         else: return {"status":"INSUFFICIENT DATA","answer":"INSUFFICIENT DATA: a required business measure is unavailable.","plan":plan,"evidence":[]}
         values=pd.to_numeric(df[col],errors="coerce"); result={"measure":col,"sum":float(values.sum()),"mean":float(values.mean()),"rows":int(len(df))}; columns=[col]
-        dimension=roles.get("region") or roles.get("category")
+        dimension = roles.get("region") if "region" in q else roles.get("category") if "category" in q else roles.get("region") or roles.get("category")
         if dimension and any(x in q for x in ("region","category","top","lowest","by ")):
-            grouped=df.assign(_aura_value=values).groupby(dimension)["_aura_value"].sum().sort_values(ascending="lowest" not in q)
+            wants_lowest = any(x in q for x in ("lowest", "least", "bottom", "minimum", "min "))
+            grouped=df.assign(_aura_value=values).groupby(dimension)["_aura_value"].sum().sort_values(ascending=wants_lowest)
             result["grouped_by"]=dimension; result["ranking"]={str(k):float(v) for k,v in grouped.head(10).items()}; columns.append(dimension)
+            if not grouped.empty:
+                result["requested_result"] = {"direction": "lowest" if wants_lowest else "highest", "dimension": str(grouped.index[0]), "value": float(grouped.iloc[0])}
         evidence=AnalyticsEvidence.create(dataset_id,plan["analytical_task"],columns,"pandas deterministic aggregation",result,uncertainty={"causal_claim":False})
         text=f"Verified result: {col} totals {result['sum']:,.2f} across {result['rows']:,} rows."
-        if "ranking" in result: text += f" Breakdown by {result['grouped_by']} is included in evidence {evidence.evidence_id}."
+        if "requested_result" in result:
+            item = result["requested_result"]
+            text = f"Verified result: {item['dimension']} has the {item['direction']} {col} at {item['value']:,.2f}."
+        elif "ranking" in result:
+            text += f" Breakdown by {result['grouped_by']} is included in the evidence."
         return {"status":"OK","answer":text,"plan":plan,"evidence":[asdict(evidence)]}
 
     def run_analysis(self, objective, df, dataset_id="active", dimension=None, measure=None):

@@ -15,6 +15,9 @@ def test_verified_answer_and_insufficient_data():
     aura = AuraOrchestrator()
     answer = aura.answer("What is revenue by region?", frame())
     assert answer["status"] == "OK" and answer["evidence"][0]["result"]["sum"] == 1720.0
+    lowest = aura.answer("Which region has the lowest revenue?", frame())
+    assert lowest["evidence"][0]["result"]["requested_result"] == {"direction": "lowest", "dimension": "North", "value": 856.0}
+    assert "North has the lowest Revenue" in lowest["answer"]
     assert aura.answer("What is employee morale?", frame())["status"] == "INSUFFICIENT DATA"
 
 def test_ml_task_inference():
