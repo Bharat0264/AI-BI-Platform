@@ -36,8 +36,15 @@ function queryString() {
 
 async function fetchJson(url, options) {
   const response = await fetch(url, options);
-  const payload = await response.json();
-  if (!response.ok) throw new Error(payload.error || "Request failed");
+  const body = await response.text();
+  let payload = null;
+  try {
+    payload = body ? JSON.parse(body) : null;
+  } catch (_) {
+    throw new Error(`Request failed (${response.status}): the server returned an invalid response.`);
+  }
+  if (!response.ok) throw new Error(payload?.error || `Request failed (${response.status}): the server returned an empty response.`);
+  if (!payload) throw new Error("The server returned an empty response. Please try again.");
   return payload;
 }
 

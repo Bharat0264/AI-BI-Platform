@@ -169,10 +169,46 @@ class AutoMLEngine:
         if pd.api.types.is_numeric_dtype(y) and y.nunique() > 12: return "regression"
         return "binary classification" if y.nunique() == 2 else "multiclass classification"
     def train(self, df, target):
-        task=self.infer_task(df,target)
-        if task == "invalid" or len(df)<12: raise ValueError("A valid target and at least 12 rows are required.")
-        x=pd.get_dummies(df.drop(columns=[target]), dummy_na=True).replace([np.inf,-np.inf],np.nan).fillna(0); y=df[target]
-        Xtr,Xte,ytr,yte=train_test_split(x,y,test_size=.25,random_state=42)
+        if target not in df or len(df) < 12:
+            raise ValueError("A valid target and at least 12 rows are required.")
+        work = df.dropna(subset=[target]).copy()
+        if len(work) < 12:
+            raise ValueError("The selected target needs at least 12 non-empty values.")
+        # Bound training work deterministically. This prevents high-cardinality identifiers
+        # (for example Order ID) from expanding into an unsafe one-hot feature matrix.
+        if len(work) > 25_000:
+            work = work.sample(n=25_000, random_state=42)
+        task=self.infer_task(work,target)
+        y=work[target]
+        if y.nunique(dropna=True) < 2:
+            raise ValueError("The selected target must contain at least two distinct values.")
+        if task != "regression":
+            class_counts = y.value_counts(dropna=True)
+            if y.nunique() > 30 or class_counts.min() < 2:
+                raise ValueError("Classification targets need no more than 30 classes and at least two rows in every class.")
+
+        features = pd.DataFrame(index=work.index)
+        excluded = []
+        for column in work.columns:
+            if column == target:
+                continue
+            series = work[column]
+            numeric = pd.to_numeric(series, errors="coerce")
+            numeric_ratio = numeric.notna().mean()
+            cardinality = series.nunique(dropna=True)
+            uniqueness = cardinality / max(len(work), 1)
+            if numeric_ratio >= .9:
+                features[column] = numeric.replace([np.inf, -np.inf], np.nan).fillna(0)
+            elif cardinality <= 40 and uniqueness < .95:
+                features[column] = series.astype("string").fillna("(missing)")
+            else:
+                excluded.append(column)
+        if features.empty:
+            raise ValueError("No safe predictive features remain after excluding identifiers and high-cardinality fields.")
+        x = pd.get_dummies(features, dummy_na=True, dtype=float).replace([np.inf, -np.inf], np.nan).fillna(0)
+        if x.shape[1] > 250:
+            raise ValueError("The selected data produces too many encoded features. Exclude high-cardinality columns before training.")
+        Xtr,Xte,ytr,yte=train_test_split(x,y,test_size=.25,random_state=42, stratify=y if task != "regression" else None)
         model = RandomForestRegressor(n_estimators=80,random_state=42) if task=="regression" else RandomForestClassifier(n_estimators=80,random_state=42)
         model.fit(Xtr,ytr); pred=model.predict(Xte)
         if task=="regression":
@@ -180,7 +216,7 @@ class AutoMLEngine:
         else:
             precision,recall,f1,_=precision_recall_fscore_support(yte,pred,average="weighted",zero_division=0)
             metrics={"accuracy":float(accuracy_score(yte,pred)),"precision":float(precision),"recall":float(recall),"f1":float(f1)}
-        return {"task":task,"model":"RandomForest","metrics":metrics,"feature_importance":dict(sorted(zip(x.columns,model.feature_importances_),key=lambda z:z[1],reverse=True)[:10]),"causal_claim":False}
+        return {"task":task,"model":"RandomForest","metrics":metrics,"feature_importance":dict(sorted(zip(x.columns,model.feature_importances_),key=lambda z:z[1],reverse=True)[:10]),"training_rows":int(len(work)),"feature_count":int(x.shape[1]),"excluded_features":excluded,"causal_claim":False}
 
 class AuraOrchestrator:
     def __init__(self): self.schema=SemanticSchemaEngine(); self.kpis=KPIEngine(); self.planner=AnalyticsPlanner(); self.visuals=VisualizationEngine(); self.anomalies=AnomalyEngine(); self.ml=AutoMLEngine()

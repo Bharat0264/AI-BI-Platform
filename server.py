@@ -1,10 +1,12 @@
 import sys
 import re
 import sqlite3
+from io import BytesIO
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from gridfs import GridFS
 from flask import Flask
 from flask import Response
 from flask import jsonify
@@ -25,7 +27,7 @@ from platform_store import add_record, delete_record, get_record, get_setting, i
 from aura import AuraOrchestrator
 from aura.providers import GeminiEvidenceProvider
 from persistence import AuraRepository
-from persistence.mongo import ping_database
+from persistence.mongo import get_database, ping_database
 
 
 app = Flask(__name__, static_folder="frontend", static_url_path="")
@@ -50,10 +52,29 @@ REQUIRED_COLUMNS = [
 
 
 def persist_active_dataset(df=None, source=None):
+    """Persist the active data across process restarts without exposing it to an LLM."""
+    fs = GridFS(get_database(), collection="active_datasets")
+    current = get_setting("active_dataset", {}) or {}
     if df is None:
+        if current.get("file_id"):
+            try:
+                fs.delete(current["file_id"])
+            except Exception:
+                app.logger.warning("Could not remove the previous active dataset from persistent storage")
+        set_setting("active_dataset", {})
         SESSION_DATA_PATH.unlink(missing_ok=True)
         SESSION_META_PATH.unlink(missing_ok=True)
         return
+    buffer = BytesIO()
+    df.to_pickle(buffer)
+    file_id = fs.put(buffer.getvalue(), filename=str(source or "Saved dataset"), metadata={"source": str(source or "Saved dataset")})
+    set_setting("active_dataset", {"file_id": file_id, "source": str(source or "Saved dataset")})
+    if current.get("file_id"):
+        try:
+            fs.delete(current["file_id"])
+        except Exception:
+            app.logger.warning("Could not remove a superseded active dataset from persistent storage")
+    # Keep a local cache for development; the GridFS copy is authoritative on Render.
     df.to_pickle(SESSION_DATA_PATH)
     SESSION_META_PATH.write_text(str(source or "Saved dataset"), encoding="utf-8")
 
@@ -66,6 +87,15 @@ def aura_context(df, source):
 
 
 def restore_active_dataset():
+    try:
+        saved = get_setting("active_dataset", {}) or {}
+        if saved.get("file_id"):
+            payload = GridFS(get_database(), collection="active_datasets").get(saved["file_id"]).read()
+            ACTIVE_DATASET["df"] = pd.read_pickle(BytesIO(payload))
+            ACTIVE_DATASET["source"] = saved.get("source") or "Saved dataset"
+            return
+    except Exception:
+        app.logger.exception("Could not restore the saved dataset from persistent storage")
     if SESSION_DATA_PATH.exists():
         try:
             ACTIVE_DATASET["df"] = pd.read_pickle(SESSION_DATA_PATH)
@@ -772,6 +802,9 @@ def aura_ml():
         return jsonify(run)
     except ValueError as exc:
         return jsonify({"error": str(exc)}), 400
+    except Exception:
+        app.logger.exception("AutoML training failed")
+        return jsonify({"error": "AutoML training could not be completed. Check the service logs and try a target with fewer categories."}), 500
 
 
 @app.route("/api/aura/analytics", methods=["POST"])
