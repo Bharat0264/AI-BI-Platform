@@ -19,7 +19,7 @@ def _build_features(month_index):
 
 def predict_sales(df, periods=6):
     prepared = df.copy()
-    prepared["Order Date"] = pd.to_datetime(prepared["Order Date"], errors="coerce")
+    prepared["Order Date"] = pd.to_datetime(prepared["Order Date"], format="%Y-%m-%d", errors="coerce")
     prepared = prepared.dropna(subset=["Order Date"])
 
     monthly_sales = (

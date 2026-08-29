@@ -57,7 +57,7 @@ def profit_by_region(df):
 
 def monthly_sales_trend(df):
 
-    df['Order Date'] = pd.to_datetime(df['Order Date'])
+    df['Order Date'] = pd.to_datetime(df['Order Date'], format="%Y-%m-%d", errors="coerce")
 
     monthly_sales = (
         df.groupby(df['Order Date'].dt.to_period('M'))['Sales']

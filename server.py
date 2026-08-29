@@ -127,7 +127,7 @@ def validate_dataset(df):
 
 def prepare_dataset(df):
     prepared, _, _ = normalize_business_dataset(df)
-    prepared["Order Date"] = pd.to_datetime(prepared["Order Date"], errors="coerce")
+    prepared["Order Date"] = pd.to_datetime(prepared["Order Date"], format="%Y-%m-%d", errors="coerce")
     prepared["Sales"] = pd.to_numeric(prepared["Sales"], errors="coerce").fillna(0)
     prepared["Profit"] = pd.to_numeric(prepared["Profit"], errors="coerce").fillna(0)
     prepared["Discount"] = pd.to_numeric(prepared["Discount"], errors="coerce").fillna(0)
@@ -319,7 +319,7 @@ def dataset_profile(raw_df, prepared_df, filtered, source_name):
 
 def quality_scan(raw_df, prepared_df):
     missing_required = validate_dataset(raw_df)
-    invalid_dates = pd.to_datetime(raw_df.get("Order Date"), errors="coerce").isna().sum()
+    invalid_dates = pd.to_datetime(raw_df.get("Order Date"), format="%Y-%m-%d", errors="coerce").isna().sum()
     missing_cells = int(raw_df.isna().sum().sum())
     duplicate_rows = int(raw_df.duplicated().sum())
     score = 100
