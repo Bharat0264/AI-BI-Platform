@@ -252,7 +252,10 @@ class AuraOrchestrator:
         fields=self.schema.infer(df); roles={f.semantic_role:f.column for f in fields}; plan=self.planner.plan(objective,fields)
         measure=measure or roles.get("revenue") or roles.get("profit") or next((f.column for f in fields if f.semantic_role=="generic numerical"),None)
         if not measure or measure not in df: raise ValueError("Choose a numeric measure available in the dataset.")
-        values=pd.to_numeric(df[measure],errors="coerce"); result={"measure":measure,"rows":int(len(df)),"sum":float(values.sum()),"mean":float(values.mean())}; columns=[measure]
+        values=pd.to_numeric(df[measure],errors="coerce").replace([np.inf,-np.inf],np.nan)
+        if values.notna().sum() == 0:
+            raise ValueError(f"'{measure}' does not contain numeric values. Select a revenue, profit, quantity, price, or other numeric measure.")
+        result={"measure":measure,"rows":int(len(df)),"sum":float(values.sum()),"mean":float(values.mean())}; columns=[measure]
         if dimension and dimension in df:
             grouped=df.assign(_aura_value=values).groupby(dimension)["_aura_value"].sum().sort_values(ascending=False).head(25)
             result["dimension"]=dimension; result["series"]={str(k):float(v) for k,v in grouped.items()}; columns.append(dimension)

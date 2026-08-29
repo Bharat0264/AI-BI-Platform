@@ -23,6 +23,14 @@ def test_verified_answer_and_insufficient_data():
 def test_ml_task_inference():
     assert AuraOrchestrator().ml.infer_task(frame(), "Revenue") == "regression"
 
+def test_analysis_rejects_non_numeric_measure():
+    try:
+        AuraOrchestrator().run_analysis("Revenue by region", frame(), measure="Region", dimension="Region")
+    except ValueError as error:
+        assert "does not contain numeric values" in str(error)
+        return
+    assert False, "Expected a non-numeric measure to be rejected"
+
 def test_root_cause_decline_is_evidence_grounded():
     df = pd.DataFrame({"Order ID": range(12), "Order Date": pd.date_range("2025-01-01", periods=12, freq="MS"), "Revenue": [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 50], "Region": ["North"] * 11 + ["South"]})
     aura = AuraOrchestrator(); evidence, answer = aura.anomalies.root_cause(df, aura.schema.infer(df))

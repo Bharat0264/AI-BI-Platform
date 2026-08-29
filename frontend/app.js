@@ -648,10 +648,15 @@ window.addEventListener("hashchange", () => {
 showFeaturePage(window.location.hash.slice(1) || "overview");
 
 function fillAuraSelectors(fields) {
-  const options = fields.map(f => `<option value="${escapeHtml(f.column)}">${escapeHtml(f.column)} (${escapeHtml(f.semantic_role)})</option>`).join("");
-  document.getElementById("analyticsMeasure").innerHTML = `<option value="">Auto-select measure</option>${options}`;
-  document.getElementById("analyticsDimension").innerHTML = `<option value="">No grouping</option>${options}`;
-  document.getElementById("mlTarget").innerHTML = `<option value="">Select target</option>${options}`;
+  const option = (field) => `<option value="${escapeHtml(field.column)}">${escapeHtml(field.column)} (${escapeHtml(field.semantic_role)})</option>`;
+  const measureRoles = new Set(["revenue", "profit", "cost", "quantity", "price", "generic numerical", "target/outcome"]);
+  const dimensionRoles = new Set(["region", "location", "category", "customer", "product", "channel", "generic categorical"]);
+  const measures = fields.filter(field => measureRoles.has(field.semantic_role)).map(option).join("");
+  const dimensions = fields.filter(field => dimensionRoles.has(field.semantic_role)).map(option).join("");
+  const allOptions = fields.map(option).join("");
+  document.getElementById("analyticsMeasure").innerHTML = `<option value="">Auto-select measure</option>${measures}`;
+  document.getElementById("analyticsDimension").innerHTML = `<option value="">No grouping</option>${dimensions}`;
+  document.getElementById("mlTarget").innerHTML = `<option value="">Select target</option>${allOptions}`;
 }
 
 async function loadAuraIntelligence() {
