@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
+from date_utils import parse_business_dates
 
 sns.set_style("whitegrid")
 
@@ -57,7 +58,7 @@ def profit_by_region(df):
 
 def monthly_sales_trend(df):
 
-    df['Order Date'] = pd.to_datetime(df['Order Date'], format="%Y-%m-%d", errors="coerce")
+    df['Order Date'] = parse_business_dates(df['Order Date'])
 
     monthly_sales = (
         df.groupby(df['Order Date'].dt.to_period('M'))['Sales']

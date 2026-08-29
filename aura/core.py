@@ -7,6 +7,7 @@ from uuid import uuid4
 import re
 import numpy as np
 import pandas as pd
+from date_utils import parse_business_dates
 from sklearn.ensemble import IsolationForest, RandomForestClassifier, RandomForestRegressor
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.metrics import accuracy_score, mean_absolute_error, r2_score, mean_squared_error, precision_recall_fscore_support
@@ -64,7 +65,7 @@ class SemanticSchemaEngine:
             if column in corrections:
                 fields.append(SemanticField(column, corrections[column], 1.0, "User-confirmed workspace definition")); continue
             numeric = pd.to_numeric(series, errors="coerce").notna().mean()
-            dates = pd.to_datetime(series, format="%Y-%m-%d", errors="coerce").notna().mean() if series.dtype == object else 0
+            dates = parse_business_dates(series).notna().mean() if series.dtype == object else 0
             uniqueness = series.nunique(dropna=True) / max(len(series), 1)
             matches = [(role, term) for role, terms in ROLE_TERMS.items() for term in terms if term in label]
             if matches:
@@ -139,7 +140,7 @@ class AnomalyEngine:
         date_col=roles.get("date/time")
         if not measure or not date_col:
             return None, "INSUFFICIENT DATA: a date/time field and revenue or profit field are required."
-        work=df.copy(); work["_date"]=pd.to_datetime(work[date_col], format="%Y-%m-%d", errors="coerce"); work["_value"]=pd.to_numeric(work[measure],errors="coerce").fillna(0)
+        work=df.copy(); work["_date"]=parse_business_dates(work[date_col]); work["_value"]=pd.to_numeric(work[measure],errors="coerce").fillna(0)
         work=work.dropna(subset=["_date"])
         if work.empty: return None, "INSUFFICIENT DATA: date values could not be interpreted."
         work["_period"]=work["_date"].dt.to_period("M")

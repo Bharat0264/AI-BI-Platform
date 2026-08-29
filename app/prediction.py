@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from date_utils import parse_business_dates
 
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
@@ -19,7 +20,7 @@ def _build_features(month_index):
 
 def predict_sales(df, periods=6):
     prepared = df.copy()
-    prepared["Order Date"] = pd.to_datetime(prepared["Order Date"], format="%Y-%m-%d", errors="coerce")
+    prepared["Order Date"] = parse_business_dates(prepared["Order Date"])
     prepared = prepared.dropna(subset=["Order Date"])
 
     monthly_sales = (

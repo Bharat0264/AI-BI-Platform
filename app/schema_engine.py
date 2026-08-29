@@ -1,6 +1,7 @@
 """Semantic normalization for common business datasets."""
 import re
 import pandas as pd
+from date_utils import parse_business_dates
 
 ALIASES = {
     "Order ID": ["order id", "order_id", "invoice id", "invoice", "transaction id"],
@@ -29,7 +30,7 @@ def normalize_business_dataset(df):
             mapping[target], used = source, used | {source}
     if "Order Date" not in mapping:
         for col in result.select_dtypes(include=["object"]).columns:
-            if pd.to_datetime(result[col], errors="coerce").notna().mean() >= .8:
+            if parse_business_dates(result[col]).notna().mean() >= .8:
                 mapping["Order Date"], used = col, used | {col}; break
     numeric = [c for c in result.columns if pd.to_numeric(result[c], errors="coerce").notna().mean() >= .8]
     if "Sales" not in mapping:
