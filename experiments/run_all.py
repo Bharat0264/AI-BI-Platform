@@ -34,6 +34,16 @@ def _figures(records, target):
         for row in records: grouped.setdefault(row["baseline"],[]).append(row[metric])
         names=list(grouped); values=[sum(grouped[n])/len(grouped[n]) for n in names]
         fig,ax=plt.subplots(figsize=(8,4.5)); ax.bar(names,values,color="#3267a8"); ax.set_ylabel(label); ax.set_ylim(0,1); ax.set_title(label+" by system"); plt.xticks(rotation=20,ha="right"); fig.tight_layout(); fig.savefig(target/name,dpi=300); plt.close(fig)
+    levels=sorted({row["perturbation"] for row in records})
+    fig,ax=plt.subplots(figsize=(8,4.5))
+    for baseline in sorted({row["baseline"] for row in records}):
+        values=[sum(r["semantic_macro_f1"] for r in records if r["baseline"]==baseline and r["perturbation"]==level)/max(1,sum(r["baseline"]==baseline and r["perturbation"]==level for r in records)) for level in levels]
+        ax.plot(levels,values,marker="o",label=baseline)
+    ax.set_ylim(0,1); ax.set_ylabel("Semantic macro-F1"); ax.set_title("Semantic F1 vs schema perturbation"); ax.legend(fontsize=8); fig.tight_layout(); fig.savefig(target/"semantic_f1_vs_perturbation.png",dpi=300); plt.close(fig)
+    for group,metric,name,title in (("ablation","semantic_macro_f1","ablation_comparison.png","Ablation comparison"),("family","semantic_macro_f1","domain_wise_performance.png","Domain-wise semantic performance")):
+        labels=sorted({row[group] for row in records}); values=[sum(r[metric] for r in records if r[group]==label)/max(1,sum(r[group]==label for r in records)) for label in labels]
+        fig,ax=plt.subplots(figsize=(8,4.5)); ax.bar(labels,values,color="#5a8f60"); ax.set_ylim(0,1); ax.set_ylabel("Semantic macro-F1"); ax.set_title(title); plt.xticks(rotation=25,ha="right"); fig.tight_layout(); fig.savefig(target/name,dpi=300); plt.close(fig)
+    fig,ax=plt.subplots(figsize=(7,4.5)); ax.scatter([r["latency_seconds"] for r in records],[r["numeric_correctness"] for r in records],alpha=.65,color="#a64d79"); ax.set_xlabel("Latency (seconds)"); ax.set_ylabel("Numeric correctness"); ax.set_ylim(0,1); ax.set_title("Accuracy vs latency"); fig.tight_layout(); fig.savefig(target/"accuracy_vs_latency.png",dpi=300); plt.close(fig)
 
 def main():
     parser=argparse.ArgumentParser(); parser.add_argument("--mode",choices=("smoke","small","full"),default="smoke"); parser.add_argument("--seed",type=int,default=42); parser.add_argument("--rows",type=int,default=80); args=parser.parse_args()
@@ -55,6 +65,7 @@ def main():
     (raw_dir/f"{run_id}.json").write_text(json.dumps({"experiment_id":run_id,"timestamp":datetime.now(timezone.utc).isoformat(),"git_sha":git_sha(),"mode":args.mode,"seeds":seeds,"rows":args.rows,"records":raw,"skipped":skipped},indent=2),encoding="utf-8")
     flat=[_flat(row) for row in raw]; keys={"family","seed","perturbation","baseline","ablation"}
     _write_csv(table_dir/"semantic_results.csv",[{k:v for k,v in row.items() if k.startswith("semantic_") or k in keys} for row in flat]); _write_csv(table_dir/"kpi_results.csv",[{k:v for k,v in row.items() if k.startswith("kpi_") or k in keys} for row in flat]); _write_csv(table_dir/"answerability_results.csv",[{k:v for k,v in row.items() if k.startswith("answerability_") or k in keys} for row in flat]); _write_csv(table_dir/"grounding_results.csv",[{k:v for k,v in row.items() if k.startswith("grounding_") or k in keys} for row in flat]); _write_csv(table_dir/"robustness_results.csv",flat); _write_csv(table_dir/"ablation_results.csv",flat); _write_csv(table_dir/"latency_results.csv",[{k:row.get(k) for k in (*keys,"latency_seconds","repair_frequency")} for row in flat])
-    summary={"experiment_id":run_id,"mode":args.mode,"records":len(raw),"skipped":len(skipped),"semantic_macro_f1":group_summaries(flat,"semantic_macro_f1",["baseline","perturbation"]),"generated_from_actual_computation":True}; (table_dir/"experiment_summary.json").write_text(json.dumps(summary,indent=2),encoding="utf-8"); _figures(flat,figure_dir); print(json.dumps(summary))
+    sprs={baseline:sum(row["semantic_macro_f1"] for row in flat if row["baseline"]==baseline)/max(1,sum(row["baseline"]==baseline for row in flat)) for baseline in sorted({row["baseline"] for row in flat})}
+    summary={"experiment_id":run_id,"mode":args.mode,"records":len(raw),"skipped":len(skipped),"semantic_macro_f1":group_summaries(flat,"semantic_macro_f1",["baseline","perturbation"]),"schema_perturbation_robustness_score":sprs,"generated_from_actual_computation":True}; (table_dir/"experiment_summary.json").write_text(json.dumps(summary,indent=2),encoding="utf-8"); _figures(flat,figure_dir); print(json.dumps(summary))
 
 if __name__=="__main__": main()
