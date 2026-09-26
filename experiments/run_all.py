@@ -1,19 +1,60 @@
-"""Reproducible smoke experiment runner; emits measured results only."""
-import argparse, json
-import sys
+"""Run AURABench smoke, small, or full reproducible research experiments."""
+from __future__ import annotations
+import argparse, csv, json, sys
+from datetime import datetime, timezone
 from pathlib import Path
-ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
-from benchmark.generate import retail
-from aura import AuraOrchestrator
+ROOT=Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path: sys.path.insert(0,str(ROOT))
+from benchmark.generate import FAMILIES, generate_family
+from benchmark.perturbations import LEVELS
+from experiments.framework import ABLATIONS, BASELINES, evaluate_example, git_sha
+from experiments.metrics import group_summaries
+
+DEFAULT_SEEDS=(42,123,456,789,2026)
+
+def _write_csv(path, rows):
+    path.parent.mkdir(parents=True,exist_ok=True)
+    if not rows: path.write_text(""); return
+    keys=sorted({key for row in rows for key in row})
+    with path.open("w",newline="",encoding="utf-8") as handle:
+        writer=csv.DictWriter(handle,fieldnames=keys); writer.writeheader(); writer.writerows(rows)
+
+def _flat(record):
+    base={key:value for key,value in record.items() if key not in {"semantic","kpi","answerability","grounding","anomaly"}}
+    return {**base,**{f"semantic_{k}":v for k,v in record["semantic"].items() if k!="per_role"},**{f"kpi_{k}":v for k,v in record["kpi"].items()},**{f"answerability_{k}":v for k,v in record["answerability"].items()},**{f"grounding_{k}":v for k,v in record["grounding"].items()},**{f"anomaly_{k}":v for k,v in record["anomaly"].items()}}
+
+def _figures(records, target):
+    if not records: return
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    target.mkdir(parents=True,exist_ok=True)
+    for metric,name,label in (("semantic_macro_f1","semantic_f1_by_system.png","Semantic macro-F1"),("grounding_supported_claim_rate","supported_claim_rate_by_baseline.png","Supported Claim Rate"),("grounding_unsupported_numerical_claim_rate","unsupported_numerical_claim_rate_by_baseline.png","Unsupported Numerical Claim Rate")):
+        grouped={}
+        for row in records: grouped.setdefault(row["baseline"],[]).append(row[metric])
+        names=list(grouped); values=[sum(grouped[n])/len(grouped[n]) for n in names]
+        fig,ax=plt.subplots(figsize=(8,4.5)); ax.bar(names,values,color="#3267a8"); ax.set_ylabel(label); ax.set_ylim(0,1); ax.set_title(label+" by system"); plt.xticks(rotation=20,ha="right"); fig.tight_layout(); fig.savefig(target/name,dpi=300); plt.close(fig)
 
 def main():
-    p=argparse.ArgumentParser(); p.add_argument("--seed",type=int,default=42); args=p.parse_args()
-    df=retail(args.seed); aura=AuraOrchestrator(); inspection=aura.inspect(df,"aurabench-retail")
-    roles={x["column"]:x["semantic_role"] for x in inspection["semantic_schema"]}
-    expected={"purchase_date":"date/time","gross_merchandise_value":"revenue","net_margin":"profit","market":"region","product_line":"product"}
-    accuracy=sum(roles.get(k)==v for k,v in expected.items())/len(expected)
-    out={"seed":args.seed,"status":"smoke","semantic_role_accuracy":accuracy,"dataset_rows":len(df),"note":"Synthetic smoke measurement; not a research claim."}
-    target=Path("outputs/experiments"); target.mkdir(parents=True,exist_ok=True); (target/"smoke_results.json").write_text(json.dumps(out,indent=2)); print(json.dumps(out))
+    parser=argparse.ArgumentParser(); parser.add_argument("--mode",choices=("smoke","small","full"),default="smoke"); parser.add_argument("--seed",type=int,default=42); parser.add_argument("--rows",type=int,default=80); args=parser.parse_args()
+    if args.mode=="smoke": families=["retail"]; seeds=[args.seed]; levels=["L0"]; baselines=["B4_FULL_AURA_BI"]; ablations=["full"]
+    elif args.mode=="small": families=list(FAMILIES); seeds=[args.seed]; levels=list(LEVELS); baselines=["B0_STATIC_BI","B2_SEMANTIC_ONLY","B3_EVIDENCE_AURA","B4_FULL_AURA_BI"]; ablations=["full"]
+    else: families=list(FAMILIES); seeds=list(DEFAULT_SEEDS); levels=list(LEVELS); baselines=list(BASELINES); ablations=list(ABLATIONS)
+    raw=[]; skipped=[]
+    for family in families:
+        for seed in seeds:
+            example=generate_family(family,seed,args.rows)
+            for level in levels:
+                for baseline in baselines:
+                    for ablation in ablations:
+                        result=evaluate_example(example,level=level,baseline=baseline,ablation=ablation)
+                        if result.get("skipped"): skipped.append({"family":family,"seed":seed,"level":level,"baseline":baseline,"ablation":ablation,**result}); continue
+                        raw.append(result)
+    output=ROOT/"outputs"/"experiments"; raw_dir=output/"raw"; table_dir=output/"tables"; figure_dir=output/"figures"; raw_dir.mkdir(parents=True,exist_ok=True)
+    run_id=datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    (raw_dir/f"{run_id}.json").write_text(json.dumps({"experiment_id":run_id,"timestamp":datetime.now(timezone.utc).isoformat(),"git_sha":git_sha(),"mode":args.mode,"seeds":seeds,"rows":args.rows,"records":raw,"skipped":skipped},indent=2),encoding="utf-8")
+    flat=[_flat(row) for row in raw]; keys={"family","seed","perturbation","baseline","ablation"}
+    _write_csv(table_dir/"semantic_results.csv",[{k:v for k,v in row.items() if k.startswith("semantic_") or k in keys} for row in flat]); _write_csv(table_dir/"kpi_results.csv",[{k:v for k,v in row.items() if k.startswith("kpi_") or k in keys} for row in flat]); _write_csv(table_dir/"answerability_results.csv",[{k:v for k,v in row.items() if k.startswith("answerability_") or k in keys} for row in flat]); _write_csv(table_dir/"grounding_results.csv",[{k:v for k,v in row.items() if k.startswith("grounding_") or k in keys} for row in flat]); _write_csv(table_dir/"robustness_results.csv",flat); _write_csv(table_dir/"ablation_results.csv",flat); _write_csv(table_dir/"latency_results.csv",[{k:row.get(k) for k in (*keys,"latency_seconds","repair_frequency")} for row in flat])
+    summary={"experiment_id":run_id,"mode":args.mode,"records":len(raw),"skipped":len(skipped),"semantic_macro_f1":group_summaries(flat,"semantic_macro_f1",["baseline","perturbation"]),"generated_from_actual_computation":True}; (table_dir/"experiment_summary.json").write_text(json.dumps(summary,indent=2),encoding="utf-8"); _figures(flat,figure_dir); print(json.dumps(summary))
+
 if __name__=="__main__": main()

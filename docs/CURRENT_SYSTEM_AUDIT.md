@@ -16,8 +16,10 @@ The repository is a Flask 3.1 application serving a responsive vanilla HTML/CSS/
 | Voice | Browser speech recognition/TTS UI | Preserve; it continues to call `/api/ask`. |
 | PDF reporting | Working ReportLab report | Preserve; future evidence records can populate it. |
 | Persistence | MongoDB/PyMongo collections with legacy SQLite import utility | Primary production persistence; source data and generated files remain external references. |
-| Tests | No focused automated suite found | Add deterministic pytest coverage. |
+| Tests | Deterministic Flask/AURA/Mongo repository tests plus research-module tests | Preserve legacy tests and add benchmark, provenance, verifier, perturbation and metric coverage. |
 
 ## Reuse and risks
 
 The current UI, filtering, Plotly views, report download, and forecasting are retained. The largest risk is that existing `prepare_dataset` requires a date and sales-like field, while AURA-BI must accept heterogeneous datasets. New services therefore operate on the original uploaded DataFrame and the legacy dashboard continues to use normalization. Gemini availability is optional and never required for deterministic results. Existing SQLite records are not migrated destructively.
+
+The research framework is modular: AURABench generators, perturbations, provenance, verification, and experiment execution do not alter existing Flask API contracts or MongoDB artifact persistence.

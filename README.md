@@ -17,7 +17,8 @@ AURA-BI is an evidence-first business intelligence platform that understands unf
 - Safe unsupported-question response: `INSUFFICIENT DATA`.
 - Isolation Forest diagnostic anomaly evidence and guarded supervised AutoML with reproducible splits, metrics, and feature importance.
 - Existing executive dashboard, filters, Plotly charts, six-month forecast/planning, browser voice interface, PDF report, saved dashboards, alerts, actions, schedules, and stock-analysis tools.
-- AURABench starter synthetic retail generator and reproducible experiment smoke runner.
+- AURABench: eight seeded heterogeneous synthetic data families, preserved ground truth, schema perturbations, baselines, ablations, metrics, raw records, and publication-readable figure generation.
+- Claim-level provenance, deterministic evidence verification, and a bounded verify-and-repair loop for numerical analytical responses.
 - Phase 2 workspaces for Data Intelligence, Analytics, AutoML, Anomaly Intelligence, AI Analyst evidence, and research status, all inside the existing UI.
 
 ## Architecture
@@ -47,7 +48,8 @@ Run checks:
 
 ```powershell
 python -m pytest tests -q
-python experiments/run_all.py --seed 42
+python experiments/run_all.py --mode smoke --seed 42
+python experiments/run_all.py --mode small --seed 42
 ```
 
 For test tooling, install `requirements-dev.txt` and run `python -m pytest tests -q`.
@@ -59,6 +61,8 @@ AURA-BI supports autonomous analytics and semantic business intelligence. It doe
 It is distinct from **NEXORA-CDI**, which focuses on causal inference, treatment-effect estimation, counterfactual decisions, calibrated decision confidence, decision gates, and decision provenance.
 
 See [architecture](docs/ARCHITECTURE.md), [project specification](docs/PROJECT_SPEC.md), [methodology](docs/RESEARCH_METHODOLOGY.md), [experiment guide](docs/EXPERIMENT_GUIDE.md), [viva guide](docs/VIVA_GUIDE.md), and the [current-system audit](docs/CURRENT_SYSTEM_AUDIT.md).
+
+Research execution details: [AURABench](docs/AURABENCH.md) and [reproducibility](docs/REPRODUCIBILITY.md). Generated experiment files are measurements from the current run, not committed publication claims.
 
 ## Deployment
 

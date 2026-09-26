@@ -12,20 +12,22 @@ from sklearn.ensemble import IsolationForest, RandomForestClassifier, RandomFore
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.metrics import accuracy_score, mean_absolute_error, r2_score, mean_squared_error, precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
+from .provenance import EvidenceClaim
+from .verifier import EvidenceVerifier
 
 
 ROLE_TERMS = {
     "date/time": ("date", "time", "month", "year", "timestamp"),
     "identifier": ("id", "uuid", "code", "number", "invoice", "order"),
-    "revenue": ("revenue", "sales", "gmv", "turnover", "amount", "merchandise value"),
+    "revenue": ("revenue", "sales", "gmv", "turnover", "amount", "merchandise value", "recognized income", "attributed", "basket value", "realized value", "billing amount"),
     "profit": ("profit", "margin", "earnings", "income"),
-    "cost": ("cost", "cogs", "expense", "spend"),
+    "cost": ("cost", "cogs", "expense", "spend", "freight"),
     "quantity": ("quantity", "qty", "units", "volume", "demand"),
     "price": ("price", "rate", "unit price"),
     "customer": ("customer", "client", "buyer", "account"),
     "product": ("product", "sku", "item", "brand"),
-    "category": ("category", "department", "segment", "type"),
-    "region": ("region", "market", "state", "country", "city", "territory", "location"),
+    "category": ("category", "department", "segment", "type", "class", "family", "group", "vertical", "source"),
+    "region": ("region", "market", "state", "country", "city", "territory", "location", "business unit", "office", "hub", "audience", "delivery", "factory", "service area"),
     "channel": ("channel", "source", "campaign", "platform"),
     "target/outcome": ("target", "label", "outcome", "churn", "converted", "status"),
 }
@@ -36,6 +38,7 @@ class SemanticField:
     semantic_role: str
     confidence: float
     reason: str
+    signals: dict | None = None
 
 @dataclass
 class AnalyticsEvidence:
@@ -63,23 +66,47 @@ class SemanticSchemaEngine:
         for column in df.columns:
             series, label = df[column], _name(column)
             if column in corrections:
-                fields.append(SemanticField(column, corrections[column], 1.0, "User-confirmed workspace definition")); continue
+                fields.append(SemanticField(column, corrections[column], 1.0, "User-confirmed workspace definition", {"user_correction": 1.0})); continue
             numeric = pd.to_numeric(series, errors="coerce").notna().mean()
-            dates = parse_business_dates(series).notna().mean() if series.dtype == object else 0
+            dates = 1.0 if pd.api.types.is_datetime64_any_dtype(series) else (parse_business_dates(series).notna().mean() if series.dtype == object else 0)
             uniqueness = series.nunique(dropna=True) / max(len(series), 1)
-            matches = [(role, term) for role, terms in ROLE_TERMS.items() for term in terms if term in label]
-            if matches:
-                role, term = matches[0]; confidence = .88
-                reason = f"Column name contains '{term}'"
-            elif dates >= .8:
-                role, confidence, reason = "date/time", .82, "At least 80% of values parse as dates"
-            elif uniqueness >= .98 and series.nunique() > 5:
-                role, confidence, reason = "identifier", .72, "Nearly unique values suggest a record identifier"
-            elif numeric >= .8:
-                role, confidence, reason = "generic numerical", .66, "At least 80% of values parse as numeric"
+            cardinality = series.nunique(dropna=True)
+            categorical_ratio = cardinality / max(len(series), 1)
+            signals = {"name": 0.0, "datatype": float(numeric), "date_parseability": float(dates), "uniqueness": float(uniqueness), "cardinality_ratio": float(categorical_ratio)}
+            scores = {role: 0.0 for role in ROLE_TERMS}
+            for role, terms in ROLE_TERMS.items():
+                hits = [term for term in terms if term in label]
+                if hits:
+                    scores[role] += min(.78, .58 + .12 * len(hits)); signals[f"name:{role}"] = scores[role]
+            # Date labels are more specific than an incidental "order" token in
+            # a label such as "Order Date"; identifier uniqueness must not win.
+            if any(term in label for term in ROLE_TERMS["date/time"]):
+                scores["date/time"] += .5
+            scores["date/time"] += .72 * dates
+            scores["identifier"] += .42 * uniqueness if cardinality > 5 and dates < .3 else 0
+            if any(token in label for token in (" id", "_id", "key", "ref", "code", "token", "reading")):
+                scores["identifier"] += .45
+            if any(token in label for token in ("class", "family", "group", "vertical")):
+                scores["category"] += .35
+            # Numeric business measures normally have substantial numeric coverage;
+            # categorical fields have modest cardinality relative to records.
+            for role in ("revenue", "profit", "cost", "quantity", "price"):
+                scores[role] += .12 * numeric
+            for role in ("customer", "product", "category", "region", "channel"):
+                scores[role] += .08 if categorical_ratio < .65 else 0
+            role, score = max(scores.items(), key=lambda item: item[1])
+            identifier_hint = any(token in label for token in ("id", "uuid", "code", "number", "invoice", "order", "key", "ref", "token"))
+            if role == "identifier" and not identifier_hint and numeric >= .8:
+                role, score = "generic numerical", .66
+            if score < .35:
+                role = "generic numerical" if numeric >= .8 else "generic categorical"
+                score = .66 if numeric >= .8 else .62
+                reason = "Numeric coverage" if numeric >= .8 else "Categorical value pattern without a confident business-role match"
             else:
-                role, confidence, reason = "generic categorical", .62, "Non-numeric values without a business-name match"
-            fields.append(SemanticField(column, role, confidence, reason))
+                evidence = [key for key, value in signals.items() if value and (key == "name" or key.startswith("name:"))]
+                reason = f"Fused name, type, parseability, cardinality and uniqueness signals ({', '.join(evidence) or 'distribution signals'})"
+            confidence = round(float(min(.99, max(.05, score))), 3)
+            fields.append(SemanticField(column, role, confidence, reason, signals))
         return fields
 
     def profile(self, df: pd.DataFrame) -> dict:
@@ -220,12 +247,17 @@ class AutoMLEngine:
         return {"task":task,"model":"RandomForest","metrics":metrics,"feature_importance":dict(sorted(zip(x.columns,model.feature_importances_),key=lambda z:z[1],reverse=True)[:10]),"training_rows":int(len(work)),"feature_count":int(x.shape[1]),"excluded_features":excluded,"causal_claim":False}
 
 class AuraOrchestrator:
-    def __init__(self): self.schema=SemanticSchemaEngine(); self.kpis=KPIEngine(); self.planner=AnalyticsPlanner(); self.visuals=VisualizationEngine(); self.anomalies=AnomalyEngine(); self.ml=AutoMLEngine()
+    def __init__(self, config=None):
+        self.config = {"semantic": True, "planner": True, "provenance": True, "verifier": True, "repair": True, **(config or {})}
+        self.schema=SemanticSchemaEngine(); self.kpis=KPIEngine(); self.planner=AnalyticsPlanner(); self.visuals=VisualizationEngine(); self.anomalies=AnomalyEngine(); self.ml=AutoMLEngine(); self.verifier=EvidenceVerifier()
     def inspect(self, df, dataset_id="active", corrections=None):
-        fields=self.schema.infer(df, corrections); anomaly=self.anomalies.investigate(df, fields, dataset_id)
+        fields=self.schema.infer(df, corrections) if self.config["semantic"] else []
+        anomaly=self.anomalies.investigate(df, fields, dataset_id)
         return {"profile":self.schema.profile(df),"semantic_schema":[asdict(f) for f in fields],"kpis":self.kpis.discover(df,fields),"visualizations":self.visuals.recommend(fields),"anomaly_evidence":asdict(anomaly) if anomaly else None}
     def answer(self, question, df, dataset_id="active"):
-        fields=self.schema.infer(df); plan=self.planner.plan(question,fields); roles={f.semantic_role:f.column for f in fields}; q=question.lower()
+        fields=self.schema.infer(df) if self.config["semantic"] else []
+        plan=self.planner.plan(question,fields) if self.config["planner"] else {"objective":question,"analytical_task":"descriptive statistics","required_columns":[],"filters":{},"aggregations":["sum"],"statistical_method":"static deterministic aggregation","visualization":"bar","validation_rules":[]}
+        roles={f.semantic_role:f.column for f in fields}; q=question.lower()
         if not any(x in q for x in ("sales","revenue","profit","margin","customer","record","trend","anomaly","top","lowest","region","category")):
             return {"status":"INSUFFICIENT DATA","answer":"INSUFFICIENT DATA: no supported analytical objective could be resolved.","plan":plan,"evidence":[]}
         if "revenue" in roles: col=roles["revenue"]
@@ -246,7 +278,24 @@ class AuraOrchestrator:
             text = f"Verified result: {item['dimension']} has the {item['direction']} {col} at {item['value']:,.2f}."
         elif "ranking" in result:
             text += f" Breakdown by {result['grouped_by']} is included in the evidence."
-        return {"status":"OK","answer":text,"plan":plan,"evidence":[asdict(evidence)]}
+        evidence_dict = asdict(evidence)
+        claims = []
+        if self.config["provenance"]:
+            value = result.get("requested_result", {}).get("value", result["sum"])
+            claims = [EvidenceClaim.numeric(claim_text=text, evidence=evidence_dict, value=value, operation="ranking" if "requested_result" in result else "sum").to_dict()]
+        verification = {"status": "NOT_RUN", "claims": [], "unsupported_claim_count": 0, "missing_evidence_count": 0}
+        repair_attempts = 0
+        if self.config["verifier"] and claims:
+            verification = self.verifier.verify(claims, [evidence_dict], columns).to_dict()
+            # Deterministic output is constructed from the evidence. A repair is
+            # bounded to two attempts and never substitutes an invented number.
+            while verification["status"] != "SUPPORTED" and self.config["repair"] and repair_attempts < 2:
+                repair_attempts += 1
+                claims[0]["expected_value"] = result.get("requested_result", {}).get("value", result["sum"])
+                verification = self.verifier.verify(claims, [evidence_dict], columns).to_dict()
+        if verification["status"] not in {"SUPPORTED", "NOT_RUN"}:
+            return {"status":"INSUFFICIENT DATA","answer":"INSUFFICIENT DATA: no verified evidence could support the requested analytical claim.","plan":plan,"evidence":[evidence_dict],"claims":claims,"verification":verification,"repair_attempts":repair_attempts}
+        return {"status":"OK","answer":text,"plan":plan,"evidence":[evidence_dict],"claims":claims,"verification":verification,"repair_attempts":repair_attempts}
 
     def run_analysis(self, objective, df, dataset_id="active", dimension=None, measure=None):
         fields=self.schema.infer(df); roles={f.semantic_role:f.column for f in fields}; plan=self.planner.plan(objective,fields)
