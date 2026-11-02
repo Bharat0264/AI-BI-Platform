@@ -15,3 +15,5 @@ These are developer-authored checks. Cases are correlated and do not represent i
 render-startup.json records the subsequent Render binding/cache-recovery fix and its 405-test regression run. The earlier summary.json is the pre-fix phase-completion snapshot.
 
 public-demo.json records the owner-requested temporary no-login mode, its isolation/reversal behavior and the 410-test regression run.
+
+atlas-database-names.json records the Atlas shared-cluster database naming correction and the 431-test run.

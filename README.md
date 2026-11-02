@@ -40,6 +40,8 @@ Original enterprise data
 
 The specialized Data, Analyst, ML, Anomaly, Visualization, and Report services exchange structured outputs through an orchestrator. Computation is deterministic first; LLM use is optional and constrained to supplied evidence.
 
+Atlas deployment follow-up: generated workspace database names now fit the 38-byte shared-cluster limit. **431 tests passed**; see [validation](docs/validation/atlas-database-names.json). Existing Render MongoDB settings do not need renaming.
+
 ## Temporary no-login demo
 
 Verified by **410 passing tests**, including a real-browser no-login upload/question flow. See [demo-mode validation](docs/validation/public-demo.json).

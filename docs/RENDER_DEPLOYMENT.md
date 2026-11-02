@@ -66,3 +66,12 @@ Render, Blueprint YAML Reference — secret generation and existing-service sync
 Pylons Project, Waitress arguments — host, port and url_scheme: https://docs.pylonsproject.org/projects/waitress/en/stable/arguments.html
 
 Documentation checked 2 November 2026.
+
+
+## Atlas database-name limit follow-up
+
+The deployment log reported that the generated AURABI tenant database name exceeded the cluster's 38-byte limit. The code now retains already-valid short legacy names, and compacts longer generated names to a three-character prefix plus a 128-bit SHA-256 digest over the full configured base and workspace identity. Every supported generated name is at most 38 ASCII bytes. The authentication database base_auth remains at most 29 bytes under the existing 24-character base limit.
+
+Keep MONGODB_DATABASE and your URI unchanged; changing the base manually could select a different data namespace. Deploy the latest naming fix instead. No database is renamed or deleted by the fix. Previously oversized tenant names could not be created on the affected Atlas tier. For pre-existing oversized databases on a different tier, data migration is a separate operator step, not silently performed by startup.
+
+Regression tests reproduce the reported AURABI/public-demo path with a database client enforcing 38 bytes, cover the longest supported bases and multiple identities, preserve valid existing names, and verify isolation between bases sharing a readable prefix. MongoDB documents the Free-cluster limit here: https://www.mongodb.com/docs/atlas/reference/free-shared-limitations/

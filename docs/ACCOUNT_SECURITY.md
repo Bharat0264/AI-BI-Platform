@@ -10,7 +10,7 @@ The owner has requested a public demo for now. AURA_PUBLIC_DEMO=true overrides t
 
 Use Python 3.12.16 as recorded in .python-version. Install requirements-dev.txt, or requirements.txt without test/audit tools for runtime-only installation. The old Python 3.10 constraints file is historical and cannot install the security-patched dependencies.
 
-Copy .env.example only if .env does not already exist. Set MONGODB_URI and a MONGODB_DATABASE base of 1–24 letters, digits or underscores. Use a separate evaluation cluster/database and appropriate least-privilege MongoDB credentials. Account storage requires access to the base_auth database and provisioned base_u_<hash> databases. Grant only the actual required databases; this application does not configure MongoDB server roles.
+Copy .env.example only if .env does not already exist. Set MONGODB_URI and a MONGODB_DATABASE base of 1–24 letters, digits or underscores. Use a separate evaluation cluster/database and appropriate least-privilege MongoDB credentials. Account storage requires access to the base_auth database and generated account/demo databases (names fit Atlas’s 38-byte limit). Grant only the actual required databases; this application does not configure MongoDB server roles.
 
 Set AURA_AUTH_REQUIRED=true and AURA_SECRET_KEY to a unique random secret of at least 32 characters. Generate it privately using Python's secrets.token_hex(32), then store it in your secret manager or .env. Do not publish it, reuse the test fixture key or send it in chat. AURA_COOKIE_SECURE=false is required for local HTTP testing; HTTPS deployments must use true.
 
@@ -54,3 +54,5 @@ GitHub Actions runs regression/browser tests on Python 3.12 and separately audit
 Flask/Pallets, Security Considerations and Sessions API, documentation accessed 2 November 2026: https://flask.palletsprojects.com/en/stable/web-security/ and https://flask.palletsprojects.com/en/stable/api/#sessions
 
 Werkzeug/Pallets, Security Helpers, documentation accessed 2 November 2026: https://werkzeug.palletsprojects.com/en/stable/utils/#werkzeug.security.generate_password_hash
+
+Database naming compatibility: already-valid base_u_<hash> names of at most 38 bytes are retained. Longer names now use a three-character readable prefix, _t_, and a 128-bit digest of the full base name plus account identity. This keeps names within 38 bytes without mixing bases sharing a prefix. Oversized databases on a different, less-restrictive deployment are not renamed or deleted automatically; an operator must plan migration if such databases already contain data.

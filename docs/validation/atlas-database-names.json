@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-02",
+  "failure": "Atlas rejected a 41-byte generated tenant database name; the affected cluster accepts at most 38 bytes.",
+  "tests": {
+    "tests": "431",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "90.937"
+  },
+  "database_naming_cases": 21,
+  "affected_demo_name_bytes": 38,
+  "maximum_supported_base_result_bytes": 38,
+  "behavior": "Preserve valid <=38-byte legacy names; otherwise use a three-character prefix and a 128-bit digest over the full base and owner. No database is renamed or deleted.",
+  "limitations": "Local regression uses a mock client enforcing the actual Atlas name-length rule. Real deployment and existing database permissions were not changed or certified.",
+  "source_sha256": {
+    "authentication.py": "4e18ca649f446c3928f5a525aa0dcf19603e9b437cbf18a12f52d3ca0461fd14",
+    "tests/test_database_names.py": "192a659da9dde29c30c7f0f5185c17d89c4bbe21261e7346b2b706e8e1dbf0c5"
+  },
+  "reference": "https://www.mongodb.com/docs/atlas/reference/free-shared-limitations/"
+}

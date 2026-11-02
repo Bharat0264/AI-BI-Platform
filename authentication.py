@@ -27,7 +27,15 @@ def principal_scope(user_id):
 def tenant_database_name(base, user_id):
     if not re.fullmatch(r'[A-Za-z0-9_]{1,24}',base):
         raise RuntimeError('Authenticated MONGODB_DATABASE must use 1–24 letters, digits or underscores.')
-    return base+'_u_'+sha256(str(user_id).encode()).hexdigest()[:32]
+    legacy = base+'_u_'+sha256(str(user_id).encode()).hexdigest()[:32]
+    # The affected Atlas tier rejects names over 38 bytes, while other MongoDB
+    # deployments permit longer names. Preserve already-valid legacy names.
+    if len(legacy.encode('ascii')) <= 38:
+        return legacy
+    # Keep a full 128-bit digest. Include the complete base name so truncating
+    # its readable prefix cannot mix deployments with the same first letters.
+    digest = sha256((base+'\0'+str(user_id)).encode()).hexdigest()[:32]
+    return base[:3]+'_t_'+digest
 
 
 def auth_database():
