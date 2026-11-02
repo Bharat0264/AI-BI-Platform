@@ -2,7 +2,9 @@
 
 **Autonomous Unified Reasoning & Analytics for Business Intelligence**
 
-> *AURA-BI: A Self-Adaptive Multi-Agent Framework for Autonomous Business Intelligence over Heterogeneous Enterprise Data*
+> *AURA-BI: Ambiguity-Aware, Evidence-Verified Business Analytics*
+
+**Research prototype:** we study whether comparing alternative business measure meanings can provide correct conditional evidence while avoiding unjustified answers. The working website demonstrates the method. See the [research protocol, measured comparison and limitations](docs/RESEARCH_PROTOCOL.md). This is preliminary research, not a claim of novelty or state-of-the-art performance.
 
 AURA-BI is an evidence-first business intelligence platform that understands unfamiliar datasets, infers business semantics, proposes valid KPIs and visualizations, plans deterministic analytics, investigates anomalies, supports practical AutoML, and answers business questions without allowing an LLM to invent metrics. It preserves the existing responsive dashboard and its established sales analytics, forecasting, voice interaction, reporting, and workspace features.
 

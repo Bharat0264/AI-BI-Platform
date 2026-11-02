@@ -21,6 +21,7 @@ jobs:
         env:
           AURA_UI_BROWSER_CHANNEL: chromium
       - run: python -m experiments.accuracy --suite scope --output outputs/ci-scope
+      - run: python -m experiments.research_study --output outputs/ci-research/policy-study.json
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         if: always()
         with:
@@ -28,3 +29,4 @@ jobs:
           path: |
             test-results.xml
             outputs/ci-scope
+            outputs/ci-research
