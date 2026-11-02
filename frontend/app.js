@@ -7,6 +7,7 @@ const state = {
   recognition: null,
   listening: false,
   assetType: "stocks",
+  inspectionSequence: 0,
 };
 
 const colors = ["#14b8a6", "#f97316", "#7c3aed", "#0ea5e9", "#ef4444", "#84cc16"];
@@ -260,7 +261,7 @@ function renderDatasetProfile(profile) {
     ["Products", profile.products],
   ];
 
-  document.getElementById("datasetProfile").innerHTML = rows.map(([label, value]) => `
+  document.getElementById("datasetProfile").innerHTML = rows.filter(([,value]) => value !== undefined && value !== null && value !== "N/A").map(([label, value]) => `
     <div class="profile-item">
       <span>${escapeHtml(label)}</span>
       <strong>${escapeHtml(value ?? "N/A")}</strong>
@@ -327,7 +328,7 @@ function renderCards(id, cards) {
       <h3>${escapeHtml(item.title)}</h3>
       <p>${escapeHtml(item.body)}</p>
     </article>
-  `).join("") : `<article class="card"><h3>No CSV imported</h3><p>Import a CSV to generate this analysis.</p></article>`;
+  `).join("") : `<article class="card"><h3>No results yet</h3><p>Add a file to see this analysis.</p></article>`;
 }
 
 function renderDemandPlan(plan = {}) {
@@ -358,7 +359,7 @@ function render(payload) {
 
   fillSelect(document.getElementById("regionFilter"), state.regions, state.selectedRegions);
   fillSelect(document.getElementById("categoryFilter"), state.categories, state.selectedCategories);
-  document.getElementById("sourceLabel").textContent = `${payload.source} | ${payload.rows.toLocaleString()} rows`;
+  document.getElementById("sourceLabel").textContent = payload.rows ? `${payload.source} · ${payload.rows.toLocaleString()} rows` : "No file added yet";
 
   renderMetrics(payload.metrics);
   renderExecutiveSummary(payload.executiveSummary || []);
@@ -375,6 +376,8 @@ function render(payload) {
   renderTable("previewTable", payload.preview);
   renderTable("forecastTable", payload.forecastTable);
   renderDemandPlan(payload.demandPlan);
+  state.inspectionSequence++;
+  window.auraGuide.update(payload);
 
   plotBar("categoryChart", "Sales by Category", payload.charts.categorySales.labels, payload.charts.categorySales.values);
   plotBar("regionChart", "Profit by Region", payload.charts.regionProfit.labels, payload.charts.regionProfit.values);
@@ -382,8 +385,8 @@ function render(payload) {
   plotBar("discountChart", "Average Discount by Category", payload.charts.discountByCategory.labels, payload.charts.discountByCategory.values);
   plotLine("monthlyChart", "Monthly Sales Trend", payload.charts.monthlySales.labels, payload.charts.monthlySales.values);
   plotForecast(payload.charts.forecast);
-  loadAuraIntelligence().catch(() => {});
-  analyst.refresh();
+  if (window.auraGuide.ready) loadAuraIntelligence().catch(error => { document.getElementById("auraWarnings").textContent = `Could not check your columns. Click Check again. ${error.message}`; });
+  if (window.auraGuide.ready) analyst.refresh(); else analyst.reset();
 }
 
 async function loadAnalysis() {
@@ -434,32 +437,34 @@ async function uploadDataset() {
     setUploadStatus("Choose a CSV, Excel or JSON file.", true); return;
   }
   setUploadStatus(`Analyzing ${file.name}...`);
-  button.disabled = true;
+  window.auraGuide.busy(true);
   const formData = new FormData();
   formData.append("dataset", file);
   try {
     const payload = await fetchJson("/api/upload", { method: "POST", body: formData });
     analyst.reset(); render(payload);
-    setUploadStatus(`Imported ${payload.source} with ${payload.rows.toLocaleString()} rows.${payload.dashboard_mode === "general" ? " General analytics mode: use Data Intelligence and AI Analyst; financial dashboards are unavailable." : ""}`);
+    setUploadStatus(`Imported ${payload.source} with ${payload.rows.toLocaleString()} rows.${payload.dashboard_mode === "general" ? " Ready to explore in Results or Ask a question. Financial charts need revenue, profit and dates." : ""}`);
+    showFeaturePage("dashboard", { updateHash: true });
   } catch (error) {
     setUploadStatus(error.message, true);
   } finally {
-    button.disabled = false;
+    window.auraGuide.busy(false);
   }
 }
 
 async function loadDemoDataset() {
   const button = document.getElementById("demoButton");
-  setUploadStatus("Loading demo dataset...");
-  button.disabled = true;
+  setUploadStatus("Loading sample data. This can take a moment…");
+  window.auraGuide.busy(true, "sample");
   try {
     const payload = await fetchJson("/api/demo", { method: "POST" });
     analyst.reset(); render(payload);
     setUploadStatus(`Loaded ${payload.source} with ${payload.rows.toLocaleString()} rows.`);
+    showFeaturePage("dashboard", { updateHash: true });
   } catch (error) {
     setUploadStatus(error.message, true);
   } finally {
-    button.disabled = false;
+    window.auraGuide.busy(false);
   }
 }
 
@@ -472,7 +477,7 @@ document.getElementById("demoButton").addEventListener("click", loadDemoDataset)
 
 document.getElementById("datasetFile").addEventListener("change", () => {
   const file = document.getElementById("datasetFile").files[0];
-  setUploadStatus(file ? `${file.name} selected. Click Import dataset to import it.` : "");
+  setUploadStatus(file ? `${file.name} selected. Click Upload file to see your results.` : "");
 });
 
 const analyst = window.createAuraAnalyst({
@@ -597,8 +602,8 @@ if (!browserSupportsVoiceInput()) {
 }
 
 function showFeaturePage(pageId, { updateHash = false } = {}) {
-  const target = document.querySelector(`[data-page-content="${pageId}"]`);
-  if (!target) pageId = "overview";
+  const target = [...document.querySelectorAll("[data-page-content]")].find(page => page.dataset.pageContent === pageId);
+  if (!target) { pageId = "overview"; history.replaceState(null, "", "#overview"); }
 
   document.querySelectorAll("[data-page-content]").forEach((page) => {
     page.classList.toggle("active-page", page.dataset.pageContent === pageId);
@@ -613,7 +618,8 @@ function showFeaturePage(pageId, { updateHash = false } = {}) {
     window.location.hash = pageId;
   }
   window.scrollTo({ top: 0, behavior: "smooth" });
-  if (pageId === "assistant") analyst.refresh();
+  window.auraGuide.route(pageId);
+  if (pageId === "assistant" && window.auraGuide.ready) analyst.refresh();
 
   // Plotly measures hidden containers as zero-width. Resize charts after their
   // feature page becomes visible so charts remain usable when returning to it.
@@ -635,6 +641,7 @@ window.addEventListener("hashchange", () => {
   showFeaturePage(window.location.hash.slice(1) || "overview");
 });
 
+window.auraGuide.configure({ navigate: showFeaturePage });
 showFeaturePage(window.location.hash.slice(1) || "overview");
 
 function fillAuraSelectors(fields) {
@@ -650,14 +657,25 @@ function fillAuraSelectors(fields) {
 }
 
 async function loadAuraIntelligence() {
+  if (!window.auraGuide.ready) return;
+  const sequence = ++state.inspectionSequence;
   const data = await fetchJson("/api/aura/inspect");
+  if (sequence !== state.inspectionSequence) return;
+  window.auraGuide.inspect(data);
   const profile = data.profile || {}; const fields = data.semantic_schema || [];
   const colProfile = profile.column_profile || {};
   const missing = Object.values(colProfile).reduce((sum, item) => sum + (item.null_percent || 0), 0);
-  document.getElementById("auraDatasetOverview").innerHTML = [["Rows",profile.rows],["Columns",profile.columns],["Duplicates",profile.duplicates],["Missing %",missing.toFixed(1)]].map(([k,v]) => `<article class="card"><div class="metric-label">${k}</div><div class="metric-value">${escapeHtml(v)}</div></article>`).join("");
+  document.getElementById("auraDatasetOverview").innerHTML = [["Rows",profile.rows],["Columns",profile.columns],["Repeated rows",profile.duplicates]].map(([k,v]) => `<article class="card"><div class="metric-label">${k}</div><div class="metric-value">${escapeHtml(v)}</div></article>`).join("");
   const roleOptions=["identifier","date/time","revenue","profit","cost","quantity","price","customer","product","category","region","location","channel","target/outcome","generic numerical","generic categorical"];
-  document.getElementById("semanticTable").innerHTML=`<thead><tr><th>Column</th><th>Detected Type</th><th>Semantic Role</th><th>Confidence</th><th>Reason</th><th>Correction</th></tr></thead><tbody>${fields.map(f=>`<tr><td>${escapeHtml(f.column)}</td><td>${escapeHtml(colProfile[f.column]?.dtype||"unknown")}</td><td>${escapeHtml(f.semantic_role)}</td><td>${Math.round(f.confidence*100)}%</td><td>${escapeHtml(f.reason)}</td><td><select data-role-column="${escapeHtml(f.column)}">${roleOptions.map(role=>`<option value="${role}" ${role===f.semantic_role?"selected":""}>${role}</option>`).join("")}</select></td></tr>`).join("")}</tbody>`;
-  document.querySelectorAll("[data-role-column]").forEach(select=>select.addEventListener("change",async()=>{ try { await fetchJson("/api/aura/schema",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({corrections:{[select.dataset.roleColumn]:select.value}})}); loadAuraIntelligence(); analyst.refresh(); } catch(error) { document.getElementById("auraWarnings").textContent=error.message; } }));
+  document.getElementById("semanticTable").innerHTML=`<thead><tr><th>Column in your file</th><th>Suggested meaning</th><th>Change meaning</th><th>Details</th></tr></thead><tbody>${fields.map(f=>`<tr><td>${escapeHtml(f.column)}</td><td>${escapeHtml(window.auraGuide.roleLabel(f.semantic_role))}</td><td><select aria-label="Meaning of ${escapeHtml(f.column)}" data-role-column="${escapeHtml(f.column)}">${roleOptions.map(role=>`<option value="${role}" ${role===f.semantic_role?"selected":""}>${escapeHtml(window.auraGuide.roleLabel(role))}</option>`).join("")}</select></td><td><details><summary>Why this choice?</summary><p>${escapeHtml(f.reason)}</p><small>Data type: ${escapeHtml(colProfile[f.column]?.dtype || "unknown")}. Pattern-match score: ${Math.round(f.confidence*100)}% — this is not a probability of correctness.</small></details></td></tr>`).join("")}</tbody>`;
+  document.querySelectorAll("[data-role-column]").forEach(select=>select.addEventListener("change",async()=>{
+    const status=document.getElementById("columnMeaningStatus");status.textContent="Saving this column meaning…";
+    try {
+      await fetchJson("/api/aura/schema",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({corrections:{[select.dataset.roleColumn]:select.value}})});
+      const message=`Saved: ${select.dataset.roleColumn} means ${window.auraGuide.roleLabel(select.value)}.`;
+      await loadAuraIntelligence();await analyst.refresh();status.textContent=message;
+    } catch(error) {status.textContent=error.message;}
+  }));
   document.getElementById("auraKpis").innerHTML = (data.kpis || []).map(k => `<article class="card"><div class="card-kicker">${escapeHtml(k.applicability_reason)}</div><h3>${escapeHtml(k.name)}: ${Number(k.computed_value).toLocaleString(undefined,{maximumFractionDigits:2})}</h3><p>${escapeHtml(k.formula)} · ${escapeHtml(k.source_columns.join(", "))}</p></article>`).join("") || `<p class="muted">No valid KPIs can be derived from this dataset.</p>`;
   document.getElementById("auraWarnings").textContent = (profile.quality_warnings || []).join(" · ") || "No data-quality warnings found.";
   fillAuraSelectors(fields);

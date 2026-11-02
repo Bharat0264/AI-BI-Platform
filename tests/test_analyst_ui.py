@@ -76,6 +76,7 @@ def ui(monkeypatch, browser, tmp_path):
     page.on("pageerror", lambda error: errors.append(str(error)))
     page.goto(f"http://127.0.0.1:{http.server_port}/#assistant")
     pw.expect(page.locator("#definitionScope")).to_contain_text("sales.csv")
+    page.locator("#savedMeanings").evaluate("element => element.open = true")
     yield page, store, context(data, "sales.csv"), current, errors
     browser_context.close()
     http.shutdown()
@@ -296,7 +297,7 @@ def test_general_semicolon_upload_and_role_confirmation_in_browser(ui, monkeypat
     page.locator('nav a[data-page="overview"]').click()
     page.locator('#datasetFile').set_input_files({'name':'bank-example.csv','mimeType':'text/csv','buffer':raw})
     page.locator('#analyzeCsvButton').click()
-    pw.expect(page.locator('#uploadStatus')).to_contain_text('General analytics mode')
+    pw.expect(page.locator('#uploadStatus')).to_contain_text('Ready to explore')
     page.locator('nav a[data-page="data-intelligence"]').click()
     pw.expect(page.locator('[data-role-column="campaign"]')).to_be_visible()
     with page.expect_response('**/api/aura/inspect'):
@@ -312,8 +313,8 @@ def test_general_semicolon_upload_and_role_confirmation_in_browser(ui, monkeypat
     assert list(server.ACTIVE_DATASET['df'].columns)==['campaign','job','month']
     assert 'Sales' not in server.ACTIVE_DATASET['df'].columns
     page.locator('nav a[data-page="exports"]').click()
-    page.locator('#generateReportLink').click()
-    pw.expect(page.locator('#exportReportStatus')).to_contain_text('financial PDF report requires')
+    pw.expect(page.locator('#generateReportLink')).to_have_attribute('aria-disabled','true')
+    pw.expect(page.locator('#reportAvailability')).to_contain_text('financial PDF report requires')
     assert store.db.reports.count_documents({})==0
     assert errors==[]
 
@@ -444,4 +445,134 @@ def test_failed_replacement_upload_keeps_existing_answer(ui):
     pw.expect(page.locator('#uploadStatus')).to_contain_text('Invalid replacement')
     page.locator('nav a[data-page="assistant"]').click()
     pw.expect(page.locator('#answer')).to_contain_text('1,000.00')
+    assert errors==[]
+
+
+def real_empty_workspace(ui, monkeypatch):
+    page,_,_,current,_=ui
+    server=importlib.import_module('server')
+    monkeypatch.setattr(server,'financial_dashboard_available',current['real_financial_gate'])
+    monkeypatch.setattr(server,'analysis_payload',current['real_analysis_payload'])
+    monkeypatch.setattr(server,'dataset_from_request',current['real_dataset_from_request'])
+    monkeypatch.setattr(server,'persist_active_dataset',lambda *args:None)
+    monkeypatch.setitem(server.ACTIVE_DATASET,'df',None)
+    monkeypatch.setitem(server.ACTIVE_DATASET,'source',None)
+    page.goto(page.url.split('#')[0]+'#overview')
+    page.reload()
+    pw.expect(page.locator('#sourceLabel')).to_have_text('No file added yet')
+    return server
+
+
+def test_simple_navigation_help_and_empty_pages(ui,monkeypatch):
+    page,_,_,_,errors=ui
+    real_empty_workspace(ui,monkeypatch)
+    assert page.locator('#primaryNavigation a').all_text_contents()==['Start','My data','Results','Ask a question','Download']
+    assert page.locator('#advancedNavigation').evaluate('element => element.open') is False
+    pw.expect(page.locator('#analyzeCsvButton')).to_be_disabled()
+    page.locator('#openQuickHelp').click();pw.expect(page.locator('#quickHelp')).to_be_visible()
+    page.locator('#closeQuickHelp').click();pw.expect(page.locator('#quickHelp')).to_be_hidden()
+    for name in ['dashboard','data-intelligence','assistant','exports']:
+        page.locator(f'#primaryNavigation a[data-page="{name}"]').click()
+        pw.expect(page.locator(f'[data-page-content="{name}"] [data-empty-state]')).to_be_visible()
+        pw.expect(page.locator(f'[data-page-content="{name}"] [data-needs-data]')).to_be_hidden()
+    page.locator('#primaryNavigation a[data-page="overview"]').click()
+    capture_workspace(page,'simple-start-desktop.png')
+    assert errors==[]
+
+
+def test_guided_upload_results_examples_and_download(ui,monkeypatch):
+    page,store,_,_,errors=ui
+    real_empty_workspace(ui,monkeypatch)
+    page.locator('#datasetFile').set_input_files({'name':'my-units.csv','mimeType':'text/csv','buffer':b'Quantity,Region\n5,North\n7,South\n'})
+    pw.expect(page.locator('#analyzeCsvButton')).to_be_enabled()
+    page.locator('#analyzeCsvButton').click()
+    pw.expect(page.locator('#currentPageTitle')).to_have_text('Results')
+    pw.expect(page.locator('#generalResults')).to_be_visible()
+    pw.expect(page.locator('#financialResults')).to_be_hidden()
+    pw.expect(page.locator('#simpleNumberSummary')).to_contain_text('Quantity')
+    pw.expect(page.locator('#simpleNumberSummary')).to_contain_text('6')
+    capture_workspace(page,'simple-results-desktop.png')
+    page.locator('#primaryNavigation a[data-page="data-intelligence"]').click()
+    pw.expect(page.locator('#simpleDataPreview')).to_contain_text('North')
+    pw.expect(page.get_by_label('Meaning of Quantity')).to_have_value('quantity')
+    page.locator('#primaryNavigation a[data-page="assistant"]').click()
+    assert page.locator('#savedMeanings').evaluate('element => element.open') is False
+    page.get_by_role('button',name='Total Quantity',exact=True).click()
+    pw.expect(page.locator('#question')).to_have_value('What is Quantity?')
+    page.locator('#askButton').click();pw.expect(page.locator('#answer')).to_contain_text('12.00')
+    capture_workspace(page,'simple-question-desktop.png')
+    page.locator('#primaryNavigation a[data-page="exports"]').click()
+    pw.expect(page.locator('#generateReportLink')).to_have_attribute('aria-disabled','true')
+    pw.expect(page.locator('#reportAvailability')).to_contain_text('download your data as CSV')
+    with page.expect_download() as downloaded:
+        page.get_by_role('link',name='Download data (CSV)',exact=True).click()
+    assert downloaded.value.suggested_filename=='source_dataset.csv'
+    assert store.db.reports.count_documents({})==0
+    assert errors==[]
+
+
+def test_sample_button_is_a_complete_starting_path(ui,monkeypatch,tmp_path):
+    page,_,_,_,errors=ui
+    server=real_empty_workspace(ui,monkeypatch)
+    sample=tmp_path/'sample.csv';sample.write_text('Quantity,Region\n5,North\n7,South\n')
+    monkeypatch.setattr(server,'DATA_PATH',sample)
+    page.get_by_role('button',name='Try sample data',exact=True).click()
+    pw.expect(page.locator('#currentPageTitle')).to_have_text('Results')
+    pw.expect(page.locator('#generalResults')).to_be_visible()
+    page.locator('#primaryNavigation a[data-page="overview"]').click()
+    pw.expect(page.locator('#uploadNextSteps')).to_be_visible()
+    pw.expect(page.locator('#readyFileSummary')).to_contain_text('2 rows')
+    assert errors==[]
+
+
+def test_mobile_simple_navigation_and_unknown_link_recovery(ui,monkeypatch):
+    page,_,_,_,errors=ui
+    real_empty_workspace(ui,monkeypatch)
+    page.set_viewport_size({'width':390,'height':844})
+    for name in ['overview','data-intelligence','dashboard','assistant','exports']:
+        pw.expect(page.locator(f'#primaryNavigation a[data-page="{name}"]')).to_be_in_viewport()
+    page.wait_for_function('document.documentElement.scrollWidth <= innerWidth')
+    capture_workspace(page,'simple-start-mobile.png')
+    page.goto(page.url.split('#')[0]+'#unknown%22]')
+    pw.expect(page.locator('#currentPageTitle')).to_have_text('Start here')
+    assert page.url.endswith('#overview')
+    page.locator('#advancedNavigation summary').click()
+    page.locator('nav a[data-page="research"]').click()
+    pw.expect(page.locator('#research')).to_be_visible()
+    assert errors==[]
+
+
+def test_import_busy_state_prevents_competing_uploads(ui,monkeypatch):
+    page,_,_,_,errors=ui
+    real_empty_workspace(ui,monkeypatch)
+    pending=[];page.route('**/api/upload',lambda route:pending.append(route))
+    page.locator('#datasetFile').set_input_files({'name':'file.csv','mimeType':'text/csv','buffer':b'Quantity\n5\n'})
+    page.locator('#analyzeCsvButton').click()
+    pw.expect(page.locator('#analyzeCsvButton')).to_have_text('Reading your file…')
+    pw.expect(page.locator('#demoButton')).to_be_disabled()
+    pw.expect(page.locator('#datasetFile')).to_be_disabled()
+    pending[0].fulfill(status=400,content_type='application/json',body='{"error":"Please check this file."}')
+    pw.expect(page.locator('#uploadStatus')).to_contain_text('Please check')
+    pw.expect(page.locator('#datasetFile')).to_be_enabled()
+    pw.expect(page.locator('#demoButton')).to_be_enabled()
+    assert errors==[]
+
+
+def capture_workspace(page,name):
+    target=os.getenv('AURA_UI_CAPTURE_DIR')
+    if target:
+        page.evaluate('window.scrollTo(0,0)')
+        page.screenshot(path=str(Path(target)/name),full_page=True)
+
+
+def test_number_summary_excludes_identifiers_and_year_codes(ui,monkeypatch):
+    page,_,_,_,errors=ui
+    real_empty_workspace(ui,monkeypatch)
+    raw=b'Quantity,Region,year,customer_id\n5,North,2025,111\n7,South,2026,222\n'
+    page.locator('#datasetFile').set_input_files({'name':'codes.csv','mimeType':'text/csv','buffer':raw})
+    page.locator('#analyzeCsvButton').click()
+    pw.expect(page.locator('#simpleNumberSummary tbody tr')).to_have_count(1)
+    pw.expect(page.locator('#simpleNumberSummary')).to_contain_text('Quantity')
+    pw.expect(page.locator('#simpleNumberSummary')).not_to_contain_text('customer_id')
+    pw.expect(page.locator('#simpleNumberSummary')).not_to_contain_text('year')
     assert errors==[]

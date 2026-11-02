@@ -1,0 +1,39 @@
+{
+  "date": "2026-11-02",
+  "change": "Plain-language guided workspace for first-time users",
+  "tests": {
+    "tests": "437",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "56.432"
+  },
+  "browser_cases": 29,
+  "new_guided_journey_cases": 6,
+  "primary_navigation": [
+    "Start",
+    "My data",
+    "Results",
+    "Ask a question",
+    "Download"
+  ],
+  "checks": [
+    "No-file guidance and Help dialog",
+    "Real CSV upload automatically opens correct result view",
+    "Question examples use loaded measure/group columns",
+    "General-data CSV download works; unsupported financial PDF is explained and marked unavailable",
+    "Sample data provides a working alternative starting path",
+    "All five main navigation items fit a 390px viewport; invalid links recover to Start",
+    "Import errors restore controls; competing imports are disabled while busy",
+    "Numeric summary excludes identifiers and date/category codes"
+  ],
+  "source_sha256": {
+    "frontend/index.html": "80c13f29c1c8e5852c745ed57928e4b9b192c7fc1dd5205487fdef1967bfbf0b",
+    "frontend/styles.css": "58bba05a6a4dc32b9f9d617195372f0e281c75df0efd3d00620bf0f3255c3310",
+    "frontend/app.js": "f4d970031a1c066e3aacc2991725acaeffa4c8ec749516538cca52221675ed62",
+    "frontend/analyst.js": "a025af3c599645b3bf15990f96f67b0a523babf8a717076751a3583227c1159a",
+    "frontend/guide.js": "78f2d04e54bf9ab93e9578424d037b46599ac903bfb9f4eb7293ff894be0d3e3",
+    "tests/test_analyst_ui.py": "361ade2ea9ea31e6a90a21576e9d23c6512d97ffe1b13a11bc5ed1b662fe633e"
+  },
+  "limits": "Local Flask/MongoDB test transport and chart/PDF stubs where documented. Real local browser interactions and applicable routes were exercised. Synthetic-fixture screenshots visually inspected on desktop/mobile. No real-user study, full accessibility audit or live Render deployment success is claimed. Analytical engine and original data remain unchanged."
+}

@@ -21,49 +21,59 @@
   <aside class="sidebar">
     <div class="brand">AURA-BI</div>
     <div id="accountControls" hidden><span id="accountName"></span><button id="accountLogout" type="button">Sign out</button><p id="accountSessionStatus" role="status"></p></div>
-    <div class="caption">Autonomous Unified Reasoning &amp; Analytics</div>
-    <nav>
-      <a href="#overview" data-page="overview" class="active">Executive</a>
-      <a href="#data-intelligence" data-page="data-intelligence">Data Intelligence</a>
-      <a href="#aura-analytics" data-page="aura-analytics">Analytics</a>
-      <a href="#automl" data-page="automl">AutoML</a>
-      <a href="#anomaly-intelligence" data-page="anomaly-intelligence">Anomaly Intelligence</a>
-      <a href="#research" data-page="research">Research</a>
-      <a href="#dashboard" data-page="dashboard">Dashboard</a>
-      <a href="#risk" data-page="risk">Risk Center</a>
-      <a href="#segments" data-page="segments">Segments</a>
-      <a href="#quality" data-page="quality">Data Quality</a>
-      <a href="#forecast" data-page="forecast">Forecast</a>
-      <a href="#insights" data-page="insights">Insights</a>
-      <a href="#assistant" data-page="assistant">AI Assistant</a>
-      <a href="#decision-room" data-page="decision-room">Decision Room</a>
-      <a href="#stocks" data-page="stocks">Indian Stocks</a>
-      <a href="#exports" data-page="exports">Exports</a>
+    <div class="caption">Your data, made clear</div>
+    <nav aria-label="Main navigation">
+      <div id="primaryNavigation" class="primary-links">
+        <a href="#overview" data-page="overview" class="active">Start</a>
+        <a href="#data-intelligence" data-page="data-intelligence">My data</a>
+        <a href="#dashboard" data-page="dashboard">Results</a>
+        <a href="#assistant" data-page="assistant">Ask a question</a>
+        <a href="#exports" data-page="exports">Download</a>
+      </div>
+      <details id="advancedNavigation"><summary>More tools</summary><div class="advanced-links">
+        <a href="#quality" data-page="quality">Check data quality</a>
+        <a href="#forecast" data-page="forecast">Forecasts &amp; stock planning</a>
+        <a href="#segments" data-page="segments">Customers &amp; products</a>
+        <a href="#risk" data-page="risk">Financial risks</a>
+        <a href="#insights" data-page="insights">Patterns &amp; unusual changes</a>
+        <a href="#aura-analytics" data-page="aura-analytics">Custom calculations</a>
+        <a href="#automl" data-page="automl">Build a prediction model</a>
+        <a href="#anomaly-intelligence" data-page="anomaly-intelligence">Investigate a change</a>
+        <a href="#decision-room" data-page="decision-room">Saved work &amp; planning</a>
+        <a href="#stocks" data-page="stocks">Indian market research</a>
+        <a href="#research" data-page="research">About the research</a>
+      </div></details>
     </nav>
+    <details id="dashboardFilters" hidden><summary>Filter financial results</summary><p class="muted">These filters change the financial charts, not your questions.</p>
     <form id="filterForm">
-      <label>Region</label>
+      <label for="regionFilter">Region</label>
       <select id="regionFilter" multiple size="4"></select>
-      <label>Category</label>
+      <label for="categoryFilter">Category</label>
       <select id="categoryFilter" multiple size="4"></select>
       <button type="submit">Apply Filters</button>
       <button type="button" class="ghost" id="resetFilters">Reset</button>
-    </form>
+    </form></details>
     <div class="source" id="sourceLabel">Loading dataset...</div>
   </aside>
 
-  <main>
+  <main id="mainContent">
+    <header class="workspace-header"><div><p class="page-eyebrow">YOUR WORKSPACE</p><h1 id="currentPageTitle">Start here</h1><p id="currentPageHint">Add a file or try the sample to get started.</p></div><button id="openQuickHelp" type="button" class="secondary">How it works</button></header>
     <p id="publicDemoNotice" class="scope-summary" role="note" hidden>Public demo: this workspace is shared. Other visitors can view or replace uploaded data. Use sample data only.</p>
     <section class="hero executive-hero" data-page-content="overview">
-      <div class="eyebrow">Enterprise analytics command center</div>
-      <h1>AURA-BI</h1>
-      <p>Analyze business data, measure profit quality, detect risk exposure, forecast sales, ask AI questions, and generate board-ready reports from one full-stack website.</p>
+      <div class="welcome-copy">
+      <p class="welcome-tag">START WITH ONE FILE</p>
+      <h2>Turn your spreadsheet into clear answers.</h2>
+      <p>Add a file, see what it contains, and ask a question. No data expertise needed.</p></div>
+      <div class="upload-heading"><h3>1. Add your data</h3><span>Or try a sample first</span></div>
       <form id="uploadForm" class="upload">
-        <input type="file" id="datasetFile" aria-describedby="importHelp" aria-label="Choose a business dataset" accept=".csv,.xlsx,.xls,.json">
-        <button type="submit" id="analyzeCsvButton">Import dataset</button>
-        <button type="button" class="secondary" id="demoButton">Load Demo Dataset</button>
-        <p id="importHelp" class="muted">CSV, Excel or JSON. Maximum file size: 100 MB.</p>
+        <input type="file" id="datasetFile" aria-describedby="importHelp" aria-label="Choose a CSV, Excel or JSON file" accept=".csv,.xlsx,.xls,.json">
+        <button type="submit" id="analyzeCsvButton" disabled>Upload file</button>
+        <button type="button" class="secondary" id="demoButton">Try sample data</button>
+        <p id="importHelp" class="muted">CSV, Excel or JSON · Up to 100 MB. Your original file is not edited.</p>
         <div class="upload-status" id="uploadStatus" aria-live="polite"></div>
       </form>
+      <div id="uploadNextSteps" class="ready-panel" hidden><div><span class="ready-label">YOUR FILE IS READY</span><h3 id="readyFileName"></h3><p id="readyFileSummary"></p></div><div class="ready-actions"><button type="button" data-go-page="dashboard">See my results →</button><button type="button" class="secondary" data-go-page="assistant">Ask a question</button></div></div>
+      <div class="journey" aria-label="Your next steps"><button type="button" data-go-page="data-intelligence"><span>2</span><strong>Check your file</strong><small>Preview rows and column meanings</small></button><button type="button" data-go-page="assistant"><span>3</span><strong>Ask a question</strong><small>Start with a total or an average</small></button><button type="button" data-go-page="exports"><span>4</span><strong>Download your work</strong><small>Save your data or a financial report</small></button></div>
     </section>
 
     <section id="stocks" data-page-content="stocks">
@@ -93,22 +103,22 @@
       </div>
     </section>
 
-    <section id="overview" data-page-content="overview">
-      <div class="metrics" id="metrics"></div>
+    <section id="overview" data-page-content="overview"><details class="panel" data-needs-data hidden><summary>More about this file</summary>
+
       <div class="overview-grid">
         <div>
-          <h2>Executive Summary</h2>
+          <h2>Financial summary</h2>
           <div class="summary-grid" id="executiveSummary"></div>
         </div>
         <div>
-          <h2>Dataset Profile</h2>
+          <h2>File details</h2>
           <div class="profile-grid" id="datasetProfile"></div>
         </div>
       </div>
-    </section>
+    </details></section>
 
-    <section id="dashboard" data-page-content="dashboard">
-      <h2>Performance Dashboard</h2>
+    <section id="dashboard" data-page-content="dashboard"><div class="empty-state" data-empty-state><div class="empty-symbol" aria-hidden="true">＋</div><h2>Add a file to get started</h2><p>Once you upload a file, your results will appear here.</p><button type="button" data-go-page="overview">Add a file or try the sample</button></div><div data-needs-data hidden><div class="section-intro"><p id="resultsExplanation">Here is what your file tells us.</p></div><div id="generalResults" hidden><div id="fileFactCards" class="file-facts"></div><div class="panel table-wrap"><h3>Your numbers at a glance</h3><p class="muted">Observed values, not predictions. Reference IDs, dates and category codes are excluded. Averages ignore empty cells; display values are rounded to 2 decimals.</p><table id="simpleNumberSummary"></table></div><div class="next-action"><div><h3>Want to explore a number?</h3><p>Ask about a total, average or comparison using your column names.</p></div><button type="button" data-go-page="assistant">Ask about my data →</button></div></div><div id="financialResults" hidden><div class="metrics" id="metrics"></div>
+
       <div class="chart-grid">
         <div class="panel"><div id="categoryChart"></div></div>
         <div class="panel"><div id="regionChart"></div></div>
@@ -118,33 +128,33 @@
         <div class="panel"><div id="discountChart"></div></div>
       </div>
       <div class="panel wide"><div id="monthlyChart"></div></div>
-    </section>
+    </div><div class="page-next-actions"><button type="button" class="secondary" data-go-page="data-intelligence">Check my data</button><button type="button" data-go-page="assistant">Ask a question →</button></div></div></section>
 
-    <section id="risk" data-page-content="risk">
-      <h2>Risk Command Center</h2>
+    <section id="risk" data-page-content="risk"><div class="empty-state" data-empty-state><div class="empty-symbol" aria-hidden="true">＋</div><h2>Add a file to get started</h2><p>This tool needs a file. Start by uploading one or trying sample data.</p><button type="button" data-go-page="overview">Add a file or try the sample</button></div><div data-needs-data hidden>
+      <h2>Financial risks</h2>
       <div class="risk-grid">
         <div class="risk-score" id="riskOverview"></div>
         <div class="panel table-wrap"><table id="marginMatrixTable"></table></div>
       </div>
       <h2>Discount Sensitivity</h2>
       <div class="panel table-wrap"><table id="discountSensitivityTable"></table></div>
-    </section>
+    </div></section>
 
-    <section id="segments" data-page-content="segments">
+    <section id="segments" data-page-content="segments"><div class="empty-state" data-empty-state><div class="empty-symbol" aria-hidden="true">＋</div><h2>Add a file to get started</h2><p>This tool needs a file. Start by uploading one or trying sample data.</p><button type="button" data-go-page="overview">Add a file or try the sample</button></div><div data-needs-data hidden>
       <h2>Customer and Segment Performance</h2>
       <div class="chart-grid">
         <div class="panel table-wrap"><table id="segmentTable"></table></div>
         <div class="panel table-wrap"><table id="productTable"></table></div>
       </div>
-    </section>
+    </div></section>
 
-    <section id="quality" data-page-content="quality">
+    <section id="quality" data-page-content="quality"><div class="empty-state" data-empty-state><div class="empty-symbol" aria-hidden="true">＋</div><h2>Add a file to get started</h2><p>This tool needs a file. Start by uploading one or trying sample data.</p><button type="button" data-go-page="overview">Add a file or try the sample</button></div><div data-needs-data hidden>
       <h2>Data Quality</h2>
       <div class="quality-grid" id="qualityCards"></div>
       <div class="panel table-wrap"><table id="previewTable"></table></div>
-    </section>
+    </div></section>
 
-    <section id="forecast" data-page-content="forecast">
+    <section id="forecast" data-page-content="forecast"><div class="empty-state" data-empty-state><div class="empty-symbol" aria-hidden="true">＋</div><h2>Add a file to get started</h2><p>This tool needs a file. Start by uploading one or trying sample data.</p><button type="button" data-go-page="overview">Add a file or try the sample</button></div><div data-needs-data hidden>
       <h2>Forecast</h2>
       <div class="panel wide"><div id="forecastChart"></div></div>
       <div class="panel table-wrap"><table id="forecastTable"></table></div>
@@ -157,27 +167,27 @@
         <div class="panel table-wrap"><h3>Product Stock Plan</h3><table id="demandProductTable"></table></div>
         <div class="panel table-wrap"><h3>Sector Outlook</h3><table id="demandSectorTable"></table></div>
       </div>
-    </section>
+    </div></section>
 
-    <section id="insights" data-page-content="insights">
-      <h2>Autonomous Insights</h2>
+    <section id="insights" data-page-content="insights"><div class="empty-state" data-empty-state><div class="empty-symbol" aria-hidden="true">＋</div><h2>Add a file to get started</h2><p>This tool needs a file. Start by uploading one or trying sample data.</p><button type="button" data-go-page="overview">Add a file or try the sample</button></div><div data-needs-data hidden>
+      <h2>Patterns in your data</h2>
       <div class="card-grid" id="insightCards"></div>
       <h2>Anomalies</h2>
       <div class="card-grid" id="anomalyCards"></div>
       <h2>Growth Opportunities</h2>
       <div class="card-grid" id="opportunityCards"></div>
-    </section>
+    </div></section>
 
-    <section id="assistant" data-page-content="assistant">
-      <h2>AI Analyst</h2>
+    <section id="assistant" data-page-content="assistant"><div class="empty-state" data-empty-state><div class="empty-symbol" aria-hidden="true">＋</div><h2>Add a file to get started</h2><p>Add a file first. Then you can ask questions about its numbers.</p><button type="button" data-go-page="overview">Add a file or try the sample</button></div><div data-needs-data hidden>
+
       <div class="panel assistant">
-        <label class="analyst-label" for="question">Your business question</label>
-        <textarea id="question" maxlength="2000" aria-describedby="analystScope questionHelp questionError" placeholder="Try: What is sales? Or: Which region has the highest profit?"></textarea>
-        <p id="analystScope" class="muted">Questions use all uploaded rows unless you select an explicit scope below. Dashboard filters do not apply here.</p>
-        <p id="questionHelp" class="muted">Use an exact column name for a total or average. Ctrl+Enter (Command+Enter on Mac) asks your question. Maximum 2,000 characters.</p>
+        <div id="questionExamples" class="question-examples" aria-label="Questions you can try"></div><label class="analyst-label" for="question">Your business question</label>
+        <textarea id="question" maxlength="2000" aria-describedby="analystScope questionHelp questionError" placeholder="For example: What is total sales?"></textarea>
+        <p id="analystScope" class="muted">Answers use your whole file unless you choose a filter below. Filters on the Results page do not apply here.</p>
+        <p id="questionHelp" class="muted">Click an example to fill the question box, then ask. You can also press Ctrl+Enter (Command+Enter on Mac).</p>
         <p id="nextQuestionScope" class="scope-summary" aria-live="polite">Next question: all uploaded rows.</p>
         <p id="questionError" class="status-line error" role="alert" hidden></p>
-        <details id="analystScopeControls" class="analyst-card"><summary>Filter rows or compare date periods (optional)</summary>
+        <details id="analystScopeControls" class="analyst-card"><summary>Only use part of my data / compare dates (optional)</summary>
           <p class="muted">Choose exact labels. Leave filter values empty to include all labels. Dates include both start and end, in the source calendar with no timezone conversion.</p>
           <div class="analyst-form">
             <div><label class="analyst-label" for="scopeRegionColumn">Region filter column</label><select id="scopeRegionColumn" data-scope-input><option value="">No region filter</option></select><label class="analyst-label" for="scopeRegionValues">Region values</label><select id="scopeRegionValues" multiple size="3" data-scope-input></select></div>
@@ -190,21 +200,16 @@
           <div class="analyst-form"><div><label class="analyst-label" for="scopeBaselineStart">Baseline start</label><input id="scopeBaselineStart" type="date" data-scope-input></div><div><label class="analyst-label" for="scopeBaselineEnd">Baseline end</label><input id="scopeBaselineEnd" type="date" data-scope-input></div></div>
           <p id="scopeOptionsNote" class="muted"></p><button id="clearAnalystScope" class="secondary" type="button" data-analyst-action>Clear selected scope</button>
         </details>
-        <div class="assistant-actions">
-          <button id="voiceQuestionButton" type="button">Start Voice Question</button>
-          <button id="askButton" type="button">Ask about data</button>
-          <button id="speakAnswerButton" type="button" class="secondary">Play Answer</button>
-          <button id="stopVoiceButton" type="button" class="ghost inline">Stop Voice</button>
-        </div>
-        <div class="voice-status" id="voiceStatus" aria-live="polite">Voice assistant ready.</div>
+        <div class="assistant-actions"><button id="askButton" type="button">Ask about data</button></div>
+        <details class="voice-options"><summary>Use voice (optional)</summary><div class="assistant-actions"><button id="voiceQuestionButton" type="button" class="secondary">Speak a question</button><button id="speakAnswerButton" type="button" class="secondary">Read the answer aloud</button><button id="stopVoiceButton" type="button" class="secondary">Stop voice</button></div></details>
+        <div class="voice-status" id="voiceStatus" aria-live="polite">Ready for your question.</div>
         <p id="answerOutcome" class="scope-summary" role="status" hidden></p>
         <div id="answerFreshness" aria-live="polite"></div>
         <pre id="answer" aria-live="polite"></pre>
         <div id="interpretationChoices" class="analyst-cards"></div>
-        <div id="answerCitations" class="evidence-grid"></div>
-        <details id="aiEvidence"><summary>View Evidence</summary><pre id="aiEvidenceDetail"></pre></details>
+        <details id="aiEvidence"><summary>Calculation details (optional)</summary><div id="answerCitations" class="evidence-grid"></div><pre id="aiEvidenceDetail"></pre></details>
       </div>
-      <div id="analystWorkspace">
+      <details id="savedMeanings" class="saved-work"><summary>Saved column meanings &amp; previous answers (optional)</summary><div id="analystWorkspace">
         <div class="section-heading"><h3>Definitions &amp; answer history</h3><button id="refreshAnalyst" type="button" class="secondary" data-analyst-action>Refresh status</button></div>
         <div id="analystStatus" class="status-line" role="status" aria-live="polite"></div>
         <div class="panel">
@@ -226,40 +231,40 @@
         </div>
         <div class="panel"><h3>Answer history</h3><p class="muted">Freshness checks definitions and data context. It does not certify analytical accuracy.</p><div id="analystAnswerHistory" class="analyst-cards"><p>No answers loaded.</p></div></div>
         <div class="panel"><h3>Report history</h3><p class="muted">Regenerating preserves recorded filters and creates a separate file. Recalculate any outdated answers first.</p><div id="analystReportHistory" class="analyst-cards"><p>No reports loaded.</p></div></div>
-      </div>
-    </section>
+      </div></details>
+    </div></section>
 
-    <section id="data-intelligence" class="aura-section" data-page-content="data-intelligence">
-      <div class="section-heading"><div><div class="eyebrow">AURA schema engine</div><h2>Data Intelligence</h2></div><button id="refreshAura" type="button">Refresh intelligence</button></div>
+    <section id="data-intelligence" class="aura-section" data-page-content="data-intelligence"><div class="empty-state" data-empty-state><div class="empty-symbol" aria-hidden="true">＋</div><h2>Add a file to get started</h2><p>Preview your rows and check column meanings after adding a file.</p><button type="button" data-go-page="overview">Add a file or try the sample</button></div><div data-needs-data hidden>
+      <div class="section-heading"><div><h2>Check your columns</h2></div><button id="refreshAura" type="button">Check again</button></div>
       <div id="auraDatasetOverview" class="quality-grid"><p class="muted">Upload a dataset to inspect its semantics and quality.</p></div>
-      <div class="panel table-wrap"><h3>Semantic Schema</h3><table id="semanticTable"></table></div>
-      <div class="panel"><h3>Discovered KPIs</h3><div id="auraKpis" class="card-grid"></div></div>
-      <div class="panel"><h3>Data-quality warnings</h3><div id="auraWarnings" class="muted">No dataset inspected.</div></div>
-    </section>
+      <div class="panel table-wrap"><h3>What do your columns mean?</h3><p class="muted">We suggest a meaning for each column. Change it only if it is wrong; your original file stays unchanged.</p><p id="columnMeaningStatus" role="status" class="status-line"></p><table id="semanticTable"></table></div>
+      <details class="panel"><summary>Suggested business metrics (optional)</summary><div id="auraKpis" class="card-grid"></div></details>
+      <div class="panel"><h3>Anything to check?</h3><div id="auraWarnings" class="muted">No dataset inspected.</div></div>
+    <details class="panel table-wrap" open><summary>Preview of your file · first 20 rows</summary><table id="simpleDataPreview"></table></details><div class="page-next-actions"><button type="button" data-go-page="dashboard">See results →</button></div></div></section>
 
-    <section id="aura-analytics" class="aura-section" data-page-content="aura-analytics">
-      <h2>Analytics Workspace</h2><p class="muted">Run deterministic analysis and inspect its generated evidence.</p>
+    <section id="aura-analytics" class="aura-section" data-page-content="aura-analytics"><div class="empty-state" data-empty-state><div class="empty-symbol" aria-hidden="true">＋</div><h2>Add a file to get started</h2><p>This tool needs a file. Start by uploading one or trying sample data.</p><button type="button" data-go-page="overview">Add a file or try the sample</button></div><div data-needs-data hidden>
+      <h2>Custom calculations</h2><p class="muted">Run deterministic analysis and inspect its generated evidence.</p>
       <div class="panel"><div class="form-grid"><input id="analyticsObjective" placeholder="Objective, e.g. rank revenue by region"><select id="analyticsMeasure"></select><select id="analyticsDimension"></select></div><button id="runAnalytics" type="button">Run analysis</button><div id="analyticsStatus" class="status-line"></div></div>
       <div class="panel wide"><div id="auraAnalysisChart"></div><p id="chartReason" class="muted"></p><details><summary>View Evidence</summary><pre id="analyticsEvidence"></pre></details></div>
-    </section>
+    </div></section>
 
-    <section id="automl" class="aura-section" data-page-content="automl">
-      <h2>AutoML Lab</h2><p class="muted">Train only after selecting a target. Feature importance describes model behaviour, not causality.</p>
+    <section id="automl" class="aura-section" data-page-content="automl"><div class="empty-state" data-empty-state><div class="empty-symbol" aria-hidden="true">＋</div><h2>Add a file to get started</h2><p>This tool needs a file. Start by uploading one or trying sample data.</p><button type="button" data-go-page="overview">Add a file or try the sample</button></div><div data-needs-data hidden>
+      <h2>Build a prediction model</h2><p class="muted">Train only after selecting a target. Feature importance describes model behaviour, not causality.</p>
       <div class="panel"><div class="prompt-row"><select id="mlTarget"></select><button id="trainModel" type="button">Train guarded model</button></div><div id="mlStatus" class="status-line"></div><div id="mlResults" class="quality-grid"></div></div>
       <div class="panel table-wrap"><h3>Recent model runs</h3><table id="mlHistory"></table></div>
-    </section>
+    </div></section>
 
-    <section id="anomaly-intelligence" class="aura-section" data-page-content="anomaly-intelligence">
-      <h2>Anomaly Intelligence</h2><p class="muted">Investigate the latest monthly change. Contributions are associated with the difference and are not causal effects.</p>
+    <section id="anomaly-intelligence" class="aura-section" data-page-content="anomaly-intelligence"><div class="empty-state" data-empty-state><div class="empty-symbol" aria-hidden="true">＋</div><h2>Add a file to get started</h2><p>This tool needs a file. Start by uploading one or trying sample data.</p><button type="button" data-go-page="overview">Add a file or try the sample</button></div><div data-needs-data hidden>
+      <h2>Investigate a change</h2><p class="muted">Investigate the latest monthly change. Contributions are associated with the difference and are not causal effects.</p>
       <div class="panel"><button id="runRootCause" type="button">Investigate latest decrease</button><div id="rootCauseStatus" class="status-line"></div><div id="rootCauseContributors" class="card-grid"></div><details><summary>View Evidence</summary><pre id="rootCauseEvidence"></pre></details></div>
-    </section>
+    </div></section>
 
     <section id="research" class="aura-section" data-page-content="research">
       <h2>AURA-BI Research</h2><div class="card-grid"><article class="card"><div class="card-kicker">Research problem</div><p>Can an adaptive system understand heterogeneous enterprise data and generate verified business intelligence with minimal manual configuration?</p></article><article class="card"><div class="card-kicker">Contributions</div><p>Semantic schema engine, analytics planner, KPI discovery, guarded AutoML, anomaly investigation, evidence-grounded analytics, and adaptive visualization.</p></article><article class="card"><div class="card-kicker">AURABench status</div><p>Starter synthetic family and smoke runner are available. No benchmark claims are displayed until experiments are executed.</p></article></div></section>
 
-    <section id="decision-room" data-page-content="decision-room">
+    <section id="decision-room" data-page-content="decision-room"><div class="empty-state" data-empty-state><div class="empty-symbol" aria-hidden="true">＋</div><h2>Add a file to get started</h2><p>This tool needs a file. Start by uploading one or trying sample data.</p><button type="button" data-go-page="overview">Add a file or try the sample</button></div><div data-needs-data hidden>
       <div class="section-heading">
-        <div><div class="eyebrow dark">From insight to execution</div><h2>AI Decision Room</h2></div>
+        <div><div class="eyebrow dark">From insight to execution</div><h2>Saved work &amp; planning</h2></div>
         <div class="workspace-badge" id="workspaceBadge">Local workspace</div>
       </div>
 
@@ -321,20 +326,15 @@
         <div class="panel wide"><h3>Semantic metric layer</h3><p>Canonical definitions used across the workspace.</p><div id="metricList"></div><div class="prompt-row"><input id="metricName" placeholder="Metric name"><input id="metricFormula" placeholder="Formula, e.g. Profit / Sales"><select id="metricFormat"><option value="currency">Currency</option><option value="percent">Percent</option><option value="number">Number</option></select><button id="addMetric" type="button">Add metric</button></div></div>
       </div>
       <div id="platformStatus" class="status-line" aria-live="polite"></div>
-    </section>
+    </div></section>
 
-    <section id="exports" data-page-content="exports">
-      <h2>Export Center</h2>
-      <div class="export-grid">
-        <a class="button" href="/api/export/filtered">Download Filtered CSV</a>
-        <a id="generateReportLink" class="button" href="/api/report">Generate PDF Report</a>
-      </div>
-      <div id="exportReportStatus" class="status-line" role="status" aria-live="polite"></div>
-    </section>
+    <section id="exports" data-page-content="exports"><div class="empty-state" data-empty-state><div class="empty-symbol" aria-hidden="true">＋</div><h2>Add a file to get started</h2><p>Add a file before downloading data or a report.</p><button type="button" data-go-page="overview">Add a file or try the sample</button></div><div data-needs-data hidden><h2>Take your work with you</h2><p class="section-description">Choose what you want to save. Downloads do not change your uploaded file.</p><div class="download-cards"><article class="panel"><span class="download-type">CSV FILE</span><h3>Download your data</h3><p>Save a spreadsheet-friendly copy. Financial result filters apply when available.</p><a class="button" href="/api/export/filtered">Download data (CSV)</a></article><article class="panel"><span class="download-type">PDF REPORT</span><h3>Download a financial report</h3><p id="reportAvailability">Requires revenue, profit and usable dates.</p><a id="generateReportLink" class="button" href="/api/report">Create PDF report</a></article></div><div id="exportReportStatus" class="status-line" role="status" aria-live="polite"></div></div></section>
+    <dialog id="quickHelp" aria-labelledby="quickHelpTitle"><h2 id="quickHelpTitle">From a file to an answer</h2><ol><li><strong>Start:</strong> upload CSV, Excel or JSON, or try the sample.</li><li><strong>My data:</strong> preview rows and check what the columns mean.</li><li><strong>Results / Ask a question:</strong> see a summary or ask about a total or average.</li><li><strong>Download:</strong> save your data; financial files can also produce a PDF.</li></ol><p>More tools contains forecasts, prediction models and research details. You can ignore it when getting started.</p><button id="closeQuickHelp" type="button">Got it</button></dialog>
   </main>
 
   <script src="/auth.js"></script>
   <script src="/analyst.js"></script>
+  <script src="/guide.js"></script>
   <script src="/app.js"></script>
   <script src="/platform.js"></script>
 </body>

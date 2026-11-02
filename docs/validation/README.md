@@ -17,3 +17,5 @@ render-startup.json records the subsequent Render binding/cache-recovery fix and
 public-demo.json records the owner-requested temporary no-login mode, its isolation/reversal behavior and the 410-test regression run.
 
 atlas-database-names.json records the Atlas shared-cluster database naming correction and the 431-test run.
+
+guided-workspace.json records the plain-language five-destination interface, six new guided journey cases and the 437-test regression run.

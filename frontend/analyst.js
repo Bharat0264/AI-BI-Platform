@@ -179,7 +179,7 @@ window.createAuraAnalyst = function ({ request, escapeHtml: esc, onAnswer, onSta
         : impact === "SAME_TESTED_OUTPUT" ? "These columns give the same tested output, but may have different business meanings. Choose which one you mean."
         : "Some interpretations could not be checked. Review the available results and choose a meaning below.")
       : payload.answer;
-    byId("answerFreshness").innerHTML = badge(payload.lifecycle || { status: payload.status === "CLARIFICATION_REQUIRED" ? "UNRESOLVED" : "UNKNOWN" }) + (payload.definition ? `<p class="muted">Using ${esc(payload.definition.measure_column)} · ${esc(payload.definition.aggregation)}${payload.definition.saved_reference ? ` · saved version ${esc(payload.definition.saved_reference.version)}` : " · this question only"}</p>` : "");
+    byId("answerFreshness").innerHTML = badge(payload.lifecycle || { status: payload.status === "CLARIFICATION_REQUIRED" ? "UNRESOLVED" : "UNKNOWN" }) + (payload.definition ? `<p class="muted">Using ${esc(payload.definition.measure_column)} · ${esc(({ sum: "total", mean: "average" })[payload.definition.aggregation] || payload.definition.aggregation)}${payload.definition.saved_reference ? ` · saved version ${esc(payload.definition.saved_reference.version)}` : " · this question only"}</p>` : "");
     byId("aiEvidenceDetail").textContent = JSON.stringify({ definition: payload.definition, plan: payload.plan, evidence: payload.evidence, verification: payload.verification, interpretation_check: payload.interpretation_check }, null, 2);
     const citations = payload.citations || (payload.evidence || []).map(item => ({ label: "Computed evidence", value: item.evidence_id, source: item.method }));
     byId("answerCitations").innerHTML = citations.map(item => `<article><span>${esc(item.label)}</span><strong>${esc(item.value)}</strong><small>${esc(item.source)}</small></article>`).join("");
@@ -253,6 +253,7 @@ window.createAuraAnalyst = function ({ request, escapeHtml: esc, onAnswer, onSta
   }
   async function reviewDefinition(method, generation, term, column) {
     if (!context) throw new Error("Refresh the dataset before choosing a definition.");
+    byId("savedMeanings").open = true;
     const scope = context.dataset_id;
     const history = await request(`/api/aura/definitions?term=${encodeURIComponent(term)}`);
     if (generation !== epoch || scope !== context?.dataset_id) return;
@@ -305,6 +306,7 @@ window.createAuraAnalyst = function ({ request, escapeHtml: esc, onAnswer, onSta
     } catch (error) { clearReplay(); throw error; }
   }
   async function downloadReport(id, generation) {
+    if (!window.auraGuide.financial) throw new Error("A financial PDF report requires revenue, profit and date columns. You can download your data as CSV instead.");
     const url = id ? `/api/report?recomputed_from=${encodeURIComponent(id)}` : reportUrl();
     status("Generating a separate report file…");
     const response = await fetch(url);

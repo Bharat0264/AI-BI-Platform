@@ -155,7 +155,7 @@ def test_browser_signin_upload_logout_and_account_switch(accounts):
             expect(page.locator('#accountLogin')).to_be_visible()
             page.locator('#accountUsername').fill('bob');page.locator('#accountPassword').fill('test-password-12345');page.locator('#accountLoginButton').click()
             expect(page.locator('#accountName')).to_have_text('bob')
-            expect(page.locator('#sourceLabel')).to_contain_text('No CSV imported')
+            expect(page.locator('#sourceLabel')).to_contain_text('No file added yet')
             expect(page.locator('#answer')).not_to_contain_text('7.00')
             assert errors==[]
             browser.close()

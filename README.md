@@ -42,6 +42,10 @@ The specialized Data, Analyst, ML, Anomaly, Visualization, and Report services e
 
 Atlas deployment follow-up: generated workspace database names now fit the 38-byte shared-cluster limit. **431 tests passed**; see [validation](docs/validation/atlas-database-names.json). Existing Render MongoDB settings do not need renaming.
 
+## A simpler way to use the site
+
+Start → My data → Results → Ask a question → Download. The main flow now has plain-language guidance, file-based question examples, useful empty states and a mobile-friendly five-item menu. Research/model tools are optional under More tools. See the [simple user guide](docs/USER_GUIDE.md) and [redesign details](docs/GUIDED_WORKSPACE.md).
+
 ## Temporary no-login demo
 
 Verified by **410 passing tests**, including a real-browser no-login upload/question flow. See [demo-mode validation](docs/validation/public-demo.json).
