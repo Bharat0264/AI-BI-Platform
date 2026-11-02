@@ -1,0 +1,105 @@
+{
+  "date": "2026-11-02",
+  "status": "SOURCE_IMPLEMENTATION_VERIFIED_PUBLIC_DEPLOYMENT_NOT_VALIDATED",
+  "python": "3.12.16 (main, Oct 26 2026, 14:10:56) [MSC v.1944 64 bit (AMD64)]",
+  "packages": {
+    "Flask": "3.1.3",
+    "pandas": "2.3.3",
+    "numpy": "2.5.4",
+    "scikit-learn": "1.9.1",
+    "pytest": "9.0.3",
+    "playwright": "1.64.1",
+    "dnspython": "2.9.1",
+    "Pillow": "13.0.0",
+    "filelock": "4.2.6"
+  },
+  "tests": {
+    "tests": "395",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "89.346"
+  },
+  "browser_cases": 22,
+  "account_cases": 11,
+  "dependency_advisory_entries": 0,
+  "evaluations": {
+    "arithmetic": {
+      "cases": 332,
+      "passed": 332,
+      "failed": 0,
+      "answerable_cases": 243,
+      "resolved_answers": 243,
+      "correct_resolved_answers": 243,
+      "wrong_resolved_answers": 0,
+      "coverage": 1.0,
+      "numeric_accuracy_when_answered": 1.0,
+      "unsafe_unconditional_answers": 0,
+      "unexpected_exceptions": 0
+    },
+    "language": {
+      "cases": 154,
+      "passed": 154,
+      "failed": 0,
+      "answerable_cases": 24,
+      "resolved_answers": 24,
+      "correct_resolved_answers": 24,
+      "wrong_resolved_answers": 0,
+      "coverage": 1.0,
+      "numeric_accuracy_when_answered": 1.0,
+      "unsafe_unconditional_answers": 0,
+      "unexpected_exceptions": 0
+    },
+    "scope": {
+      "cases": 70,
+      "passed": 70,
+      "failed": 0,
+      "answerable_cases": 62,
+      "resolved_answers": 62,
+      "correct_resolved_answers": 62,
+      "wrong_resolved_answers": 0,
+      "coverage": 1.0,
+      "numeric_accuracy_when_answered": 1.0,
+      "unsafe_unconditional_answers": 0,
+      "unexpected_exceptions": 0
+    },
+    "public-data": {
+      "cases": 32,
+      "passed": 29,
+      "failed": 3,
+      "answerable_cases": 27,
+      "resolved_answers": 24,
+      "correct_resolved_answers": 24,
+      "wrong_resolved_answers": 0,
+      "coverage": 0.8888888888888888,
+      "numeric_accuracy_when_answered": 1.0,
+      "unsafe_unconditional_answers": 0,
+      "unexpected_exceptions": 0
+    },
+    "retail-amount": {
+      "cases": 4,
+      "passed": 4,
+      "failed": 0,
+      "answerable_cases": 4,
+      "resolved_answers": 4,
+      "correct_resolved_answers": 4,
+      "wrong_resolved_answers": 0,
+      "coverage": 1.0,
+      "numeric_accuracy_when_answered": 1.0,
+      "unsafe_unconditional_answers": 0,
+      "unexpected_exceptions": 0
+    }
+  },
+  "scope": "Fresh Windows Python 3.12.16 environment with newly installed dependencies. Mocked MongoDB/GridFS plus real local HTTP/browser checks; no real database migration, staging deployment, production load or backup/restore validation. One known mongomock clock deprecation is filtered only for that test-double module.",
+  "source_sha256": {
+    "server.py": "4a334d48fd684bcf0d85f08926050feff4bf2bfc02a2bc729a27909a39a76cf8",
+    "authentication.py": "ae10a50de328e323243d2b032afbfbcaf9570cbd60152ad90d96cb8fcd0b5647",
+    "security.py": "ce71b49cd2c2acd00710a9dec711a96674134c4b404b60049f72b7a5fe78b559",
+    "persistence/mongo.py": "15175d0eaafb1127bb3c58b2e71d8a9cd158353544730a94e5a606d5b18fa427",
+    "persistence/repositories.py": "b307cdc9cd7cdf3a7eb0a2b08c3c9aea0a71999a13fc2d51024225604a9cda31",
+    "frontend/auth.js": "0ba12533ae5e87d4adf7e8aed002da01e52d9623ac0396e0c5ab34ed65e33909",
+    "requirements.txt": "63792e4fe6eb80179008beffccaa9073485da8ee59b828a337b4c0e3466f90a1",
+    "requirements-dev.txt": "f8f312546ad9365a73c2d6388fd2ca8e3869d9fc229d3868bf249a981df307d1",
+    "constraints-local-win-py312.txt": "f940b23f3d6d6d2db038f61da3966ab855b87d8b2bcc47b7124cdeafcec86235"
+  }
+}

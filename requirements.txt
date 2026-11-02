@@ -1,6 +1,6 @@
 Flask==3.1.3
 waitress==3.0.2
-pandas
+pandas>=2.3.3,<3
 openpyxl
 numpy
 plotly
@@ -13,3 +13,7 @@ python-dotenv
 reportlab
 pymongo>=4.10,<5
 certifi>=2024.8.30
+
+# Security-patched runtime dependencies require Python 3.12 (see .python-version).
+dnspython>=2.9.1
+Pillow>=13.0.0

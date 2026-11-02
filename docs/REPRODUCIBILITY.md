@@ -12,3 +12,8 @@ python experiments/run_all.py --mode full
 Each run writes timestamped raw JSON to `outputs/experiments/raw/`, CSV tables to `outputs/experiments/tables/`, and 300-DPI PNG figures to `outputs/experiments/figures/`. Raw records include an experiment ID, timestamp, Git SHA when available, seed, family, row count, perturbation, baseline, ablation, provider availability, metrics, latency, and repair frequency.
 
 The full mode uses seeds `42, 123, 456, 789, 2026`, all benchmark domains, perturbations, baselines, and ablation flags. It may take substantial time. Provider credentials are optional; unavailable provider baselines are recorded as skipped rather than assigned synthetic scores.
+
+
+## Independent analyst arithmetic
+
+Run `python experiments/accuracy.py` for a separate Decimal-based reference evaluation. It reports numeric success, coverage and unsafe responses separately, including known ordinary-phrasing failures. See [evaluation protocol and limitations](ACCURACY_EVALUATION.md). The legacy benchmark numeric metric now uses an independent reference for answerable questions; older result files used an answer-status proxy and are not directly comparable.

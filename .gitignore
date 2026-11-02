@@ -17,3 +17,5 @@ data/.active_dataset_source.txt
 data/*.db
 models/artifacts/
 
+.venv/
+/work/

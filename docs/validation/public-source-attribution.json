@@ -1,0 +1,45 @@
+[
+  {
+    "id": "bike",
+    "url": "https://archive.ics.uci.edu/static/public/275/bike+sharing+dataset.zip",
+    "archive_file": "bike.zip",
+    "bytes": 279992,
+    "sha256": "b70182d0d0508e9abbb79306ce5c0cec34869000f8220175ac83d11dbe845401",
+    "title": "Bike Sharing",
+    "authors": "Hadi Fanaee-T",
+    "citation_year": 2013,
+    "page": "https://archive.ics.uci.edu/dataset/275/bike+sharing+dataset",
+    "doi": "10.24432/C5W894",
+    "license": "CC BY 4.0",
+    "retrieved_utc": "2026-11-02"
+  },
+  {
+    "id": "bank",
+    "url": "https://archive.ics.uci.edu/static/public/222/bank+marketing.zip",
+    "archive_file": "bank.zip",
+    "bytes": 1023843,
+    "sha256": "e0bf5f5de5b846e2f18e9d90606637267d46dfa260e0f17bb12e605db5efbeb4",
+    "title": "Bank Marketing",
+    "authors": "S. Moro, P. Rita, P. Cortez",
+    "citation_year": 2014,
+    "page": "https://archive.ics.uci.edu/dataset/222/bank+marketing",
+    "doi": "10.24432/C5K306",
+    "license": "CC BY 4.0",
+    "retrieved_utc": "2026-11-02"
+  },
+  {
+    "id": "retail",
+    "url": "https://archive.ics.uci.edu/static/public/352/online+retail.zip",
+    "archive_file": "retail.zip",
+    "bytes": 23715478,
+    "sha256": "f5385cbb54bbebf7196389109c6b0621faab0c304e3702548165e71c84aede8b",
+    "title": "Online Retail",
+    "authors": "Daqing Chen",
+    "citation_year": 2015,
+    "page": "https://archive.ics.uci.edu/dataset/352/online+retail",
+    "doi": "10.24432/C5BW33",
+    "license": "CC BY 4.0",
+    "retrieved_utc": "2026-11-02",
+    "canonical_rows_sha256": "3a30d32b81eda7a2b150b7825b96e34ca4330442558bab874cec842ea53d20f6"
+  }
+]

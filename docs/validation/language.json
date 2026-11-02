@@ -1,0 +1,3697 @@
+{
+  "metadata": {
+    "run_id": "20261102T134207Z",
+    "suite": "language",
+    "seeds": [
+      0
+    ],
+    "python": "3.12.16 (main, Oct 26 2026, 14:10:56) [MSC v.1944 64 bit (AMD64)]",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "2.5.4",
+      "scikit-learn": "1.9.1"
+    },
+    "source_hashes": {
+      "aura/core.py": "42ed0c11996727e0464113ba2a9c2b4371ea77fff88a6bcab2aeab4cbfdb6d01",
+      "aura/verifier.py": "eb4526d7663f2077db9f8cb7cfe3409bbb8ffbce17ce05ce3ec9b3f94ddf3119",
+      "aura/interpretations.py": "83e4b3b0590cb4c3e0aa446098d68ceea58d669709ec006a29c1ebccdd7a8ad1",
+      "aura/questions.py": "25ab695bfc81c57558d359f1848416aa64a3c26358088d0a023c7044cea76f15",
+      "aura/scopes.py": "8670c26d6ca9b9ffc417e78969b38f5a2fff38d168e9de553fb50d4b7a83aa7e",
+      "aura/scoped_engine.py": "c1a8fbb7678a7a18dc09c27cfc9d1fe2041b20d69ebfc59797d6896e4c37706f",
+      "experiments/oracle.py": "de381e08d892dddf00009fd5ca0d093ca1f0ccb1767876d2e9d4c1dffef78366",
+      "experiments/accuracy.py": "53ed8b1956486bb3de44b2231e4b44c8022baa42f20d0effdb6e04cc43868f35",
+      "experiments/language_checks.py": "c72d58a1bc4bc9b8fb8491634353af29c93f076606e4837917d8157bae28190c"
+    },
+    "git_sha": "8184a2c8492652a6744c319c53aa34b23a41f7ba",
+    "scope": "Synthetic, developer-designed cases; not independent authorship or real-user validation. Templates share seeded datasets; do not treat cases as independent statistical samples."
+  },
+  "summary": {
+    "overall": {
+      "cases": 154,
+      "passed": 154,
+      "failed": 0,
+      "answerable_cases": 24,
+      "resolved_answers": 24,
+      "correct_resolved_answers": 24,
+      "wrong_resolved_answers": 0,
+      "coverage": 1.0,
+      "numeric_accuracy_when_answered": 1.0,
+      "unsafe_unconditional_answers": 0,
+      "unexpected_exceptions": 0
+    },
+    "by_family": {
+      "additional_phrasing_challenge": {
+        "cases": 4,
+        "passed": 4,
+        "failed": 0,
+        "answerable_cases": 4,
+        "resolved_answers": 4,
+        "correct_resolved_answers": 4,
+        "wrong_resolved_answers": 0,
+        "coverage": 1.0,
+        "numeric_accuracy_when_answered": 1.0,
+        "unsafe_unconditional_answers": 0,
+        "unexpected_exceptions": 0
+      },
+      "language_specification": {
+        "cases": 20,
+        "passed": 20,
+        "failed": 0,
+        "answerable_cases": 20,
+        "resolved_answers": 20,
+        "correct_resolved_answers": 20,
+        "wrong_resolved_answers": 0,
+        "coverage": 1.0,
+        "numeric_accuracy_when_answered": 1.0,
+        "unsafe_unconditional_answers": 0,
+        "unexpected_exceptions": 0
+      },
+      "unsupported_or_ambiguous_intent": {
+        "cases": 10,
+        "passed": 10,
+        "failed": 0,
+        "answerable_cases": 0,
+        "resolved_answers": 0,
+        "correct_resolved_answers": 0,
+        "wrong_resolved_answers": 0,
+        "coverage": null,
+        "numeric_accuracy_when_answered": null,
+        "unsafe_unconditional_answers": 0,
+        "unexpected_exceptions": 0
+      },
+      "unsupported_qualifier": {
+        "cases": 120,
+        "passed": 120,
+        "failed": 0,
+        "answerable_cases": 0,
+        "resolved_answers": 0,
+        "correct_resolved_answers": 0,
+        "wrong_resolved_answers": 0,
+        "coverage": null,
+        "numeric_accuracy_when_answered": null,
+        "unsafe_unconditional_answers": 0,
+        "unexpected_exceptions": 0
+      }
+    },
+    "failure_reasons": {}
+  },
+  "records": [
+    {
+      "case_id": "language-0",
+      "family": "language_specification",
+      "seed": 0,
+      "question": "Please show our revenue totals for every region",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Revenue",
+        "operation": "sum",
+        "value": 70.0,
+        "groups": {
+          "North": 40.0,
+          "South": 30.0
+        }
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "f5cbd7c0-ddd5-4d59-8d7a-23b17d24e94c",
+          "dataset_id": "accuracy-evaluation",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Revenue",
+            "Region"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "Revenue",
+            "sum": 70.0,
+            "mean": 17.5,
+            "rows": 4,
+            "valid_rows": 4,
+            "excluded_rows": 0,
+            "grouped_by": "Region",
+            "ranking": {
+              "North": 40.0,
+              "South": 30.0
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:42:06.060538+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "revenue",
+            "measure_column": "Revenue",
+            "semantic_role": "revenue",
+            "aggregation": "sum",
+            "grouping_column": "Region",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {},
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.014252299999498064,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-0-0",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Please show our revenue totals for every region last month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008116699998936383,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-0-1",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Please show our revenue totals for every region in North?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.007967000001372071,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-0-2",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Please show our revenue totals for every region excluding cancelled orders?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.007886699997470714,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-0-3",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Please show our revenue totals for every region in 2025?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.007916900001873728,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-0-4",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Please show our revenue totals for every region and forecast next month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008122499999444699,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-0-5",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Please show our revenue totals for every region where revenue exceeds 20?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.01810029999978724,
+      "exception": null
+    },
+    {
+      "case_id": "language-1",
+      "family": "language_specification",
+      "seed": 0,
+      "question": "What\u2019s our total profit?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Profit",
+        "operation": "sum",
+        "value": 9.0
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "1d4a7ad4-da92-46d0-8677-c9857b5c6877",
+          "dataset_id": "accuracy-evaluation",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Profit"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "Profit",
+            "sum": 9.0,
+            "mean": 2.25,
+            "rows": 4,
+            "valid_rows": 4,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:42:06.140007+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "profit",
+            "measure_column": "Profit",
+            "semantic_role": "profit",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {},
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.021672599999874365,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-1-0",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "What\u2019s our total profit last month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.014303299998573493,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-1-1",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "What\u2019s our total profit in North?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.011526900001626927,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-1-2",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "What\u2019s our total profit excluding cancelled orders?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.00865930000145454,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-1-3",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "What\u2019s our total profit in 2025?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.00863759999992908,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-1-4",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "What\u2019s our total profit and forecast next month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008623400000942638,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-1-5",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "What\u2019s our total profit where revenue exceeds 20?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008719299999938812,
+      "exception": null
+    },
+    {
+      "case_id": "language-2",
+      "family": "language_specification",
+      "seed": 0,
+      "question": "Which category has the lowest average profit?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Profit",
+        "operation": "mean",
+        "value": 2.25,
+        "groups": {
+          "Office": 0.5,
+          "Tools": 4.0
+        },
+        "winners": [
+          "Office"
+        ],
+        "winning_value": 0.5
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "097540f1-636e-4edb-b2d8-3b5704c5c8aa",
+          "dataset_id": "accuracy-evaluation",
+          "analysis_type": "ranking",
+          "source_columns": [
+            "Profit",
+            "Category"
+          ],
+          "filters": {},
+          "method": "pandas mean",
+          "result": {
+            "measure": "Profit",
+            "sum": 9.0,
+            "mean": 2.25,
+            "rows": 4,
+            "valid_rows": 4,
+            "excluded_rows": 0,
+            "grouped_by": "Category",
+            "ranking": {
+              "Office": 0.5,
+              "Tools": 4.0
+            },
+            "requested_result": {
+              "direction": "lowest",
+              "dimension": "Office",
+              "value": 0.5
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:42:06.209462+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ],
+            "ranking": [
+              "requested_result",
+              "value"
+            ]
+          },
+          "definition": {
+            "term": "profit",
+            "measure_column": "Profit",
+            "semantic_role": "profit",
+            "aggregation": "mean",
+            "grouping_column": "Category",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {},
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.009637099999963539,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-2-0",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Which category has the lowest average profit last month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008601800000178628,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-2-1",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Which category has the lowest average profit in North?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.00835680000091088,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-2-2",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Which category has the lowest average profit excluding cancelled orders?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.00843689999965136,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-2-3",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Which category has the lowest average profit in 2025?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008370700001250952,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-2-4",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Which category has the lowest average profit and forecast next month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008404699998209253,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-2-5",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Which category has the lowest average profit where revenue exceeds 20?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008365499998035375,
+      "exception": null
+    },
+    {
+      "case_id": "language-3",
+      "family": "language_specification",
+      "seed": 0,
+      "question": "Show me the region with the largest revenue",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Revenue",
+        "operation": "sum",
+        "value": 70.0,
+        "groups": {
+          "North": 40.0,
+          "South": 30.0
+        },
+        "winners": [
+          "North"
+        ],
+        "winning_value": 40.0
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "4feccfea-7e52-478a-b430-166d10c78d30",
+          "dataset_id": "accuracy-evaluation",
+          "analysis_type": "ranking",
+          "source_columns": [
+            "Revenue",
+            "Region"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "Revenue",
+            "sum": 70.0,
+            "mean": 17.5,
+            "rows": 4,
+            "valid_rows": 4,
+            "excluded_rows": 0,
+            "grouped_by": "Region",
+            "ranking": {
+              "North": 40.0,
+              "South": 30.0
+            },
+            "requested_result": {
+              "direction": "highest",
+              "dimension": "North",
+              "value": 40.0
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:42:06.269707+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ],
+            "ranking": [
+              "requested_result",
+              "value"
+            ]
+          },
+          "definition": {
+            "term": "revenue",
+            "measure_column": "Revenue",
+            "semantic_role": "revenue",
+            "aggregation": "sum",
+            "grouping_column": "Region",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {},
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.009190999997372273,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-3-0",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Show me the region with the largest revenue last month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008462599998892983,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-3-1",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Show me the region with the largest revenue in North?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008442300000751857,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-3-2",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Show me the region with the largest revenue excluding cancelled orders?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008346599999640603,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-3-3",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Show me the region with the largest revenue in 2025?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008366300000488991,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-3-4",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Show me the region with the largest revenue and forecast next month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008302600002934923,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-3-5",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Show me the region with the largest revenue where revenue exceeds 20?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008398499998293119,
+      "exception": null
+    },
+    {
+      "case_id": "language-4",
+      "family": "language_specification",
+      "seed": 0,
+      "question": "What is the maximum regional profit?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Profit",
+        "operation": "sum",
+        "value": 9.0,
+        "groups": {
+          "North": 7.0,
+          "South": 2.0
+        },
+        "winners": [
+          "North"
+        ],
+        "winning_value": 7.0
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "e4b0ab40-e8e1-4297-a7a2-0bb9dcd9721e",
+          "dataset_id": "accuracy-evaluation",
+          "analysis_type": "ranking",
+          "source_columns": [
+            "Profit",
+            "Region"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "Profit",
+            "sum": 9.0,
+            "mean": 2.25,
+            "rows": 4,
+            "valid_rows": 4,
+            "excluded_rows": 0,
+            "grouped_by": "Region",
+            "ranking": {
+              "North": 7.0,
+              "South": 2.0
+            },
+            "requested_result": {
+              "direction": "highest",
+              "dimension": "North",
+              "value": 7.0
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:42:06.329258+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ],
+            "ranking": [
+              "requested_result",
+              "value"
+            ]
+          },
+          "definition": {
+            "term": "profit",
+            "measure_column": "Profit",
+            "semantic_role": "profit",
+            "aggregation": "sum",
+            "grouping_column": "Region",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {},
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.009218400002282578,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-4-0",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "What is the maximum regional profit last month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008401499999308726,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-4-1",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "What is the maximum regional profit in North?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008558500001527136,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-4-2",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "What is the maximum regional profit excluding cancelled orders?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.009219299998221686,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-4-3",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "What is the maximum regional profit in 2025?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008601900000940077,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-4-4",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "What is the maximum regional profit and forecast next month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008472299999993993,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-4-5",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "What is the maximum regional profit where revenue exceeds 20?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008609100001194747,
+      "exception": null
+    },
+    {
+      "case_id": "language-5",
+      "family": "language_specification",
+      "seed": 0,
+      "question": "Could you please compute the mean of our cost per category?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Cost",
+        "operation": "mean",
+        "value": 5.75,
+        "groups": {
+          "Office": 5.5,
+          "Tools": 6.0
+        }
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "7aeb6edf-3329-45f0-89d8-fa1a4ac22ca0",
+          "dataset_id": "accuracy-evaluation",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Cost",
+            "Category"
+          ],
+          "filters": {},
+          "method": "pandas mean",
+          "result": {
+            "measure": "Cost",
+            "sum": 23.0,
+            "mean": 5.75,
+            "rows": 4,
+            "valid_rows": 4,
+            "excluded_rows": 0,
+            "grouped_by": "Category",
+            "ranking": {
+              "Tools": 6.0,
+              "Office": 5.5
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:42:06.390922+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "cost",
+            "measure_column": "Cost",
+            "semantic_role": "cost",
+            "aggregation": "mean",
+            "grouping_column": "Category",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {},
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.00951790000181063,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-5-0",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Could you please compute the mean of our cost per category last month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008610100001533283,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-5-1",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Could you please compute the mean of our cost per category in North?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008632400000351481,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-5-2",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Could you please compute the mean of our cost per category excluding cancelled orders?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008575799998652656,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-5-3",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Could you please compute the mean of our cost per category in 2025?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008363899996766122,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-5-4",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Could you please compute the mean of our cost per category and forecast next month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008407199999055592,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-5-5",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Could you please compute the mean of our cost per category where revenue exceeds 20?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.00843429999804357,
+      "exception": null
+    },
+    {
+      "case_id": "language-6",
+      "family": "language_specification",
+      "seed": 0,
+      "question": "Revenue grouped by regions",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Revenue",
+        "operation": "sum",
+        "value": 70.0,
+        "groups": {
+          "North": 40.0,
+          "South": 30.0
+        }
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "fe8d0c51-99bd-4170-9ac5-63703138b08e",
+          "dataset_id": "accuracy-evaluation",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Revenue",
+            "Region"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "Revenue",
+            "sum": 70.0,
+            "mean": 17.5,
+            "rows": 4,
+            "valid_rows": 4,
+            "excluded_rows": 0,
+            "grouped_by": "Region",
+            "ranking": {
+              "North": 40.0,
+              "South": 30.0
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:42:06.450446+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "revenue",
+            "measure_column": "Revenue",
+            "semantic_role": "revenue",
+            "aggregation": "sum",
+            "grouping_column": "Region",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {},
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.009219399998983135,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-6-0",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Revenue grouped by regions last month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.00833539999803179,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-6-1",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Revenue grouped by regions in North?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008416799999395153,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-6-2",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Revenue grouped by regions excluding cancelled orders?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008260999999038177,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-6-3",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Revenue grouped by regions in 2025?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008496600003127242,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-6-4",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Revenue grouped by regions and forecast next month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008345700000063516,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-6-5",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Revenue grouped by regions where revenue exceeds 20?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008457800002361182,
+      "exception": null
+    },
+    {
+      "case_id": "language-7",
+      "family": "language_specification",
+      "seed": 0,
+      "question": "Please tell me the sum of revenue broken down by category",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Revenue",
+        "operation": "sum",
+        "value": 70.0,
+        "groups": {
+          "Office": 35.0,
+          "Tools": 35.0
+        }
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "0d64516a-84f9-4d2f-8dd3-86343ae50c0d",
+          "dataset_id": "accuracy-evaluation",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Revenue",
+            "Category"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "Revenue",
+            "sum": 70.0,
+            "mean": 17.5,
+            "rows": 4,
+            "valid_rows": 4,
+            "excluded_rows": 0,
+            "grouped_by": "Category",
+            "ranking": {
+              "Office": 35.0,
+              "Tools": 35.0
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:42:06.510987+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "revenue",
+            "measure_column": "Revenue",
+            "semantic_role": "revenue",
+            "aggregation": "sum",
+            "grouping_column": "Category",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {},
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.009299900000769412,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-7-0",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Please tell me the sum of revenue broken down by category last month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008632100001705112,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-7-1",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Please tell me the sum of revenue broken down by category in North?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008469100001093466,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-7-2",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Please tell me the sum of revenue broken down by category excluding cancelled orders?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.0084272999993118,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-7-3",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Please tell me the sum of revenue broken down by category in 2025?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.00837840000167489,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-7-4",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Please tell me the sum of revenue broken down by category and forecast next month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008478200001263758,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-7-5",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Please tell me the sum of revenue broken down by category where revenue exceeds 20?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.00857449999966775,
+      "exception": null
+    },
+    {
+      "case_id": "language-8",
+      "family": "language_specification",
+      "seed": 0,
+      "question": "How much cost have we spent?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Cost",
+        "operation": "sum",
+        "value": 23.0
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "442fa0cf-7794-44b8-8ead-5dc65bb79a20",
+          "dataset_id": "accuracy-evaluation",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Cost"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "Cost",
+            "sum": 23.0,
+            "mean": 5.75,
+            "rows": 4,
+            "valid_rows": 4,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:42:06.570558+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "cost",
+            "measure_column": "Cost",
+            "semantic_role": "cost",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {},
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.009014200000819983,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-8-0",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "How much cost have we spent last month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008567900000343798,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-8-1",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "How much cost have we spent in North?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008430300000327406,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-8-2",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "How much cost have we spent excluding cancelled orders?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008457500000076834,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-8-3",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "How much cost have we spent in 2025?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.0085335000003397,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-8-4",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "How much cost have we spent and forecast next month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008537699999578763,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-8-5",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "How much cost have we spent where revenue exceeds 20?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008716299998923205,
+      "exception": null
+    },
+    {
+      "case_id": "language-9",
+      "family": "language_specification",
+      "seed": 0,
+      "question": "Which region made the most total profit?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Profit",
+        "operation": "sum",
+        "value": 9.0,
+        "groups": {
+          "North": 7.0,
+          "South": 2.0
+        },
+        "winners": [
+          "North"
+        ],
+        "winning_value": 7.0
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "3c22b722-9180-48a6-b819-b15c6c3d5bf1",
+          "dataset_id": "accuracy-evaluation",
+          "analysis_type": "ranking",
+          "source_columns": [
+            "Profit",
+            "Region"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "Profit",
+            "sum": 9.0,
+            "mean": 2.25,
+            "rows": 4,
+            "valid_rows": 4,
+            "excluded_rows": 0,
+            "grouped_by": "Region",
+            "ranking": {
+              "North": 7.0,
+              "South": 2.0
+            },
+            "requested_result": {
+              "direction": "highest",
+              "dimension": "North",
+              "value": 7.0
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:42:06.631373+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ],
+            "ranking": [
+              "requested_result",
+              "value"
+            ]
+          },
+          "definition": {
+            "term": "profit",
+            "measure_column": "Profit",
+            "semantic_role": "profit",
+            "aggregation": "sum",
+            "grouping_column": "Region",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {},
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.009654199999204138,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-9-0",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Which region made the most total profit last month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.00864949999959208,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-9-1",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Which region made the most total profit in North?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008802899999864167,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-9-2",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Which region made the most total profit excluding cancelled orders?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008762199999182485,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-9-3",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Which region made the most total profit in 2025?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.009087800000997959,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-9-4",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Which region made the most total profit and forecast next month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008396100001846207,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-9-5",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Which region made the most total profit where revenue exceeds 20?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008379499999136897,
+      "exception": null
+    },
+    {
+      "case_id": "language-10",
+      "family": "language_specification",
+      "seed": 0,
+      "question": "Would you show me revenue for each of the regions please?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Revenue",
+        "operation": "sum",
+        "value": 70.0,
+        "groups": {
+          "North": 40.0,
+          "South": 30.0
+        }
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "5016cb98-621d-4ef2-8039-15d9991a7f08",
+          "dataset_id": "accuracy-evaluation",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Revenue",
+            "Region"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "Revenue",
+            "sum": 70.0,
+            "mean": 17.5,
+            "rows": 4,
+            "valid_rows": 4,
+            "excluded_rows": 0,
+            "grouped_by": "Region",
+            "ranking": {
+              "North": 40.0,
+              "South": 30.0
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:42:06.693002+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "revenue",
+            "measure_column": "Revenue",
+            "semantic_role": "revenue",
+            "aggregation": "sum",
+            "grouping_column": "Region",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {},
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.009197900002618553,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-10-0",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Would you show me revenue for each of the regions please last month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008364100001927,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-10-1",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Would you show me revenue for each of the regions please in North?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.00926410000101896,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-10-2",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Would you show me revenue for each of the regions please excluding cancelled orders?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008585199997469317,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-10-3",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Would you show me revenue for each of the regions please in 2025?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.00843650000024354,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-10-4",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Would you show me revenue for each of the regions please and forecast next month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008421100003033644,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-10-5",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Would you show me revenue for each of the regions please where revenue exceeds 20?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008355800000572344,
+      "exception": null
+    },
+    {
+      "case_id": "language-11",
+      "family": "language_specification",
+      "seed": 0,
+      "question": "Give me our average cost by category",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Cost",
+        "operation": "mean",
+        "value": 5.75,
+        "groups": {
+          "Office": 5.5,
+          "Tools": 6.0
+        }
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "17555da4-56f3-4075-947e-d34cb61fc7d6",
+          "dataset_id": "accuracy-evaluation",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Cost",
+            "Category"
+          ],
+          "filters": {},
+          "method": "pandas mean",
+          "result": {
+            "measure": "Cost",
+            "sum": 23.0,
+            "mean": 5.75,
+            "rows": 4,
+            "valid_rows": 4,
+            "excluded_rows": 0,
+            "grouped_by": "Category",
+            "ranking": {
+              "Tools": 6.0,
+              "Office": 5.5
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:42:06.753115+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "cost",
+            "measure_column": "Cost",
+            "semantic_role": "cost",
+            "aggregation": "mean",
+            "grouping_column": "Category",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {},
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.009252200001355959,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-11-0",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Give me our average cost by category last month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008795000001555309,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-11-1",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Give me our average cost by category in North?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008767999999690801,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-11-2",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Give me our average cost by category excluding cancelled orders?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008677699999680044,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-11-3",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Give me our average cost by category in 2025?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008930099997087382,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-11-4",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Give me our average cost by category and forecast next month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008925800000724848,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-11-5",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Give me our average cost by category where revenue exceeds 20?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008642699998745229,
+      "exception": null
+    },
+    {
+      "case_id": "language-12",
+      "family": "language_specification",
+      "seed": 0,
+      "question": "Which region has the smallest average revenue?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Revenue",
+        "operation": "mean",
+        "value": 17.5,
+        "groups": {
+          "North": 20.0,
+          "South": 15.0
+        },
+        "winners": [
+          "South"
+        ],
+        "winning_value": 15.0
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "6ee6e508-e072-4cce-8582-0506e9841291",
+          "dataset_id": "accuracy-evaluation",
+          "analysis_type": "ranking",
+          "source_columns": [
+            "Revenue",
+            "Region"
+          ],
+          "filters": {},
+          "method": "pandas mean",
+          "result": {
+            "measure": "Revenue",
+            "sum": 70.0,
+            "mean": 17.5,
+            "rows": 4,
+            "valid_rows": 4,
+            "excluded_rows": 0,
+            "grouped_by": "Region",
+            "ranking": {
+              "South": 15.0,
+              "North": 20.0
+            },
+            "requested_result": {
+              "direction": "lowest",
+              "dimension": "South",
+              "value": 15.0
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:42:06.816179+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ],
+            "ranking": [
+              "requested_result",
+              "value"
+            ]
+          },
+          "definition": {
+            "term": "revenue",
+            "measure_column": "Revenue",
+            "semantic_role": "revenue",
+            "aggregation": "mean",
+            "grouping_column": "Region",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {},
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.009696799999801442,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-12-0",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Which region has the smallest average revenue last month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008804799999779789,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-12-1",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Which region has the smallest average revenue in North?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.009004700001241872,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-12-2",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Which region has the smallest average revenue excluding cancelled orders?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008787399998254841,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-12-3",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Which region has the smallest average revenue in 2025?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.00862079999933485,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-12-4",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Which region has the smallest average revenue and forecast next month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.00842449999981909,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-12-5",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Which region has the smallest average revenue where revenue exceeds 20?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.00843430000168155,
+      "exception": null
+    },
+    {
+      "case_id": "language-13",
+      "family": "language_specification",
+      "seed": 0,
+      "question": "What is the least regional profit?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Profit",
+        "operation": "sum",
+        "value": 9.0,
+        "groups": {
+          "North": 7.0,
+          "South": 2.0
+        },
+        "winners": [
+          "South"
+        ],
+        "winning_value": 2.0
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "d23528b7-c6de-47b8-9b6e-6d75011f4548",
+          "dataset_id": "accuracy-evaluation",
+          "analysis_type": "ranking",
+          "source_columns": [
+            "Profit",
+            "Region"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "Profit",
+            "sum": 9.0,
+            "mean": 2.25,
+            "rows": 4,
+            "valid_rows": 4,
+            "excluded_rows": 0,
+            "grouped_by": "Region",
+            "ranking": {
+              "South": 2.0,
+              "North": 7.0
+            },
+            "requested_result": {
+              "direction": "lowest",
+              "dimension": "South",
+              "value": 2.0
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:42:06.877309+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ],
+            "ranking": [
+              "requested_result",
+              "value"
+            ]
+          },
+          "definition": {
+            "term": "profit",
+            "measure_column": "Profit",
+            "semantic_role": "profit",
+            "aggregation": "sum",
+            "grouping_column": "Region",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {},
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.009338600000774022,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-13-0",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "What is the least regional profit last month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.00850449999779812,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-13-1",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "What is the least regional profit in North?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.00848970000151894,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-13-2",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "What is the least regional profit excluding cancelled orders?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008481299999402836,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-13-3",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "What is the least regional profit in 2025?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008440300000074785,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-13-4",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "What is the least regional profit and forecast next month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008478699997795047,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-13-5",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "What is the least regional profit where revenue exceeds 20?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008389999999053543,
+      "exception": null
+    },
+    {
+      "case_id": "language-14",
+      "family": "language_specification",
+      "seed": 0,
+      "question": "Profit averages per category",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Profit",
+        "operation": "mean",
+        "value": 2.25,
+        "groups": {
+          "Office": 0.5,
+          "Tools": 4.0
+        }
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "3f3766d2-33ad-4823-bf56-4f60bf319384",
+          "dataset_id": "accuracy-evaluation",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Profit",
+            "Category"
+          ],
+          "filters": {},
+          "method": "pandas mean",
+          "result": {
+            "measure": "Profit",
+            "sum": 9.0,
+            "mean": 2.25,
+            "rows": 4,
+            "valid_rows": 4,
+            "excluded_rows": 0,
+            "grouped_by": "Category",
+            "ranking": {
+              "Tools": 4.0,
+              "Office": 0.5
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:42:06.937447+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "profit",
+            "measure_column": "Profit",
+            "semantic_role": "profit",
+            "aggregation": "mean",
+            "grouping_column": "Category",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {},
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.009342800000013085,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-14-0",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Profit averages per category last month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008517700000084005,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-14-1",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Profit averages per category in North?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008388900001591537,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-14-2",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Profit averages per category excluding cancelled orders?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008430899997620145,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-14-3",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Profit averages per category in 2025?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008359600000403589,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-14-4",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Profit averages per category and forecast next month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008525699999154313,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-14-5",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Profit averages per category where revenue exceeds 20?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.009135799999057781,
+      "exception": null
+    },
+    {
+      "case_id": "language-15",
+      "family": "language_specification",
+      "seed": 0,
+      "question": "Compute revenue across all categories",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Revenue",
+        "operation": "sum",
+        "value": 70.0
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "77e70f5c-496e-4dc2-8d34-fc971455754f",
+          "dataset_id": "accuracy-evaluation",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Revenue"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "Revenue",
+            "sum": 70.0,
+            "mean": 17.5,
+            "rows": 4,
+            "valid_rows": 4,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:42:06.997742+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "revenue",
+            "measure_column": "Revenue",
+            "semantic_role": "revenue",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {},
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.009201300003041979,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-15-0",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Compute revenue across all categories last month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.009127900000748923,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-15-1",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Compute revenue across all categories in North?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.009286300002713688,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-15-2",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Compute revenue across all categories excluding cancelled orders?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008774199999606935,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-15-3",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Compute revenue across all categories in 2025?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008740799999941373,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-15-4",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Compute revenue across all categories and forecast next month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008549499998480314,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-15-5",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Compute revenue across all categories where revenue exceeds 20?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.00872969999909401,
+      "exception": null
+    },
+    {
+      "case_id": "language-16",
+      "family": "language_specification",
+      "seed": 0,
+      "question": "How much revenue do we generate?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Revenue",
+        "operation": "sum",
+        "value": 70.0
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "732d1317-1b54-4e7b-adc8-e844e23ef997",
+          "dataset_id": "accuracy-evaluation",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Revenue"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "Revenue",
+            "sum": 70.0,
+            "mean": 17.5,
+            "rows": 4,
+            "valid_rows": 4,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:42:07.060036+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "revenue",
+            "measure_column": "Revenue",
+            "semantic_role": "revenue",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {},
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.009114799999224488,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-16-0",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "How much revenue do we generate last month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008729900000616908,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-16-1",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "How much revenue do we generate in North?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.00881909999952768,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-16-2",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "How much revenue do we generate excluding cancelled orders?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008957199999713339,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-16-3",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "How much revenue do we generate in 2025?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008831999999529216,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-16-4",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "How much revenue do we generate and forecast next month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.00898099999903934,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-16-5",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "How much revenue do we generate where revenue exceeds 20?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.009073999997781357,
+      "exception": null
+    },
+    {
+      "case_id": "language-17",
+      "family": "language_specification",
+      "seed": 0,
+      "question": "Can you calculate the total of my profit please?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Profit",
+        "operation": "sum",
+        "value": 9.0
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "89cf6d08-30a4-40f4-9d9b-2ec744ca7bec",
+          "dataset_id": "accuracy-evaluation",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Profit"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "Profit",
+            "sum": 9.0,
+            "mean": 2.25,
+            "rows": 4,
+            "valid_rows": 4,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:42:07.122668+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "profit",
+            "measure_column": "Profit",
+            "semantic_role": "profit",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {},
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.009441599999263417,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-17-0",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Can you calculate the total of my profit please last month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008904799997253576,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-17-1",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Can you calculate the total of my profit please in North?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008955699999205535,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-17-2",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Can you calculate the total of my profit please excluding cancelled orders?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.009123399999225512,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-17-3",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Can you calculate the total of my profit please in 2025?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008916599999793107,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-17-4",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Can you calculate the total of my profit please and forecast next month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.009020800000143936,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-17-5",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Can you calculate the total of my profit please where revenue exceeds 20?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008943100001488347,
+      "exception": null
+    },
+    {
+      "case_id": "language-18",
+      "family": "language_specification",
+      "seed": 0,
+      "question": "Show the category with the highest total revenue",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Revenue",
+        "operation": "sum",
+        "value": 70.0,
+        "groups": {
+          "Office": 35.0,
+          "Tools": 35.0
+        },
+        "winners": [
+          "Office",
+          "Tools"
+        ],
+        "winning_value": 35.0
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "cc221f40-3a4d-4768-89e0-bcf121a8aedf",
+          "dataset_id": "accuracy-evaluation",
+          "analysis_type": "ranking",
+          "source_columns": [
+            "Revenue",
+            "Category"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "Revenue",
+            "sum": 70.0,
+            "mean": 17.5,
+            "rows": 4,
+            "valid_rows": 4,
+            "excluded_rows": 0,
+            "grouped_by": "Category",
+            "ranking": {
+              "Office": 35.0,
+              "Tools": 35.0
+            },
+            "requested_result": {
+              "direction": "highest",
+              "dimension": "Office",
+              "value": 35.0,
+              "ties": [
+                "Office",
+                "Tools"
+              ]
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:42:07.187136+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ],
+            "ranking": [
+              "requested_result",
+              "value"
+            ]
+          },
+          "definition": {
+            "term": "revenue",
+            "measure_column": "Revenue",
+            "semantic_role": "revenue",
+            "aggregation": "sum",
+            "grouping_column": "Category",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {},
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.010245399997074855,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-18-0",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Show the category with the highest total revenue last month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008940800002164906,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-18-1",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Show the category with the highest total revenue in North?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.009084400000574533,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-18-2",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Show the category with the highest total revenue excluding cancelled orders?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.009217399998306064,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-18-3",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Show the category with the highest total revenue in 2025?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008895999999367632,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-18-4",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Show the category with the highest total revenue and forecast next month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.009047200001077726,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-18-5",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "Show the category with the highest total revenue where revenue exceeds 20?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.009107900001254166,
+      "exception": null
+    },
+    {
+      "case_id": "language-19",
+      "family": "language_specification",
+      "seed": 0,
+      "question": "What are our mean profits by category?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Profits",
+        "operation": "mean",
+        "value": 2.25,
+        "groups": {
+          "Office": 0.5,
+          "Tools": 4.0
+        }
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "f5a0cd39-263b-46cb-a048-592abbef1192",
+          "dataset_id": "accuracy-evaluation",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Profits",
+            "Category"
+          ],
+          "filters": {},
+          "method": "pandas mean",
+          "result": {
+            "measure": "Profits",
+            "sum": 9.0,
+            "mean": 2.25,
+            "rows": 4,
+            "valid_rows": 4,
+            "excluded_rows": 0,
+            "grouped_by": "Category",
+            "ranking": {
+              "Tools": 4.0,
+              "Office": 0.5
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:42:07.253639+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "profits",
+            "measure_column": "Profits",
+            "semantic_role": "profit",
+            "aggregation": "mean",
+            "grouping_column": "Category",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {},
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.012082199998985743,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-19-0",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "What are our mean profits by category last month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.009182999998301966,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-19-1",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "What are our mean profits by category in North?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.009119700000155717,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-19-2",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "What are our mean profits by category excluding cancelled orders?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.009132900002441602,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-19-3",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "What are our mean profits by category in 2025?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.00906099999701837,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-19-4",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "What are our mean profits by category and forecast next month?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.009132899998803623,
+      "exception": null
+    },
+    {
+      "case_id": "qualifier-19-5",
+      "family": "unsupported_qualifier",
+      "seed": 0,
+      "question": "What are our mean profits by category where revenue exceeds 20?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008997799999633571,
+      "exception": null
+    },
+    {
+      "case_id": "extra-language-0",
+      "family": "additional_phrasing_challenge",
+      "seed": 0,
+      "question": "Break down revenue by region",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Revenue",
+        "operation": "sum",
+        "value": 70.0,
+        "groups": {
+          "North": 40.0,
+          "South": 30.0
+        }
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "0d57018e-7ecb-42aa-ab9a-df7f35bda0e7",
+          "dataset_id": "accuracy-evaluation",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Revenue",
+            "Region"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "Revenue",
+            "sum": 70.0,
+            "mean": 17.5,
+            "rows": 4,
+            "valid_rows": 4,
+            "excluded_rows": 0,
+            "grouped_by": "Region",
+            "ranking": {
+              "North": 40.0,
+              "South": 30.0
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:42:07.317210+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "revenue",
+            "measure_column": "Revenue",
+            "semantic_role": "revenue",
+            "aggregation": "sum",
+            "grouping_column": "Region",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {},
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.009967800000595162,
+      "exception": null
+    },
+    {
+      "case_id": "extra-language-1",
+      "family": "additional_phrasing_challenge",
+      "seed": 0,
+      "question": "List revenue by region",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Revenue",
+        "operation": "sum",
+        "value": 70.0,
+        "groups": {
+          "North": 40.0,
+          "South": 30.0
+        }
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "d60b7f17-db00-42fa-9e5f-c6e653a05309",
+          "dataset_id": "accuracy-evaluation",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Revenue",
+            "Region"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "Revenue",
+            "sum": 70.0,
+            "mean": 17.5,
+            "rows": 4,
+            "valid_rows": 4,
+            "excluded_rows": 0,
+            "grouped_by": "Region",
+            "ranking": {
+              "North": 40.0,
+              "South": 30.0
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:42:07.328484+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "revenue",
+            "measure_column": "Revenue",
+            "semantic_role": "revenue",
+            "aggregation": "sum",
+            "grouping_column": "Region",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {},
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.010049300002719974,
+      "exception": null
+    },
+    {
+      "case_id": "extra-language-2",
+      "family": "additional_phrasing_challenge",
+      "seed": 0,
+      "question": "Which region brought in the most revenue?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Revenue",
+        "operation": "sum",
+        "value": 70.0,
+        "groups": {
+          "North": 40.0,
+          "South": 30.0
+        },
+        "winners": [
+          "North"
+        ],
+        "winning_value": 40.0
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "907d0e71-fd94-4eb4-b363-31180c7290e5",
+          "dataset_id": "accuracy-evaluation",
+          "analysis_type": "ranking",
+          "source_columns": [
+            "Revenue",
+            "Region"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "Revenue",
+            "sum": 70.0,
+            "mean": 17.5,
+            "rows": 4,
+            "valid_rows": 4,
+            "excluded_rows": 0,
+            "grouped_by": "Region",
+            "ranking": {
+              "North": 40.0,
+              "South": 30.0
+            },
+            "requested_result": {
+              "direction": "highest",
+              "dimension": "North",
+              "value": 40.0
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:42:07.338383+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ],
+            "ranking": [
+              "requested_result",
+              "value"
+            ]
+          },
+          "definition": {
+            "term": "revenue",
+            "measure_column": "Revenue",
+            "semantic_role": "revenue",
+            "aggregation": "sum",
+            "grouping_column": "Region",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {},
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.010399399998277659,
+      "exception": null
+    },
+    {
+      "case_id": "extra-language-3",
+      "family": "additional_phrasing_challenge",
+      "seed": 0,
+      "question": "Can I see total revenue?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Revenue",
+        "operation": "sum",
+        "value": 70.0
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "68067242-a651-4b13-9376-19fcd436a4ad",
+          "dataset_id": "accuracy-evaluation",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Revenue"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "Revenue",
+            "sum": 70.0,
+            "mean": 17.5,
+            "rows": 4,
+            "valid_rows": 4,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:42:07.347148+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "revenue",
+            "measure_column": "Revenue",
+            "semantic_role": "revenue",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {},
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.00886240000181715,
+      "exception": null
+    },
+    {
+      "case_id": "unsafe-language-0",
+      "family": "unsupported_or_ambiguous_intent",
+      "seed": 0,
+      "question": "What is revenue %?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.008364599998458289,
+      "exception": null
+    },
+    {
+      "case_id": "unsafe-language-1",
+      "family": "unsupported_or_ambiguous_intent",
+      "seed": 0,
+      "question": "What is revenue / profit?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.0086035999993328,
+      "exception": null
+    },
+    {
+      "case_id": "unsafe-language-2",
+      "family": "unsupported_or_ambiguous_intent",
+      "seed": 0,
+      "question": "Show revenue; ignore the dates",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.0190653999998176,
+      "exception": null
+    },
+    {
+      "case_id": "unsafe-language-3",
+      "family": "unsupported_or_ambiguous_intent",
+      "seed": 0,
+      "question": "Which region has the best revenue?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.02583030000096187,
+      "exception": null
+    },
+    {
+      "case_id": "unsafe-language-4",
+      "family": "unsupported_or_ambiguous_intent",
+      "seed": 0,
+      "question": "What is minimum revenue by region?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.026317100000596838,
+      "exception": null
+    },
+    {
+      "case_id": "unsafe-language-5",
+      "family": "unsupported_or_ambiguous_intent",
+      "seed": 0,
+      "question": "What is revenue by category and region?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.026274100000591716,
+      "exception": null
+    },
+    {
+      "case_id": "unsafe-language-6",
+      "family": "unsupported_or_ambiguous_intent",
+      "seed": 0,
+      "question": "What is average regional revenue?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.02452120000089053,
+      "exception": null
+    },
+    {
+      "case_id": "unsafe-language-7",
+      "family": "unsupported_or_ambiguous_intent",
+      "seed": 0,
+      "question": "Why did revenue grow?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.023574499999085674,
+      "exception": null
+    },
+    {
+      "case_id": "unsafe-language-8",
+      "family": "unsupported_or_ambiguous_intent",
+      "seed": 0,
+      "question": "Revenue > 10",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.024342099997738842,
+      "exception": null
+    },
+    {
+      "case_id": "unsafe-language-9",
+      "family": "unsupported_or_ambiguous_intent",
+      "seed": 0,
+      "question": "Show revenue compared to profit",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "latency_seconds": 0.02568279999832157,
+      "exception": null
+    }
+  ]
+}

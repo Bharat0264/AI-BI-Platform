@@ -420,3 +420,37 @@ button.danger { background:#fee2e2; color:#991b1b; }
   .assistant-actions button { width: 100%; }
   .stock-search { grid-template-columns:1fr; }
 }
+/* Analyst controls reuse the existing palette and remain readable on narrow screens. */
+.analyst-label { color:var(--ink); letter-spacing:0; text-transform:none; font-size:.9rem; }
+.analyst-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+.analyst-actions { display:flex; gap:10px; flex-wrap:wrap; margin:14px 0; }
+.analyst-actions .secondary, #refreshAnalyst { border:1px solid var(--line); }
+.analyst-cards { display:grid; gap:12px; margin:14px 0; }
+.analyst-card { border:1px solid var(--line); border-radius:10px; padding:16px; background:#fff; min-width:0; overflow-wrap:anywhere; }
+.analyst-card h4 { margin:0 0 10px; }
+.analyst-card p { line-height:1.55; }
+.analyst-review { border:2px solid var(--accent-dark); border-radius:10px; padding:18px; margin-top:16px; background:#f0fdfa; }
+.analyst-review[hidden] { display:none; }
+.analyst-badge { display:inline-block; padding:5px 10px; border-radius:6px; background:#eef2f6; color:#344054; font-size:.82rem; font-weight:800; }
+.analyst-badge.current { background:#dcfce7; color:#166534; }
+.analyst-badge.stale { background:#fff1d6; color:#92400e; }
+.analyst-badge.unknown,.analyst-badge.unresolved { background:#eff6ff; color:#1e40af; }
+#answer { min-height:40px; }
+#recomputeReview pre,#definitionHistory { overflow-wrap:anywhere; white-space:pre-wrap; }
+#analystWorkspace .panel { margin-top:18px; }
+@media(max-width:700px) { .analyst-form { grid-template-columns:1fr; } .analyst-actions button { width:100%; } }
+
+.scope-summary { padding:12px 14px; background:#eef2ff; border-radius:8px; color:#24366b; overflow-wrap:anywhere; line-height:1.6; }
+[aria-invalid="true"] { border:2px solid #b42318; }
+:where(button, a, input, select, textarea, summary):focus-visible { outline:3px solid #4338ca; outline-offset:3px; }
+@media (prefers-reduced-motion:reduce) { *, *::before, *::after { scroll-behavior:auto !important; animation-duration:0.01ms !important; transition-duration:0.01ms !important; } }
+#assistant { min-width:0; overflow-wrap:anywhere; }
+#assistant pre { white-space:pre-wrap; overflow-wrap:anywhere; }
+#assistant .evidence-grid > article { min-width:0; }
+
+#accountLogin { max-width:440px; width:calc(100% - 36px); border:1px solid var(--line); border-radius:14px; padding:24px; color:var(--ink); }
+#accountLogin::backdrop { background:rgba(16,24,40,.65); }
+#accountLogin input { display:block; width:100%; min-height:44px; margin:8px 0 18px; border:1px solid var(--line); border-radius:8px; padding:10px; }
+#accountLogin p { line-height:1.6; }
+#accountLoginStatus { color:#b42318; }
+#accountControls button { margin:8px 0; }

@@ -1,3 +1,9 @@
 -r requirements.txt
-pytest==8.3.5
+pytest==9.0.3
 mongomock>=4.2,<5
+
+playwright>=1.50,<2
+
+pip-audit==2.10.1
+
+filelock>=4.2.6

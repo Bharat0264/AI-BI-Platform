@@ -43,7 +43,9 @@ def get_client():
 def get_database():
     name=os.getenv("MONGODB_DATABASE")
     if not name: raise RuntimeError("MongoDB persistence requires MONGODB_DATABASE.")
-    return get_client()[name]
+    from authentication import principal, tenant_database_name
+    owner=principal.get()
+    return get_client()[tenant_database_name(name,owner) if owner else name]
 
 def ping_database():
     try:
@@ -61,6 +63,10 @@ def ensure_indexes():
         if collection != "datasets":
             db[collection].create_index([("dataset_id",ASCENDING)])
         db[collection].create_index([("workspace_id",ASCENDING)])
+    for collection in ("ai_queries", "reports", "analytics_evidence"):
+        db[collection].create_index([("workspace_id", ASCENDING), ("dataset_id", ASCENDING), ("created_at", ASCENDING)])
+    db["business_definitions"].create_index(
+        [(key, ASCENDING) for key in ("workspace_id", "dataset_id", "term", "version")], unique=True)
     db["semantic_schemas"].create_index([("dataset_id",ASCENDING),("column_name",ASCENDING)],unique=True)
 
 def initialize():

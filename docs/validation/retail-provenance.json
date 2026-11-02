@@ -1,0 +1,21 @@
+{
+  "official": {
+    "rows": 541909,
+    "canonical_sha256": "3a30d32b81eda7a2b150b7825b96e34ca4330442558bab874cec842ea53d20f6",
+    "empty_cells": {
+      "Description": 1454,
+      "CustomerID": 135080
+    }
+  },
+  "local": {
+    "rows": 541909,
+    "canonical_sha256": "3a30d32b81eda7a2b150b7825b96e34ca4330442558bab874cec842ea53d20f6",
+    "empty_cells": {
+      "Description": 1454,
+      "CustomerID": 135080
+    },
+    "path": "data\\data.csv",
+    "equivalent_under_declared_normalization": true,
+    "normalization": "All 8 source columns in row order; ISO seconds; Decimal text for Quantity/UnitPrice/CustomerID; empty cells to empty strings; exact remaining strings. Local dates explicitly MM/DD/YYYY HH:MM, decoded cp1252."
+  }
+}

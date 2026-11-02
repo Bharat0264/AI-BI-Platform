@@ -10,10 +10,15 @@ from gridfs import GridFS
 from flask import Flask
 from flask import Response
 from flask import jsonify
-from flask import request
+from flask import request, g, has_request_context, current_app
 from flask import send_file
 from flask import send_from_directory
 from werkzeug.exceptions import RequestEntityTooLarge
+from security import configure_security, validate_workbook, validate_frame
+from authentication import configure_authentication
+from werkzeug.local import LocalProxy
+import hmac
+import hashlib
 from date_utils import parse_business_dates
 
 ROOT_DIR = Path(__file__).resolve().parent
@@ -23,23 +28,44 @@ if str(APP_DIR) not in sys.path:
 
 from prediction import predict_sales
 from report_generator import generate_pdf_report
-from schema_engine import normalize_business_dataset
+from schema_engine import normalize_business_dataset, ALIASES, _key
+from ingestion import read_csv_dataset
 from stock_analysis import analyze_stock
 from platform_store import add_record, delete_record, get_record, get_setting, init_store, list_records, set_setting, update_record
 from aura import AuraOrchestrator
+from aura.replay import review_token
+from aura.scopes import scope_options
 from aura.providers import GeminiEvidenceProvider
 from persistence import AuraRepository
+from persistence.definitions import DefinitionConflict, MEASURE_TERMS
 from persistence.mongo import get_database, ping_database
 
 
 app = Flask(__name__, static_folder="frontend", static_url_path="")
 app.config["MAX_CONTENT_LENGTH"] = 100 * 1024 * 1024
-init_store()
+configure_security(app)
+configure_authentication(app)
+if app.config["AURA_AUTH_REQUIRED"]:
+    ping_database()
+else:
+    init_store()
 
 DATA_PATH = ROOT_DIR / "data" / "Sample - Superstore.csv"
 SESSION_DATA_PATH = ROOT_DIR / "data" / ".active_dataset.pkl"
 SESSION_META_PATH = ROOT_DIR / "data" / ".active_dataset_source.txt"
-ACTIVE_DATASET = {"df": None, "source": None}
+LEGACY_ACTIVE_DATASET = {"df": None, "source": None}
+
+def account_storage():
+    return has_request_context() and getattr(g, "principal", None) is not None
+
+def resolve_active_dataset():
+    if account_storage():
+        if "active_dataset" not in g:
+            g.active_dataset = load_account_dataset()
+        return g.active_dataset
+    return LEGACY_ACTIVE_DATASET
+
+ACTIVE_DATASET = LocalProxy(resolve_active_dataset)
 AURA = AuraOrchestrator()
 PERSISTENCE = AuraRepository()
 REQUIRED_COLUMNS = [
@@ -58,42 +84,59 @@ def upload_too_large(_error):
     return jsonify({"error": "This file exceeds the 100 MB upload limit. Use a filtered/exported subset for larger files."}), 413
 
 
+def dataset_signature(payload):
+    message = g.principal.encode() + b"\0" + payload
+    return hmac.new(current_app.secret_key.encode(), message, hashlib.sha256).hexdigest()
+
+
+def load_account_dataset():
+    saved = get_setting("active_dataset", {}) or {}
+    empty = {"df": None, "source": None}
+    if not saved.get("file_id"):
+        return empty
+    from gridfs.errors import NoFile
+    from werkzeug.exceptions import Conflict
+    try:
+        payload = GridFS(get_database(), collection="active_datasets").get(saved["file_id"]).read()
+    except NoFile as error:
+        raise Conflict("The stored dataset is unavailable. Re-import your source dataset.") from error
+    expected = dataset_signature(payload)
+    if not hmac.compare_digest(expected, str(saved.get("signature", ""))):
+        from werkzeug.exceptions import Conflict
+        raise Conflict("Stored dataset integrity could not be verified. Re-import your source dataset.")
+    return {"df": pd.read_pickle(BytesIO(payload)), "source": saved.get("source") or "Saved dataset"}
+
+
 def persist_active_dataset(df=None, source=None):
-    """Persist the active data across process restarts without exposing it to an LLM."""
+    """Account namespaces never read/write shared local caches."""
     fs = GridFS(get_database(), collection="active_datasets")
-    current = get_setting("active_dataset", {}) or {}
     if df is None:
-        if current.get("file_id"):
-            try:
-                fs.delete(current["file_id"])
-            except Exception:
-                app.logger.warning("Could not remove the previous active dataset from persistent storage")
         set_setting("active_dataset", {})
-        SESSION_DATA_PATH.unlink(missing_ok=True)
-        SESSION_META_PATH.unlink(missing_ok=True)
+        if not account_storage():
+            SESSION_DATA_PATH.unlink(missing_ok=True)
+            SESSION_META_PATH.unlink(missing_ok=True)
+        # Keep immutable blobs: another in-flight request may still reference one.
         return
-    buffer = BytesIO()
-    df.to_pickle(buffer)
-    file_id = fs.put(buffer.getvalue(), filename=str(source or "Saved dataset"), metadata={"source": str(source or "Saved dataset")})
-    set_setting("active_dataset", {"file_id": file_id, "source": str(source or "Saved dataset")})
-    if current.get("file_id"):
-        try:
-            fs.delete(current["file_id"])
-        except Exception:
-            app.logger.warning("Could not remove a superseded active dataset from persistent storage")
-    # Keep a local cache for development; the GridFS copy is authoritative on Render.
-    df.to_pickle(SESSION_DATA_PATH)
-    SESSION_META_PATH.write_text(str(source or "Saved dataset"), encoding="utf-8")
+    buffer = BytesIO(); df.to_pickle(buffer); payload = buffer.getvalue()
+    file_id = fs.put(payload, filename=str(source or "Saved dataset"))
+    saved = {"file_id": file_id, "source": str(source or "Saved dataset")}
+    if account_storage(): saved["signature"] = dataset_signature(payload)
+    set_setting("active_dataset", saved)
+    if not account_storage():
+        df.to_pickle(SESSION_DATA_PATH)
+        SESSION_META_PATH.write_text(str(source or "Saved dataset"), encoding="utf-8")
 
 
 def aura_context(df, source):
     """Resolve normalized persistence ownership without changing route contracts."""
     workspace_id = PERSISTENCE.workspace(get_setting("current_user", {}).get("workspace", "Executive Workspace"))
-    dataset_id = PERSISTENCE.dataset(workspace_id, str(source or "active"), df, SESSION_DATA_PATH)
+    dataset_id = PERSISTENCE.dataset(workspace_id, str(source or "active"), df, "account GridFS" if account_storage() else SESSION_DATA_PATH)
     return workspace_id, dataset_id
 
 
 def restore_active_dataset():
+    if app.config["AURA_AUTH_REQUIRED"]:
+        return
     try:
         saved = get_setting("active_dataset", {}) or {}
         if saved.get("file_id"):
@@ -117,15 +160,12 @@ restore_active_dataset()
 def read_dataset(source, filename=None):
     name = (filename or getattr(source, "filename", "") or str(source)).lower()
     if name.endswith((".xlsx", ".xls")):
-        return pd.read_excel(source)
+        if name.endswith(".xlsx"):
+            validate_workbook(source)
+        return validate_frame(pd.read_excel(source, nrows=1000001))
     if name.endswith(".json"):
-        return pd.read_json(source)
-    try:
-        return pd.read_csv(source, encoding="utf-8")
-    except UnicodeDecodeError:
-        if hasattr(source, "seek"):
-            source.seek(0)
-        return pd.read_csv(source, encoding="latin1")
+        return validate_frame(pd.read_json(source))
+    return validate_frame(read_csv_dataset(source, max_rows=1000000))
 
 
 def validate_dataset(df):
@@ -133,6 +173,8 @@ def validate_dataset(df):
 
 
 def prepare_dataset(df):
+    if not financial_dashboard_available(df):
+        raise ValueError("Financial views require supplied revenue/profit measures and a usable date. Use Data Intelligence and AI Analyst for this dataset.")
     prepared, _, _ = normalize_business_dataset(df)
     prepared["Order Date"] = parse_business_dates(prepared["Order Date"])
     prepared["Sales"] = pd.to_numeric(prepared["Sales"], errors="coerce").fillna(0)
@@ -615,11 +657,43 @@ def demand_plan(df, quantity_is_estimated=False):
     return {"totals": totals, "products": plans[:50], "sectors": sector_rows, "quantityIsEstimated": quantity_is_estimated}
 
 
+def financial_dashboard_available(raw_df):
+    keyed = {_key(column): column for column in raw_df.columns}
+    def numeric(names):
+        return any(name in keyed and pd.to_numeric(raw_df[keyed[name]], errors="coerce").notna().any() for name in names)
+    sales = numeric({"sales", "revenue", "net sales", "gross sales", "turnover", "total amount", "sales amount", "revenue amount"})
+    derived_sales = numeric(set(ALIASES["Quantity"])) and numeric(set(ALIASES["Unit Price"]))
+    profit = numeric({"profit", "net profit", "gross profit", "earnings"})
+    if not (profit and (sales or derived_sales)):
+        return False
+    dates = [keyed[name] for name in ALIASES["Order Date"] if name in keyed]
+    return any(parse_business_dates(raw_df[column]).notna().any() for column in dates)
+
+
+def general_analysis_payload(raw_df, source_name, reason):
+    if raw_df.empty:
+        return {"error": "The dataset has no rows."}, 400
+    payload = empty_payload()
+    payload.update(empty=False, source=source_name, rows=len(raw_df), dashboard_mode="general")
+    payload["quality"].update(rows=len(raw_df), cleanRows="Not transformed", invalidDates="Not assessed", columns=len(raw_df.columns),
+                              missingCells=int(raw_df.isna().sum().sum()), duplicateRows=int(raw_df.duplicated().sum()))
+    payload["datasetProfile"] = {"source": source_name, "mode": "General analytics; financial dashboard unavailable",
+        "recordsAnalyzed": len(raw_df), "totalRecords": len(raw_df), "columns": len(raw_df.columns),
+        "numericColumns": len(raw_df.select_dtypes(include="number").columns), "columnMapping": {},
+        "ingestion": raw_df.attrs.get("ingestion"), "schemaWarnings": [reason]}
+    payload["insights"] = [{"title": "Dataset imported for general analytics", "body": reason + " Use Data Intelligence to confirm column meanings, then ask supported questions in AI Analyst."}]
+    preview = raw_df.head(20).replace([np.inf, -np.inf], np.nan).astype(object)
+    payload["preview"] = preview.where(pd.notna(preview), None).to_dict(orient="records")
+    return payload, 200
+
+
 def analysis_payload(raw_df, source_name, payload=None):
+    if not financial_dashboard_available(raw_df):
+        return general_analysis_payload(raw_df, source_name, "The financial dashboard needs supplied revenue and profit measures and a usable date. This dataset does not supply that schema.")
     try:
         raw_df, column_mapping, schema_warnings = normalize_business_dataset(raw_df)
     except ValueError as exc:
-        return {"error": str(exc)}, 400
+        return general_analysis_payload(raw_df, source_name, str(exc))
 
     df = prepare_dataset(raw_df)
     df.attrs["column_mapping"] = column_mapping
@@ -720,7 +794,10 @@ def api_upload():
     if not uploaded.filename.lower().endswith((".csv", ".xlsx", ".xls", ".json")):
         return jsonify({"error": "Upload a CSV, Excel, or JSON business dataset."}), 400
 
-    raw_df, source_name = read_dataset(uploaded, uploaded.filename), uploaded.filename
+    try:
+        raw_df, source_name = read_dataset(uploaded, uploaded.filename), uploaded.filename
+    except (ValueError, pd.errors.ParserError, pd.errors.EmptyDataError, UnicodeError):
+        return jsonify({"error": "Could not parse this dataset. Check its format and contents."}), 400
     payload, status = analysis_payload(raw_df, source_name)
     if status == 200:
         ACTIVE_DATASET["df"] = raw_df.copy()
@@ -744,28 +821,161 @@ def api_demo():
 
 @app.route("/api/ask", methods=["POST"])
 def api_ask():
-    body = request.get_json(silent=True) or {}
+    body = request.get_json(silent=True)
+    if not isinstance(body, dict):
+        return jsonify({"error": "Provide a JSON object containing the question."}), 400
     question = str(body.get("question", "")).strip()
+    if len(question) > 2000:
+        return jsonify({"error": "Questions must be at most 2,000 characters."}), 400
     if not question:
         return jsonify({"error": "Question is required."}), 400
 
-    raw_df, _ = dataset_from_request()
+    raw_df, source = dataset_from_request()
     if raw_df is None:
         return jsonify({"error": "Import a CSV before asking AI questions."}), 400
     # AURA queries the original frame so unfamiliar, non-sales schemas remain analyzable.
-    result = AURA.answer(question, raw_df, str(ACTIVE_DATASET.get("source") or "active"))
+    workspace_id, dataset_id = aura_context(raw_df, source)
+    corrections = {**get_setting(f"aura_schema:{source}", {}), **PERSISTENCE.corrections(dataset_id)}
+    if (("expected_dataset_id" in body and body["expected_dataset_id"] != dataset_id)
+            or ("expected_workspace_id" in body and body["expected_workspace_id"] != workspace_id)):
+        return jsonify({"error": "The workspace or dataset changed. Refresh before asking with a selected scope."}), 409
+    defaults = PERSISTENCE.definition_defaults(workspace_id, dataset_id)
+    result = AURA.answer(question, raw_df, str(dataset_id), corrections=corrections,
+                         definition=body.get("definition"), saved_definitions=defaults, scope=body.get("scope"))
+    # Provider prose is supplementary and has not passed numerical verification.
     narrative = None
     if result["status"] == "OK":
         narrative = GeminiEvidenceProvider().explain(question, result["evidence"])
-        if narrative:
-            result["answer"] = narrative
-    workspace_id, dataset_id = aura_context(raw_df, ACTIVE_DATASET.get("source"))
+    if narrative:
+        result["explanation"] = narrative
+        result["explanation_verification"] = "NOT_VERIFIED"
     for item in result["evidence"]:
         PERSISTENCE.evidence(workspace_id, dataset_id, item)
-    PERSISTENCE.query(workspace_id, dataset_id, question, result, "Gemini" if narrative else None)
+    query_id = PERSISTENCE.query(workspace_id, dataset_id, question, result, "Gemini" if narrative else None,
+                                 request_definition=body.get("definition"), request_scope=body.get("scope"))
+    if isinstance(query_id, str):
+        result["query_id"] = query_id
+        result["lifecycle"] = PERSISTENCE.artifact_state(workspace_id, "answer", query_id, dataset_id)
     citations = [{"label": "AURA evidence", "value": item["evidence_id"], "source": item["method"]} for item in result["evidence"]]
     add_record("history", question[:80], {"type": "AURA verified question", "question": question, "answer": result["answer"][:500], "evidence": result["evidence"], "plan": result["plan"]})
-    return jsonify({"answer": result["answer"], "citations": citations, "status": result["status"], "plan": result["plan"], "evidence": result["evidence"]})
+    return jsonify({**result, "citations": citations, "explanation": narrative,
+                    "explanation_verification": "NOT_VERIFIED" if narrative else "NOT_RUN"})
+
+
+@app.route("/api/aura/answers", methods=["GET"])
+@app.route("/api/aura/reports", methods=["GET"])
+def aura_artifacts():
+    raw_df, source = dataset_from_request()
+    if raw_df is None:
+        return jsonify({"error": "Import a dataset first."}), 400
+    workspace_id, dataset_id = aura_context(raw_df, source)
+    kind = "answer" if request.path.endswith("answers") else "report"
+    return jsonify({"items": PERSISTENCE.artifact_list(workspace_id, kind, dataset_id),
+                    "active_dataset_id": dataset_id, "limit": 100})
+
+
+@app.route("/api/aura/answers/<artifact_id>", methods=["GET"])
+@app.route("/api/aura/reports/<artifact_id>", methods=["GET"])
+def aura_artifact(artifact_id):
+    raw_df, source = dataset_from_request()
+    if raw_df is None:
+        return jsonify({"error": "Import a dataset first."}), 400
+    workspace_id, dataset_id = aura_context(raw_df, source)
+    kind = "answer" if "/answers/" in request.path else "report"
+    try:
+        return jsonify(PERSISTENCE.artifact_detail(workspace_id, kind, artifact_id, dataset_id))
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 404
+
+
+@app.route("/api/aura/answers/<query_id>/recompute", methods=["POST"])
+def aura_recompute(query_id):
+    body = request.get_json(silent=True)
+    if (not isinstance(body, dict) or set(body) - {"confirmed", "review_token"}
+            or not isinstance(body.get("confirmed", False), bool)):
+        return jsonify({"error": "Provide confirmed (boolean) and the preview review_token to save."}), 400
+    raw_df, source = dataset_from_request()
+    if raw_df is None:
+        return jsonify({"error": "Import the original dataset snapshot first."}), 400
+    workspace_id, dataset_id = aura_context(raw_df, source)
+    try:
+        original = PERSISTENCE._artifact(workspace_id, "answer", query_id)
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 404
+    if original["dataset_id"] != dataset_id:
+        return jsonify({"error": "Load the original dataset snapshot; changed data requires a new question."}), 409
+    if "request_definition" not in original:
+        return jsonify({"error": "This legacy answer has no reliable replay request. Ask a new question."}), 409
+    corrections = {**get_setting(f"aura_schema:{source}", {}), **PERSISTENCE.corrections(dataset_id)}
+    defaults = PERSISTENCE.definition_defaults(workspace_id, dataset_id)
+    result = AURA.answer(original["question"], raw_df, dataset_id, corrections=corrections,
+                         definition=original["request_definition"], saved_definitions=defaults, scope=original.get("request_scope"))
+    token = review_token(query_id, result)
+    if not body.get("confirmed", False):
+        return jsonify({"preview": result, "review_token": token, "recomputed_from": query_id,
+                        "saved": False})
+    if body.get("review_token") != token:
+        return jsonify({"error": "The preview is missing or changed. Review a fresh preview before saving."}), 409
+    if result["status"] != "OK" or result["verification"]["status"] != "SUPPORTED":
+        return jsonify({"error": "Resolve the question's interpretation before saving a recomputation.",
+                        "preview": result}), 400
+    for evidence in result["evidence"]:
+        PERSISTENCE.evidence(workspace_id, dataset_id, evidence)
+    new_id = PERSISTENCE.query(workspace_id, dataset_id, original["question"], result,
+                               request_definition=original["request_definition"], request_scope=original.get("request_scope"), recomputed_from=query_id)
+    return jsonify({**result, "query_id": new_id, "recomputed_from": query_id, "saved": True,
+                    "lifecycle": PERSISTENCE.artifact_state(workspace_id, "answer", new_id, dataset_id)})
+
+
+@app.route("/api/aura/definitions", methods=["GET", "PUT", "DELETE"])
+def aura_definitions():
+    raw_df, source = dataset_from_request()
+    if raw_df is None:
+        return jsonify({"error": "Import a dataset first."}), 400
+    workspace_id, dataset_id = aura_context(raw_df, source)
+    try:
+        if request.method == "GET":
+            term = request.args.get("term")
+            if term is not None:
+                return jsonify({"history": PERSISTENCE.definition_history(workspace_id, dataset_id, term),
+                                "workspace_id": workspace_id, "dataset_id": dataset_id})
+            corrections = {**get_setting(f"aura_schema:{source}", {}), **PERSISTENCE.corrections(dataset_id)}
+            fields = AURA.schema.infer(raw_df, corrections)
+            return jsonify({"definitions": PERSISTENCE.definition_defaults(workspace_id, dataset_id),
+                            "workspace_id": workspace_id, "dataset_id": dataset_id, "dataset_name": str(source or "Dataset"),
+                            "workspace_name": get_setting("current_user", {}).get("workspace", "Executive Workspace"),
+                            "semantic_schema": [{"column": f.column, "semantic_role": f.semantic_role} for f in fields],
+                            "scope_options": scope_options(raw_df, fields)})
+        body = request.get_json(silent=True)
+        if (not isinstance(body, dict) or body.get("confirmed") is not True
+                or set(body) - {"term", "measure_column", "expected_version", "confirmed", "expected_dataset_id", "expected_workspace_id"}):
+            return jsonify({"error": "Provide an explicitly confirmed term, column and expected_version."}), 400
+        if (("expected_dataset_id" in body and body["expected_dataset_id"] != dataset_id)
+                or ("expected_workspace_id" in body and body["expected_workspace_id"] != workspace_id)):
+            return jsonify({"error": "The workspace or dataset changed. Refresh and review the definition again."}), 409
+        term = body.get("term")
+        if not isinstance(term, str) or term not in MEASURE_TERMS:
+            return jsonify({"error": "Unsupported business term."}), 400
+        expected = body.get("expected_version")
+        if isinstance(expected, bool) or not isinstance(expected, int) or expected < 0:
+            return jsonify({"error": "expected_version must be a non-negative integer."}), 400
+        column = body.get("measure_column")
+        role = MEASURE_TERMS[term]
+        if request.method == "PUT":
+            corrections = {**get_setting(f"aura_schema:{source}", {}), **PERSISTENCE.corrections(dataset_id)}
+            preview = AURA.answer(f"What is {term}?", raw_df, str(dataset_id), corrections=corrections,
+                                  definition={"measure_column": column})
+            if preview["status"] != "OK" or preview["verification"]["status"] != "SUPPORTED":
+                return jsonify({"error": "This column cannot define the requested term.",
+                                "detail": preview["answer"]}), 400
+        actor = get_setting("current_user", {}).get("name", "Workspace user")
+        item = PERSISTENCE.save_definition(workspace_id, dataset_id, term, column, role,
+                                           expected, actor, active=request.method == "PUT")
+        return jsonify({"definition": item})
+    except DefinitionConflict as error:
+        return jsonify({"error": str(error)}), 409
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
 
 
 @app.route("/api/aura/inspect")
@@ -872,6 +1082,9 @@ def export_filtered():
     raw_df, _ = dataset_from_request()
     if raw_df is None:
         return jsonify({"error": "Import a CSV before exporting data."}), 400
+    if not financial_dashboard_available(raw_df):
+        return Response(raw_df.to_csv(index=False).encode("utf-8"), mimetype="text/csv",
+                        headers={"Content-Disposition": "attachment; filename=source_dataset.csv"})
     df = prepare_dataset(raw_df)
     filtered, *_ = filter_dataset(df)
     return Response(
@@ -883,27 +1096,46 @@ def export_filtered():
 
 @app.route("/api/report")
 def export_report():
-    raw_df, _ = dataset_from_request()
+    raw_df, source = dataset_from_request()
     if raw_df is None:
         return jsonify({"error": "Import a CSV before generating a report."}), 400
+    if not financial_dashboard_available(raw_df):
+        return jsonify({"error": "This financial PDF report requires supplied revenue/profit measures and a usable date. Use AI Analyst evidence for this general dataset."}), 400
+    workspace_id, dataset_id = aura_context(raw_df, source)
+    previous_id = request.args.get("recomputed_from")
+    original_filters = None
+    if previous_id:
+        try:
+            previous = PERSISTENCE._artifact(workspace_id, "report", previous_id)
+        except ValueError as error:
+            return jsonify({"error": str(error)}), 404
+        if previous["dataset_id"] != dataset_id:
+            return jsonify({"error": "Load the original dataset snapshot to regenerate this report."}), 409
+        if "filters" not in previous:
+            return jsonify({"error": "Legacy report filters are unknown. Generate a new report instead."}), 409
+        if set(request.args) - {"recomputed_from"}:
+            return jsonify({"error": "Regeneration reuses the recorded filters; omit new filter arguments."}), 400
+        original_filters = previous["filters"]
     df = prepare_dataset(raw_df)
-    filtered, *_ = filter_dataset(df)
+    filtered, _, _, regions, categories = filter_dataset(df, original_filters)
     _, forecast = predict_sales(filtered.copy())
     metrics = {item["label"]: item["value"] for item in kpis(filtered)}
     summary = executive_summary(filtered)
-    evidence_records = [r["payload"].get("evidence") for r in list_records("history")[:10] if r["payload"].get("evidence")]
+    evidence_records, excluded = PERSISTENCE.report_evidence(workspace_id, dataset_id)
+    notice = f"Evidence register: current workspace and dataset only. Excluded {excluded} outdated, unresolved or untracked evidence records encountered during selection. Evidence entries retain their own scope and may use all dataset rows."
     pdf_path = generate_pdf_report(
-        "\n\n".join([f"{item['label']}: {item['detail']}" for item in summary]),
-        metrics=metrics,
-        insights=recommendations(filtered),
-        anomalies=anomalies(filtered),
-        forecast=forecast,
-        evidence=evidence_records,
-    )
-    workspace_id, dataset_id = aura_context(raw_df, ACTIVE_DATASET.get("source"))
-    evidence_ids = [item.get("evidence_id") for record in evidence_records for item in (record if isinstance(record, list) else [record]) if isinstance(item, dict) and item.get("evidence_id")]
-    PERSISTENCE.report(workspace_id, dataset_id, evidence_ids, pdf_path)
-    return send_file(pdf_path, as_attachment=True, download_name="AI_Business_Report.pdf")
+        "\n\n".join([f"{item['label']}: {item['detail']}" for item in summary] + [notice]),
+        metrics=metrics, insights=recommendations(filtered), anomalies=anomalies(filtered),
+        forecast=forecast, evidence=evidence_records)
+    evidence_ids = [item["evidence_id"] for item in evidence_records]
+    report_id = PERSISTENCE.report(workspace_id, dataset_id, evidence_ids, pdf_path,
+                                   recomputed_from=previous_id,
+                                   filters={"regions": regions, "categories": categories})
+    response = send_file(pdf_path, as_attachment=True, download_name="AI_Business_Report.pdf")
+    response.headers["X-AURA-Report-ID"] = report_id
+    response.headers["X-AURA-Freshness"] = PERSISTENCE.artifact_state(workspace_id, "report", report_id, dataset_id)["status"]
+    return response
+
 
 
 def plain_metrics(df):
@@ -1127,6 +1359,8 @@ def platform_clean():
 
 @app.route("/api/platform/connect", methods=["POST"])
 def platform_connect():
+    if account_storage():
+        return jsonify({"error": "Server file connectors are disabled for accounts. Upload your own dataset instead."}), 403
     body = request.get_json(silent=True) or {}
     kind = body.get("type", "sqlite")
     if kind != "sqlite":
@@ -1140,7 +1374,8 @@ def platform_connect():
     if not table or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", table):
         return jsonify({"error": "Enter a valid table name."}), 400
     try:
-        with sqlite3.connect(database) as db:
+        with sqlite3.connect(database.as_uri() + "?mode=ro", uri=True) as db:
+            db.execute("PRAGMA query_only = ON")
             raw_df = pd.read_sql_query(f'SELECT * FROM "{table}" LIMIT 100000', db)
         payload, status = analysis_payload(raw_df, f"{database.name}:{table}")
         if status == 200:
@@ -1149,9 +1384,11 @@ def platform_connect():
             add_record("connection", f"{database.name}:{table}", {"type": "sqlite", "database": str(database), "table": table})
         return jsonify(payload), status
     except Exception as exc:
-        return jsonify({"error": f"Connection failed: {exc}"}), 400
+        app.logger.warning("SQLite import failed", exc_info=True)
+        return jsonify({"error": "SQLite import failed. Check the source file and table name."}), 400
 
 
 if __name__ == "__main__":
-    port = int(__import__("os").environ.get("PORT", "5000"))
-    app.run(host="0.0.0.0", port=port)
+    from start import serve_options
+    options = serve_options()
+    app.run(host=options["host"], port=options["port"], threaded=False)

@@ -1,0 +1,776 @@
+{
+  "source": {
+    "id": "retail",
+    "url": "https://archive.ics.uci.edu/static/public/352/online+retail.zip",
+    "archive_file": "retail.zip",
+    "bytes": 23715478,
+    "sha256": "f5385cbb54bbebf7196389109c6b0621faab0c304e3702548165e71c84aede8b",
+    "title": "Online Retail",
+    "authors": "Daqing Chen",
+    "citation_year": 2015,
+    "page": "https://archive.ics.uci.edu/dataset/352/online+retail",
+    "doi": "10.24432/C5BW33",
+    "license": "CC BY 4.0",
+    "retrieved_utc": "2026-11-02",
+    "canonical_rows_sha256": "3a30d32b81eda7a2b150b7825b96e34ca4330442558bab874cec842ea53d20f6"
+  },
+  "source_file_sha256": "d07aec9960083af2339975a3f9d3b26313b342dcd9f86cce0b919b1cde639a44",
+  "source_verification": {
+    "rows": 541909,
+    "canonical_sha256": "3a30d32b81eda7a2b150b7825b96e34ca4330442558bab874cec842ea53d20f6",
+    "empty_cells": {
+      "Description": 1454,
+      "CustomerID": 135080
+    }
+  },
+  "derivation": {
+    "engine": "pandas numeric Quantity * UnitPrice on a derived copy",
+    "reference": "independent Decimal multiplication from original CSV fields",
+    "unit": "GBP, explicitly declared from publisher sterling metadata",
+    "excluded_records": 0,
+    "meaning": "Signed source line amount, including cancellations/adjustments; not profit or booked revenue.",
+    "projection": "All rows; source task columns and two declared derived columns; not a full-width load test."
+  },
+  "summary": {
+    "overall": {
+      "cases": 4,
+      "passed": 4,
+      "failed": 0,
+      "answerable_cases": 4,
+      "resolved_answers": 4,
+      "correct_resolved_answers": 4,
+      "wrong_resolved_answers": 0,
+      "coverage": 1.0,
+      "numeric_accuracy_when_answered": 1.0,
+      "unsafe_unconditional_answers": 0,
+      "unexpected_exceptions": 0
+    },
+    "by_family": {
+      "declared_line_amount": {
+        "cases": 4,
+        "passed": 4,
+        "failed": 0,
+        "answerable_cases": 4,
+        "resolved_answers": 4,
+        "correct_resolved_answers": 4,
+        "wrong_resolved_answers": 0,
+        "coverage": 1.0,
+        "numeric_accuracy_when_answered": 1.0,
+        "unsafe_unconditional_answers": 0,
+        "unexpected_exceptions": 0
+      }
+    },
+    "failure_reasons": {}
+  },
+  "records": [
+    {
+      "case_id": "line-total",
+      "family": "declared_line_amount",
+      "seed": 0,
+      "question": "What is line amount?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "exception": null,
+      "expected": {
+        "measure": "Line Amount",
+        "operation": "sum",
+        "value": 9747747.934
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "aab7c9b4-8398-437f-99fc-b69f03b8a26c",
+          "dataset_id": "retail-declared-line-amount",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Line Amount",
+            "Currency"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "Line Amount",
+            "sum": 9747747.934,
+            "mean": 17.987794876999644,
+            "rows": 541909,
+            "valid_rows": 541909,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:48:25.486813+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "line amount",
+            "measure_column": "Line Amount",
+            "semantic_role": "revenue",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit",
+            "currency": "GBP"
+          },
+          "semantic_corrections": {
+            "Quantity": "quantity",
+            "UnitPrice": "price",
+            "InvoiceDate": "date/time",
+            "Country": "region",
+            "Line Amount": "revenue",
+            "Currency": "generic categorical"
+          },
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.41939080000156537
+    },
+    {
+      "case_id": "line-mean",
+      "family": "declared_line_amount",
+      "seed": 0,
+      "question": "What is average line amount?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "exception": null,
+      "expected": {
+        "measure": "Line Amount",
+        "operation": "mean",
+        "value": 17.987794876999644
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "228c9eb4-4d03-479f-8b28-f7fe0407d15d",
+          "dataset_id": "retail-declared-line-amount",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Line Amount",
+            "Currency"
+          ],
+          "filters": {},
+          "method": "pandas mean",
+          "result": {
+            "measure": "Line Amount",
+            "sum": 9747747.934,
+            "mean": 17.987794876999644,
+            "rows": 541909,
+            "valid_rows": 541909,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:48:25.890017+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "line amount",
+            "measure_column": "Line Amount",
+            "semantic_role": "revenue",
+            "aggregation": "mean",
+            "grouping_column": null,
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit",
+            "currency": "GBP"
+          },
+          "semantic_corrections": {
+            "Quantity": "quantity",
+            "UnitPrice": "price",
+            "InvoiceDate": "date/time",
+            "Country": "region",
+            "Line Amount": "revenue",
+            "Currency": "generic categorical"
+          },
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.4033229000015126
+    },
+    {
+      "case_id": "line-country",
+      "family": "declared_line_amount",
+      "seed": 0,
+      "question": "Show line amount by country",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "exception": null,
+      "expected": {
+        "measure": "Line Amount",
+        "operation": "sum",
+        "value": 9747747.934,
+        "groups": {
+          "United Kingdom": 8187806.364,
+          "France": 197403.9,
+          "Australia": 137077.27,
+          "Netherlands": 284661.54,
+          "Germany": 221698.21,
+          "Norway": 35163.46,
+          "EIRE": 263276.82,
+          "Switzerland": 56385.35,
+          "Spain": 54774.58,
+          "Poland": 7213.14,
+          "Portugal": 29367.02,
+          "Italy": 16890.51,
+          "Belgium": 40910.96,
+          "Lithuania": 1661.06,
+          "Japan": 35340.62,
+          "Iceland": 4310.0,
+          "Channel Islands": 20086.29,
+          "Denmark": 18768.14,
+          "Cyprus": 12946.29,
+          "Sweden": 36595.91,
+          "Austria": 10154.32,
+          "Israel": 7907.82,
+          "Finland": 22326.74,
+          "Bahrain": 548.4,
+          "Greece": 4710.52,
+          "Hong Kong": 10117.04,
+          "Singapore": 9120.39,
+          "Lebanon": 1693.88,
+          "United Arab Emirates": 1902.28,
+          "Saudi Arabia": 131.17,
+          "Czech Republic": 707.72,
+          "Canada": 3666.38,
+          "Unspecified": 4749.79,
+          "Brazil": 1143.6,
+          "USA": 1730.92,
+          "European Community": 1291.75,
+          "Malta": 2505.47,
+          "RSA": 1002.31
+        }
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "67dede4f-7ec1-4603-82cc-5b9115057f74",
+          "dataset_id": "retail-declared-line-amount",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Line Amount",
+            "Country",
+            "Currency"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "Line Amount",
+            "sum": 9747747.934,
+            "mean": 17.987794876999644,
+            "rows": 541909,
+            "valid_rows": 541909,
+            "excluded_rows": 0,
+            "grouped_by": "Country",
+            "ranking": {
+              "United Kingdom": 8187806.364,
+              "Netherlands": 284661.54,
+              "EIRE": 263276.82,
+              "Germany": 221698.21,
+              "France": 197403.9,
+              "Australia": 137077.27,
+              "Switzerland": 56385.35,
+              "Spain": 54774.58,
+              "Belgium": 40910.96,
+              "Sweden": 36595.91,
+              "Japan": 35340.62,
+              "Norway": 35163.46,
+              "Portugal": 29367.02,
+              "Finland": 22326.74,
+              "Channel Islands": 20086.29,
+              "Denmark": 18768.14,
+              "Italy": 16890.51,
+              "Cyprus": 12946.29,
+              "Austria": 10154.32,
+              "Hong Kong": 10117.04,
+              "Singapore": 9120.39,
+              "Israel": 7907.82,
+              "Poland": 7213.14,
+              "Unspecified": 4749.79,
+              "Greece": 4710.52,
+              "Iceland": 4310.0,
+              "Canada": 3666.38,
+              "Malta": 2505.47,
+              "United Arab Emirates": 1902.28,
+              "USA": 1730.92,
+              "Lebanon": 1693.88,
+              "Lithuania": 1661.06,
+              "European Community": 1291.75,
+              "Brazil": 1143.6,
+              "RSA": 1002.3100000000001,
+              "Czech Republic": 707.72,
+              "Bahrain": 548.4,
+              "Saudi Arabia": 131.17
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:48:26.346698+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "line amount",
+            "measure_column": "Line Amount",
+            "semantic_role": "revenue",
+            "aggregation": "sum",
+            "grouping_column": "Country",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit",
+            "currency": "GBP"
+          },
+          "semantic_corrections": {
+            "Quantity": "quantity",
+            "UnitPrice": "price",
+            "InvoiceDate": "date/time",
+            "Country": "region",
+            "Line Amount": "revenue",
+            "Currency": "generic categorical"
+          },
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "latency_seconds": 0.455737100000988
+    },
+    {
+      "case_id": "line-period-comparison",
+      "family": "declared_line_amount",
+      "seed": 0,
+      "question": "What is line amount?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "exception": null,
+      "expected": {
+        "periods": {
+          "current": {
+            "measure": "Line Amount",
+            "operation": "sum",
+            "value": 434308.3,
+            "row_scope": {
+              "selected_rows": 31900,
+              "source_rows": 541909,
+              "row_position_sha256": "f4fc1f125b7fb7ce5baa6c4ad95c3dfc2b03568c756c4d00a7748dff1aff0750",
+              "predicate": {
+                "columns": {
+                  "Country": [
+                    "United Kingdom"
+                  ]
+                },
+                "date": {
+                  "column": "InvoiceDate",
+                  "start_inclusive": "2011-01-01",
+                  "end_inclusive": "2011-01-31",
+                  "end_exclusive": "2011-02-01",
+                  "calendar_days": 31
+                }
+              }
+            }
+          },
+          "baseline": {
+            "measure": "Line Amount",
+            "operation": "sum",
+            "value": 676742.62,
+            "row_scope": {
+              "selected_rows": 40125,
+              "source_rows": 541909,
+              "row_position_sha256": "1d6e22af967155bef78cac092ff373a19831be3c30dd29ec5f63633cbbc752f2",
+              "predicate": {
+                "columns": {
+                  "Country": [
+                    "United Kingdom"
+                  ]
+                },
+                "date": {
+                  "column": "InvoiceDate",
+                  "start_inclusive": "2010-12-01",
+                  "end_inclusive": "2010-12-31",
+                  "end_exclusive": "2011-01-01",
+                  "calendar_days": 31
+                }
+              }
+            }
+          }
+        },
+        "difference": -242434.32,
+        "percent_change": -35.823710940504974
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "af0339ea-2e6e-4f3f-b082-a1ae9471e441",
+          "dataset_id": "retail-declared-line-amount",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Line Amount",
+            "Currency",
+            "Country",
+            "InvoiceDate"
+          ],
+          "filters": {
+            "columns": {
+              "Country": [
+                "United Kingdom"
+              ]
+            },
+            "date": {
+              "column": "InvoiceDate",
+              "start_inclusive": "2011-01-01",
+              "end_exclusive": "2011-02-01",
+              "end_inclusive": "2011-01-31",
+              "calendar_days": 31,
+              "timezone_policy": "naive source calendar; no timezone conversion",
+              "source_date_format": "%m/%d/%Y %H:%M"
+            }
+          },
+          "method": "pandas sum",
+          "result": {
+            "measure": "Line Amount",
+            "sum": 434308.3,
+            "mean": 13.6146802507837,
+            "rows": 31900,
+            "valid_rows": 31900,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:48:26.618295+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "line amount",
+            "measure_column": "Line Amount",
+            "semantic_role": "revenue",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {
+              "Country": [
+                "United Kingdom"
+              ]
+            },
+            "period": {
+              "column": "InvoiceDate",
+              "start_inclusive": "2011-01-01",
+              "end_exclusive": "2011-02-01",
+              "end_inclusive": "2011-01-31",
+              "calendar_days": 31,
+              "timezone_policy": "naive source calendar; no timezone conversion",
+              "source_date_format": "%m/%d/%Y %H:%M"
+            },
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit",
+            "currency": "GBP"
+          },
+          "semantic_corrections": {
+            "Quantity": "quantity",
+            "UnitPrice": "price",
+            "InvoiceDate": "date/time",
+            "Country": "region",
+            "Line Amount": "revenue",
+            "Currency": "generic categorical"
+          },
+          "interpretation_status": "RESOLVED",
+          "scope": {
+            "source_rows": 541909,
+            "selected_rows": 31900,
+            "row_position_sha256": "f4fc1f125b7fb7ce5baa6c4ad95c3dfc2b03568c756c4d00a7748dff1aff0750",
+            "row_position_basis": "zero-based source row order",
+            "period_coverage": "observed rows only; source completeness not established"
+          }
+        },
+        {
+          "evidence_id": "8811d47d-5849-4605-b674-4ea5448ef41d",
+          "dataset_id": "retail-declared-line-amount",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Line Amount",
+            "Currency",
+            "Country",
+            "InvoiceDate"
+          ],
+          "filters": {
+            "columns": {
+              "Country": [
+                "United Kingdom"
+              ]
+            },
+            "date": {
+              "column": "InvoiceDate",
+              "start_inclusive": "2010-12-01",
+              "end_exclusive": "2011-01-01",
+              "end_inclusive": "2010-12-31",
+              "calendar_days": 31,
+              "timezone_policy": "naive source calendar; no timezone conversion",
+              "source_date_format": "%m/%d/%Y %H:%M"
+            }
+          },
+          "method": "pandas sum",
+          "result": {
+            "measure": "Line Amount",
+            "sum": 676742.62,
+            "mean": 16.86585968847352,
+            "rows": 40125,
+            "valid_rows": 40125,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:48:26.644505+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "line amount",
+            "measure_column": "Line Amount",
+            "semantic_role": "revenue",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {
+              "Country": [
+                "United Kingdom"
+              ]
+            },
+            "period": {
+              "column": "InvoiceDate",
+              "start_inclusive": "2010-12-01",
+              "end_exclusive": "2011-01-01",
+              "end_inclusive": "2010-12-31",
+              "calendar_days": 31,
+              "timezone_policy": "naive source calendar; no timezone conversion",
+              "source_date_format": "%m/%d/%Y %H:%M"
+            },
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit",
+            "currency": "GBP"
+          },
+          "semantic_corrections": {
+            "Quantity": "quantity",
+            "UnitPrice": "price",
+            "InvoiceDate": "date/time",
+            "Country": "region",
+            "Line Amount": "revenue",
+            "Currency": "generic categorical"
+          },
+          "interpretation_status": "RESOLVED",
+          "scope": {
+            "source_rows": 541909,
+            "selected_rows": 40125,
+            "row_position_sha256": "1d6e22af967155bef78cac092ff373a19831be3c30dd29ec5f63633cbbc752f2",
+            "row_position_basis": "zero-based source row order",
+            "period_coverage": "observed rows only; source completeness not established"
+          }
+        },
+        {
+          "evidence_id": "fdd01a32-dd05-4c63-a344-8c2e6b428fb0",
+          "dataset_id": "retail-declared-line-amount",
+          "analysis_type": "period comparison",
+          "source_columns": [
+            "Line Amount",
+            "Currency",
+            "Country",
+            "InvoiceDate"
+          ],
+          "filters": {
+            "current": {
+              "columns": {
+                "Country": [
+                  "United Kingdom"
+                ]
+              },
+              "date": {
+                "column": "InvoiceDate",
+                "start_inclusive": "2011-01-01",
+                "end_exclusive": "2011-02-01",
+                "end_inclusive": "2011-01-31",
+                "calendar_days": 31,
+                "timezone_policy": "naive source calendar; no timezone conversion",
+                "source_date_format": "%m/%d/%Y %H:%M"
+              }
+            },
+            "baseline": {
+              "columns": {
+                "Country": [
+                  "United Kingdom"
+                ]
+              },
+              "date": {
+                "column": "InvoiceDate",
+                "start_inclusive": "2010-12-01",
+                "end_exclusive": "2011-01-01",
+                "end_inclusive": "2010-12-31",
+                "calendar_days": 31,
+                "timezone_policy": "naive source calendar; no timezone conversion",
+                "source_date_format": "%m/%d/%Y %H:%M"
+              }
+            }
+          },
+          "method": "deterministic period comparison",
+          "result": {
+            "measure": "Line Amount",
+            "aggregation": "sum",
+            "current": 434308.3,
+            "baseline": 676742.62,
+            "difference": -242434.32,
+            "percent_change": -35.823710940504974,
+            "percent_change_status": "DEFINED",
+            "difference_formula": "current - baseline",
+            "percent_formula": "(current - baseline) / baseline * 100, only when baseline > 0",
+            "direction": "decrease",
+            "period_lengths": {
+              "current": 31,
+              "baseline": 31
+            },
+            "row_counts": {
+              "current": 31900,
+              "baseline": 40125
+            },
+            "numeric_row_counts": {
+              "current": 31900,
+              "baseline": 40125
+            },
+            "excluded_numeric_rows": {
+              "current": 0,
+              "baseline": 0
+            },
+            "normalization": "None; totals are not normalized for different period lengths"
+          },
+          "uncertainty": {
+            "causal_claim": false,
+            "source_completeness_established": false
+          },
+          "timestamp": "2026-11-02T13:48:26.645606+00:00",
+          "result_bindings": {
+            "period_current": [
+              "current"
+            ],
+            "period_baseline": [
+              "baseline"
+            ],
+            "difference": [
+              "difference"
+            ],
+            "percent_change": [
+              "percent_change"
+            ]
+          },
+          "definition": {
+            "term": "line amount",
+            "measure_column": "Line Amount",
+            "semantic_role": "revenue",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {
+              "Country": [
+                "United Kingdom"
+              ]
+            },
+            "period": {
+              "current": {
+                "column": "InvoiceDate",
+                "start_inclusive": "2011-01-01",
+                "end_exclusive": "2011-02-01",
+                "end_inclusive": "2011-01-31",
+                "calendar_days": 31,
+                "timezone_policy": "naive source calendar; no timezone conversion",
+                "source_date_format": "%m/%d/%Y %H:%M"
+              },
+              "baseline": {
+                "column": "InvoiceDate",
+                "start_inclusive": "2010-12-01",
+                "end_exclusive": "2011-01-01",
+                "end_inclusive": "2010-12-31",
+                "calendar_days": 31,
+                "timezone_policy": "naive source calendar; no timezone conversion",
+                "source_date_format": "%m/%d/%Y %H:%M"
+              }
+            },
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit",
+            "currency": "GBP"
+          },
+          "semantic_corrections": {
+            "Quantity": "quantity",
+            "UnitPrice": "price",
+            "InvoiceDate": "date/time",
+            "Country": "region",
+            "Line Amount": "revenue",
+            "Currency": "generic categorical"
+          },
+          "interpretation_status": "RESOLVED",
+          "scope": {
+            "current": {
+              "source_rows": 541909,
+              "selected_rows": 31900,
+              "row_position_sha256": "f4fc1f125b7fb7ce5baa6c4ad95c3dfc2b03568c756c4d00a7748dff1aff0750",
+              "row_position_basis": "zero-based source row order",
+              "period_coverage": "observed rows only; source completeness not established"
+            },
+            "baseline": {
+              "source_rows": 541909,
+              "selected_rows": 40125,
+              "row_position_sha256": "1d6e22af967155bef78cac092ff373a19831be3c30dd29ec5f63633cbbc752f2",
+              "row_position_basis": "zero-based source row order",
+              "period_coverage": "observed rows only; source completeness not established"
+            }
+          },
+          "dependency_evidence_ids": [
+            "af0339ea-2e6e-4f3f-b082-a1ae9471e441",
+            "8811d47d-5849-4605-b674-4ea5448ef41d"
+          ]
+        }
+      ],
+      "latency_seconds": 0.30522969999947236
+    }
+  ],
+  "metadata": {
+    "run_id": "20261102T134826Z",
+    "python": "3.12.16 (main, Oct 26 2026, 14:10:56) [MSC v.1944 64 bit (AMD64)]",
+    "source_hashes": {
+      "experiments/retail_amount.py": "cc3c58338f57e1d6a54bb8494d4360da6d32ca12e3ead2762ae9636056958c3c",
+      "app/ingestion.py": "636e75986efcf30171f748c1f9f0af021c83f2f18df81c1adde76c7edccb2867",
+      "aura/core.py": "42ed0c11996727e0464113ba2a9c2b4371ea77fff88a6bcab2aeab4cbfdb6d01",
+      "aura/scopes.py": "8670c26d6ca9b9ffc417e78969b38f5a2fff38d168e9de553fb50d4b7a83aa7e",
+      "aura/scoped_engine.py": "c1a8fbb7678a7a18dc09c27cfc9d1fe2041b20d69ebfc59797d6896e4c37706f",
+      "experiments/oracle.py": "de381e08d892dddf00009fd5ca0d093ca1f0ccb1767876d2e9d4c1dffef78366"
+    }
+  }
+}

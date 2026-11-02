@@ -34,8 +34,12 @@ function queryString() {
   return params.toString();
 }
 
-async function fetchJson(url, options) {
-  const response = await fetch(url, options);
+async function fetchJson(url, options = {}) {
+  await window.auraAuthReady;
+  const headers = new Headers(options.headers || {});
+  if (window.auraCsrfToken && !["GET", "HEAD", "OPTIONS"].includes((options.method || "GET").toUpperCase())) headers.set("X-CSRF-Token", window.auraCsrfToken);
+  const response = await fetch(url, { ...options, headers });
+  if (response.status === 401) window.showAuraLogin?.();
   const body = await response.text();
   let payload = null;
   try {
@@ -244,6 +248,7 @@ function renderExecutiveSummary(items) {
 
 function renderDatasetProfile(profile) {
   const rows = [
+    ["Dataset Mode", profile.mode || "Financial dashboard"],
     ["Date Range", profile.dateRange],
     ["Records Analyzed", profile.recordsAnalyzed],
     ["Total Records", profile.totalRecords],
@@ -378,6 +383,7 @@ function render(payload) {
   plotLine("monthlyChart", "Monthly Sales Trend", payload.charts.monthlySales.labels, payload.charts.monthlySales.values);
   plotForecast(payload.charts.forecast);
   loadAuraIntelligence().catch(() => {});
+  analyst.refresh();
 }
 
 async function loadAnalysis() {
@@ -416,19 +422,25 @@ async function uploadDataset() {
   const button = document.getElementById("analyzeCsvButton");
   const file = fileInput.files[0];
   if (!file) {
-    setUploadStatus("Choose a CSV file to analyze.", true);
+    setUploadStatus("Choose a CSV, Excel or JSON dataset to import.", true);
     fileInput.click();
     return;
   }
 
+  if (file.size > 100 * 1024 * 1024) {
+    setUploadStatus("This file exceeds 100 MB. Choose a smaller dataset.", true); return;
+  }
+  if (!/\.(csv|xlsx|xls|json)$/i.test(file.name)) {
+    setUploadStatus("Choose a CSV, Excel or JSON file.", true); return;
+  }
   setUploadStatus(`Analyzing ${file.name}...`);
   button.disabled = true;
   const formData = new FormData();
   formData.append("dataset", file);
   try {
     const payload = await fetchJson("/api/upload", { method: "POST", body: formData });
-    render(payload);
-    setUploadStatus(`Imported ${payload.source} with ${payload.rows.toLocaleString()} rows.`);
+    analyst.reset(); render(payload);
+    setUploadStatus(`Imported ${payload.source} with ${payload.rows.toLocaleString()} rows.${payload.dashboard_mode === "general" ? " General analytics mode: use Data Intelligence and AI Analyst; financial dashboards are unavailable." : ""}`);
   } catch (error) {
     setUploadStatus(error.message, true);
   } finally {
@@ -442,7 +454,7 @@ async function loadDemoDataset() {
   button.disabled = true;
   try {
     const payload = await fetchJson("/api/demo", { method: "POST" });
-    render(payload);
+    analyst.reset(); render(payload);
     setUploadStatus(`Loaded ${payload.source} with ${payload.rows.toLocaleString()} rows.`);
   } catch (error) {
     setUploadStatus(error.message, true);
@@ -460,41 +472,18 @@ document.getElementById("demoButton").addEventListener("click", loadDemoDataset)
 
 document.getElementById("datasetFile").addEventListener("change", () => {
   const file = document.getElementById("datasetFile").files[0];
-  setUploadStatus(file ? `${file.name} selected. Click Analyze CSV to import it.` : "");
+  setUploadStatus(file ? `${file.name} selected. Click Import dataset to import it.` : "");
+});
+
+const analyst = window.createAuraAnalyst({
+  request: fetchJson, escapeHtml,
+  onAnswer: (text, speak) => { state.lastAnswer = text; if (speak) speakText(text); },
+  onStatus: setVoiceStatus,
+  reportUrl: () => `/api/report?${queryString()}`,
 });
 
 async function askBusinessQuestion({ speak = true } = {}) {
-  const question = document.getElementById("question").value.trim();
-  if (!question) {
-    setVoiceStatus("Type or speak a business question first.", true);
-    return;
-  }
-
-  document.getElementById("answer").textContent = "Analyzing...";
-  setVoiceStatus("Asking AI analyst...");
-
-  try {
-    const payload = await fetchJson("/api/ask", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        question,
-        regions: state.selectedRegions,
-        categories: state.selectedCategories,
-      }),
-    });
-    state.lastAnswer = payload.answer;
-    document.getElementById("answer").textContent = payload.answer;
-    const citations = payload.citations || [];
-    document.getElementById("answerCitations").innerHTML = citations.map(item => `<article><span>${escapeHtml(item.label)}</span><strong>${escapeHtml(item.value)}</strong><small>${escapeHtml(item.source)}</small></article>`).join("");
-    document.getElementById("aiEvidenceDetail").textContent = JSON.stringify({ plan: payload.plan, evidence: payload.evidence }, null, 2);
-    setVoiceStatus(speak ? "AI answer ready. Playing response..." : "AI answer ready.");
-    if (speak) speakText(payload.answer);
-  } catch (error) {
-    state.lastAnswer = "";
-    document.getElementById("answer").textContent = error.message;
-    setVoiceStatus(error.message, true);
-  }
+  return analyst.ask(document.getElementById("question").value.trim(), { speak });
 }
 
 function startVoiceQuestion() {
@@ -624,6 +613,7 @@ function showFeaturePage(pageId, { updateHash = false } = {}) {
     window.location.hash = pageId;
   }
   window.scrollTo({ top: 0, behavior: "smooth" });
+  if (pageId === "assistant") analyst.refresh();
 
   // Plotly measures hidden containers as zero-width. Resize charts after their
   // feature page becomes visible so charts remain usable when returning to it.
@@ -667,7 +657,7 @@ async function loadAuraIntelligence() {
   document.getElementById("auraDatasetOverview").innerHTML = [["Rows",profile.rows],["Columns",profile.columns],["Duplicates",profile.duplicates],["Missing %",missing.toFixed(1)]].map(([k,v]) => `<article class="card"><div class="metric-label">${k}</div><div class="metric-value">${escapeHtml(v)}</div></article>`).join("");
   const roleOptions=["identifier","date/time","revenue","profit","cost","quantity","price","customer","product","category","region","location","channel","target/outcome","generic numerical","generic categorical"];
   document.getElementById("semanticTable").innerHTML=`<thead><tr><th>Column</th><th>Detected Type</th><th>Semantic Role</th><th>Confidence</th><th>Reason</th><th>Correction</th></tr></thead><tbody>${fields.map(f=>`<tr><td>${escapeHtml(f.column)}</td><td>${escapeHtml(colProfile[f.column]?.dtype||"unknown")}</td><td>${escapeHtml(f.semantic_role)}</td><td>${Math.round(f.confidence*100)}%</td><td>${escapeHtml(f.reason)}</td><td><select data-role-column="${escapeHtml(f.column)}">${roleOptions.map(role=>`<option value="${role}" ${role===f.semantic_role?"selected":""}>${role}</option>`).join("")}</select></td></tr>`).join("")}</tbody>`;
-  document.querySelectorAll("[data-role-column]").forEach(select=>select.addEventListener("change",async()=>{ try { await fetchJson("/api/aura/schema",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({corrections:{[select.dataset.roleColumn]:select.value}})}); loadAuraIntelligence(); } catch(error) { document.getElementById("auraWarnings").textContent=error.message; } }));
+  document.querySelectorAll("[data-role-column]").forEach(select=>select.addEventListener("change",async()=>{ try { await fetchJson("/api/aura/schema",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({corrections:{[select.dataset.roleColumn]:select.value}})}); loadAuraIntelligence(); analyst.refresh(); } catch(error) { document.getElementById("auraWarnings").textContent=error.message; } }));
   document.getElementById("auraKpis").innerHTML = (data.kpis || []).map(k => `<article class="card"><div class="card-kicker">${escapeHtml(k.applicability_reason)}</div><h3>${escapeHtml(k.name)}: ${Number(k.computed_value).toLocaleString(undefined,{maximumFractionDigits:2})}</h3><p>${escapeHtml(k.formula)} · ${escapeHtml(k.source_columns.join(", "))}</p></article>`).join("") || `<p class="muted">No valid KPIs can be derived from this dataset.</p>`;
   document.getElementById("auraWarnings").textContent = (profile.quality_warnings || []).join(" · ") || "No data-quality warnings found.";
   fillAuraSelectors(fields);

@@ -1,6 +1,9 @@
+# Public deploy is intentionally blocked until docs/RELEASE_RUNBOOK.md gates pass.
 services:
   - type: web
     name: ai-bi-platform
     runtime: python
+    autoDeployTrigger: "off"
     buildCommand: python -m pip install -r requirements.txt
-    startCommand: python start.py
+    startCommand: python scripts/release_check.py --target public
+    healthCheckPath: /api/health

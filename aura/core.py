@@ -5,6 +5,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from uuid import uuid4
 import re
+import warnings
 import numpy as np
 import pandas as pd
 from date_utils import parse_business_dates
@@ -14,6 +15,9 @@ from sklearn.metrics import accuracy_score, mean_absolute_error, r2_score, mean_
 from sklearn.model_selection import train_test_split
 from .provenance import EvidenceClaim
 from .verifier import EvidenceVerifier
+from .interpretations import compare_interpretations
+from .questions import parse_question
+from .scoped_engine import answer_scoped
 
 
 ROLE_TERMS = {
@@ -59,6 +63,16 @@ class AnalyticsEvidence:
 def _name(value):
     return re.sub(r"[^a-z0-9]+", " ", str(value).lower()).strip()
 
+def _date_parseability(series):
+    # Profiling needs only a parseable/not-parseable signal, never converted dates.
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", FutureWarning)
+        try:
+            return parse_business_dates(series).notna().mean()
+        except (ValueError, TypeError, FutureWarning):
+            return pd.to_datetime(series, format="mixed", errors="coerce", utc=True).notna().mean()
+
+
 class SemanticSchemaEngine:
     def infer(self, df: pd.DataFrame, corrections: dict | None = None) -> list[SemanticField]:
         corrections = corrections or {}
@@ -68,7 +82,7 @@ class SemanticSchemaEngine:
             if column in corrections:
                 fields.append(SemanticField(column, corrections[column], 1.0, "User-confirmed workspace definition", {"user_correction": 1.0})); continue
             numeric = pd.to_numeric(series, errors="coerce").notna().mean()
-            dates = 1.0 if pd.api.types.is_datetime64_any_dtype(series) else (parse_business_dates(series).notna().mean() if series.dtype == object else 0)
+            dates = 1.0 if pd.api.types.is_datetime64_any_dtype(series) else (_date_parseability(series) if series.dtype == object else 0)
             uniqueness = series.nunique(dropna=True) / max(len(series), 1)
             cardinality = series.nunique(dropna=True)
             categorical_ratio = cardinality / max(len(series), 1)
@@ -254,48 +268,184 @@ class AuraOrchestrator:
         fields=self.schema.infer(df, corrections) if self.config["semantic"] else []
         anomaly=self.anomalies.investigate(df, fields, dataset_id)
         return {"profile":self.schema.profile(df),"semantic_schema":[asdict(f) for f in fields],"kpis":self.kpis.discover(df,fields),"visualizations":self.visuals.recommend(fields),"anomaly_evidence":asdict(anomaly) if anomaly else None}
-    def answer(self, question, df, dataset_id="active"):
-        fields=self.schema.infer(df) if self.config["semantic"] else []
-        plan=self.planner.plan(question,fields) if self.config["planner"] else {"objective":question,"analytical_task":"descriptive statistics","required_columns":[],"filters":{},"aggregations":["sum"],"statistical_method":"static deterministic aggregation","visualization":"bar","validation_rules":[]}
-        roles={f.semantic_role:f.column for f in fields}; q=question.lower()
-        if not any(x in q for x in ("sales","revenue","profit","margin","customer","record","trend","anomaly","top","lowest","region","category")):
-            return {"status":"INSUFFICIENT DATA","answer":"INSUFFICIENT DATA: no supported analytical objective could be resolved.","plan":plan,"evidence":[]}
-        if "revenue" in roles: col=roles["revenue"]
-        elif "profit" in roles: col=roles["profit"]
-        else: return {"status":"INSUFFICIENT DATA","answer":"INSUFFICIENT DATA: a required business measure is unavailable.","plan":plan,"evidence":[]}
-        values=pd.to_numeric(df[col],errors="coerce"); result={"measure":col,"sum":float(values.sum()),"mean":float(values.mean()),"rows":int(len(df))}; columns=[col]
-        dimension = roles.get("region") if "region" in q else roles.get("category") if "category" in q else roles.get("region") or roles.get("category")
-        if dimension and any(x in q for x in ("region","category","top","lowest","by ")):
-            wants_lowest = any(x in q for x in ("lowest", "least", "bottom", "minimum", "min "))
-            grouped=df.assign(_aura_value=values).groupby(dimension)["_aura_value"].sum().sort_values(ascending=wants_lowest)
-            result["grouped_by"]=dimension; result["ranking"]={str(k):float(v) for k,v in grouped.head(10).items()}; columns.append(dimension)
-            if not grouped.empty:
-                result["requested_result"] = {"direction": "lowest" if wants_lowest else "highest", "dimension": str(grouped.index[0]), "value": float(grouped.iloc[0])}
-        evidence=AnalyticsEvidence.create(dataset_id,plan["analytical_task"],columns,"pandas deterministic aggregation",result,uncertainty={"causal_claim":False})
-        text=f"Verified result: {col} totals {result['sum']:,.2f} across {result['rows']:,} rows."
-        if "requested_result" in result:
-            item = result["requested_result"]
-            text = f"Verified result: {item['dimension']} has the {item['direction']} {col} at {item['value']:,.2f}."
-        elif "ranking" in result:
-            text += f" Breakdown by {result['grouped_by']} is included in the evidence."
-        evidence_dict = asdict(evidence)
+    def answer(self, question, df, dataset_id="active", corrections=None, definition=None, saved_definitions=None, scope=None):
+        return answer_scoped(self, question, df, dataset_id, corrections, definition, saved_definitions, scope)
+
+    def _answer_unscoped(self, question, df, dataset_id="active", corrections=None, definition=None, saved_definitions=None, _fields=None):
+        fields = _fields if _fields is not None else self.schema.infer(df, corrections) if self.config["semantic"] else []
+        plan = {"objective": question, "analytical_task": "unsupported", "required_columns": [],
+                "filters": {}, "aggregations": [], "validation_rules": ["exact result binding"]}
+
+        def reject(reason):
+            return {"status": "INSUFFICIENT DATA", "answer": "INSUFFICIENT DATA: " + reason,
+                    "plan": plan, "evidence": [], "claims": [],
+                    "verification": {"status": "NOT_RUN", "claims": []}, "repair_attempts": 0}
+
+        if definition is not None and (not isinstance(definition, dict)
+                or set(definition) != {"measure_column"}
+                or not isinstance(definition["measure_column"], str)):
+            return reject("A definition must contain only a measure_column string.")
+        if not df.columns.is_unique:
+            return reject("Duplicate column names must be resolved first.")
+        measure_terms = {"revenue": "revenue", "sales": "revenue", "profit": "profit",
+                         "cost": "cost", "costs": "cost", "quantity": "quantity"}
+        aliases = dict(measure_terms)
+        field_roles = {}
+        dimension_aliases = {"region": "region", "regions": "region", "regional": "region",
+                             "category": "category", "categories": "category"}
+        dimension_roles = {}
+        for field in fields:
+            name = _name(field.column)
+            if field.semantic_role in {"revenue", "profit", "cost", "quantity"}:
+                aliases[name] = field.semantic_role
+                field_roles.setdefault(name, set()).add(field.semantic_role)
+            if field.semantic_role in {"region", "category"}:
+                dimension_aliases[name] = field.semantic_role
+                dimension_roles.setdefault(name, set()).add(field.semantic_role)
+        intent = parse_question(question, aliases, dimension_aliases)
+        if intent is None:
+            return reject("No complete supported plan could be resolved. Ask for a total, average, grouping or highest/lowest group. Dates, filters, forecasts, ratios and causes require separate supported operations.")
+        alias = intent.measure_alias
+        if len(field_roles.get(alias, set())) > 1:
+            return reject("Column names normalize to conflicting business roles. Confirm unambiguous names first.")
+        dimension_role = dimension_aliases.get(intent.dimension_alias)
+        if len(dimension_roles.get(intent.dimension_alias, set())) > 1:
+            return reject("Grouping names normalize to conflicting business roles.")
+        ranked = intent.direction is not None
+        direction = intent.direction
+        aggregation = intent.aggregation
+        operation = "ranking" if ranked else aggregation
+        plan["parsed_intent"] = intent.to_dict()
+        role = aliases[alias]
+        saved_reference = None
+        candidates = [f.column for f in fields if f.semantic_role == role]
+        exact = [column for column in candidates if _name(column) == alias]
+        if len(exact) == 1:
+            candidates = exact
+        if definition is not None:
+            selected = definition["measure_column"]
+            if selected not in candidates:
+                return reject("The chosen column is not an admissible interpretation of this question.")
+            candidates = [selected]
+        elif not exact and isinstance(saved_definitions, dict) and alias in saved_definitions:
+            saved = saved_definitions[alias]
+            if (not isinstance(saved, dict) or saved.get("active") is not True
+                    or saved.get("dataset_id") != dataset_id
+                    or saved.get("semantic_role") != role
+                    or saved.get("measure_column") not in candidates):
+                return reject("The saved definition is no longer admissible. Review and confirm a new definition.")
+            candidates = [saved["measure_column"]]
+            saved_reference = {key: saved[key] for key in
+                               ("definition_id", "version", "workspace_id", "dataset_id", "term")}
+        if not candidates:
+            return reject("The requested measure is missing; confirm its column and semantic role.")
+        if len(candidates) > 1:
+            plan.update(analytical_task="interpretation comparison", required_columns=candidates,
+                        aggregations=[aggregation])
+            return compare_interpretations(
+                candidates,
+                lambda column: self._answer_unscoped(question, df, dataset_id, corrections,
+                                           definition={"measure_column": column}, _fields=fields),
+                plan, role, term=alias)
+        col = candidates[0]
+        # A rate/margin is not an additive profit amount.
+        if "%" in str(col) or any(token in _name(col).split() for token in ("margin", "percent", "percentage", "pct", "rate")):
+            return reject("Rate and margin calculations require an explicit formula.")
+        dimension = None
+        if dimension_role:
+            dimensions = [f.column for f in fields if f.semantic_role == dimension_role]
+            exact_dimensions = [column for column in dimensions if _name(column) == intent.dimension_alias]
+            if len(exact_dimensions) == 1:
+                dimensions = exact_dimensions
+            if len(dimensions) != 1:
+                return reject("The requested grouping column is missing or ambiguous.")
+            dimension = dimensions[0]
+        if any(isinstance(value, (bool, np.bool_)) for value in df[col].dropna()):
+            return reject("Boolean flags cannot be treated as business amounts.")
+        values = pd.to_numeric(df[col], errors="coerce").replace([np.inf, -np.inf], np.nan)
+        if not values.notna().any():
+            return reject("The requested measure has no finite numeric observations.")
+        currency_columns = []
+        currency = None
+        if role in {"revenue", "profit", "cost"}:
+            currency_columns = [column for column in df.columns if _name(column) in {"currency", "currency code", "iso currency"}]
+            for currency_column in currency_columns:
+                codes = df.loc[values.notna(), currency_column]
+                if codes.isna().any() or not all(isinstance(code, str) and re.fullmatch(r"[A-Za-z]{3}", code.strip()) for code in codes):
+                    return reject("Monetary observations need explicit, consistent currency codes when a currency column is supplied.")
+                observed = {code.strip().upper() for code in codes}
+                if len(observed) != 1 or (currency is not None and currency not in observed):
+                    return reject("Multiple or conflicting currencies require an explicit conversion policy.")
+                currency = next(iter(observed))
+        columns = [col] + ([dimension] if dimension else []) + currency_columns
+        plan.update(analytical_task="ranking" if ranked else "descriptive statistics",
+                    required_columns=columns, aggregations=[aggregation],
+                    statistical_method="pandas " + aggregation)
+        result = {"measure": col, "sum": float(values.sum()), "mean": float(values.mean()),
+                  "rows": int(len(df)), "valid_rows": int(values.notna().sum()),
+                  "excluded_rows": int(values.isna().sum())}
+        if not all(np.isfinite(result[key]) for key in ("sum", "mean")):
+            return reject("The requested calculation overflowed finite numeric limits.")
         claims = []
+        bindings = {"sum": ["sum"], "mean": ["mean"]}
+        if dimension:
+            if df[dimension].isna().any():
+                return reject("Missing grouping values must be resolved before a complete breakdown can be verified.")
+            grouped = df.assign(_aura_value=values).groupby(dimension)["_aura_value"]
+            grouped = grouped.sum(min_count=1) if aggregation == "sum" else grouped.mean()
+            if len({str(label) for label in grouped.index}) != len(grouped):
+                return reject("Distinct group labels collide when represented as text. Confirm unambiguous grouping labels first.")
+            if not np.isfinite(grouped.to_numpy()).all():
+                return reject("One or more groups have no finite result.")
+            lowest = bool(ranked and direction in {"lowest", "least"})
+            grouped = grouped.sort_values(ascending=lowest)
+            result.update(grouped_by=dimension, ranking={str(k): float(v) for k, v in grouped.items()})
+            if ranked:
+                winners = [str(key) for key, value in grouped.items() if value == grouped.iloc[0]]
+                result["requested_result"] = {"direction": "lowest" if lowest else "highest",
+                                              "dimension": winners[0], "value": float(grouped.iloc[0])}
+                if len(winners) > 1:
+                    result["requested_result"]["ties"] = winners
+                bindings["ranking"] = ["requested_result", "value"]
+                text = f"Verified result: {', '.join(winners)} has the {result['requested_result']['direction']} {'average ' if aggregation == 'mean' else ''}{col} at {grouped.iloc[0]:,.2f}."
+            else:
+                text = f"Verified result: {col} {'averages' if aggregation == 'mean' else 'totals'} {result[aggregation]:,.2f}. Breakdown by {dimension} is included in the evidence."
+        else:
+            text = f"Verified result: {col} {'averages' if aggregation == 'mean' else 'totals'} {result[aggregation]:,.2f} across {result['valid_rows']:,} numeric rows."
+        if result["excluded_rows"]:
+            text += f" Excluded {result['excluded_rows']} missing, invalid or non-finite values."
+        text += " Scope: all supplied rows; no filters applied."
+        evidence = asdict(AnalyticsEvidence.create(dataset_id, plan["analytical_task"], columns,
+                         "pandas " + aggregation, result, uncertainty={"causal_claim": False}))
+        evidence["result_bindings"] = bindings
+        definition_record = {"term": alias, "measure_column": col, "semantic_role": role,
+                             "aggregation": aggregation, "grouping_column": dimension,
+                             "filters": {}, "period": "all supplied rows",
+                             "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+                             "selection": "saved definition" if saved_reference else "explicit" if definition is not None or exact else "single detected candidate"}
+        if currency:
+            definition_record["currency"] = currency
+            text += f" Currency: {currency}."
+        if saved_reference:
+            definition_record["saved_reference"] = saved_reference
+            text += f" Using saved definition {alias}, version {saved_reference['version']}: {col}."
+        evidence["definition"] = definition_record
+        evidence["semantic_corrections"] = dict(corrections or {})
+        evidence["interpretation_status"] = "RESOLVED"
+        path = bindings[operation]
+        value = result["requested_result"]["value"] if ranked else result[aggregation]
         if self.config["provenance"]:
-            value = result.get("requested_result", {}).get("value", result["sum"])
-            claims = [EvidenceClaim.numeric(claim_text=text, evidence=evidence_dict, value=value, operation="ranking" if "requested_result" in result else "sum").to_dict()]
+            claims = [EvidenceClaim.numeric(claim_text=text, evidence=evidence, value=value,
+                                            operation=operation, result_path=path).to_dict()]
         verification = {"status": "NOT_RUN", "claims": [], "unsupported_claim_count": 0, "missing_evidence_count": 0}
-        repair_attempts = 0
         if self.config["verifier"] and claims:
-            verification = self.verifier.verify(claims, [evidence_dict], columns).to_dict()
-            # Deterministic output is constructed from the evidence. A repair is
-            # bounded to two attempts and never substitutes an invented number.
-            while verification["status"] != "SUPPORTED" and self.config["repair"] and repair_attempts < 2:
-                repair_attempts += 1
-                claims[0]["expected_value"] = result.get("requested_result", {}).get("value", result["sum"])
-                verification = self.verifier.verify(claims, [evidence_dict], columns).to_dict()
-        if verification["status"] not in {"SUPPORTED", "NOT_RUN"}:
-            return {"status":"INSUFFICIENT DATA","answer":"INSUFFICIENT DATA: no verified evidence could support the requested analytical claim.","plan":plan,"evidence":[evidence_dict],"claims":claims,"verification":verification,"repair_attempts":repair_attempts}
-        return {"status":"OK","answer":text,"plan":plan,"evidence":[evidence_dict],"claims":claims,"verification":verification,"repair_attempts":repair_attempts}
+            verification = self.verifier.verify(claims, [evidence], columns).to_dict()
+            claims = verification["claims"]
+            if verification["status"] != "SUPPORTED":
+                return reject("The calculation could not be bound to verified evidence.")
+        return {"status": "OK", "answer": text, "plan": plan, "evidence": [evidence],
+                "claims": claims, "verification": verification, "repair_attempts": 0,
+                "definition": definition_record}
 
     def run_analysis(self, objective, df, dataset_id="active", dimension=None, measure=None):
         fields=self.schema.infer(df); roles={f.semantic_role:f.column for f in fields}; plan=self.planner.plan(objective,fields)

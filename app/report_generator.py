@@ -1,4 +1,5 @@
 from pathlib import Path
+from uuid import uuid4
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER
@@ -101,7 +102,7 @@ def generate_pdf_report(report_text, metrics=None, insights=None, anomalies=None
     reports_dir = Path(__file__).resolve().parents[1] / "outputs" / "reports"
     reports_dir.mkdir(parents=True, exist_ok=True)
 
-    file_path = reports_dir / "AI_Business_Report.pdf"
+    file_path = reports_dir / f"AI_Business_Report_{uuid4().hex}.pdf"
     doc = SimpleDocTemplate(
         str(file_path),
         pagesize=A4,

@@ -1,0 +1,3550 @@
+{
+  "sources": [
+    {
+      "id": "bike",
+      "url": "https://archive.ics.uci.edu/static/public/275/bike+sharing+dataset.zip",
+      "archive_file": "bike.zip",
+      "bytes": 279992,
+      "sha256": "b70182d0d0508e9abbb79306ce5c0cec34869000f8220175ac83d11dbe845401",
+      "title": "Bike Sharing",
+      "authors": "Hadi Fanaee-T",
+      "citation_year": 2013,
+      "page": "https://archive.ics.uci.edu/dataset/275/bike+sharing+dataset",
+      "doi": "10.24432/C5W894",
+      "license": "CC BY 4.0",
+      "retrieved_utc": "2026-11-02"
+    },
+    {
+      "id": "bank",
+      "url": "https://archive.ics.uci.edu/static/public/222/bank+marketing.zip",
+      "archive_file": "bank.zip",
+      "bytes": 1023843,
+      "sha256": "e0bf5f5de5b846e2f18e9d90606637267d46dfa260e0f17bb12e605db5efbeb4",
+      "title": "Bank Marketing",
+      "authors": "S. Moro, P. Rita, P. Cortez",
+      "citation_year": 2014,
+      "page": "https://archive.ics.uci.edu/dataset/222/bank+marketing",
+      "doi": "10.24432/C5K306",
+      "license": "CC BY 4.0",
+      "retrieved_utc": "2026-11-02"
+    },
+    {
+      "id": "retail",
+      "url": "https://archive.ics.uci.edu/static/public/352/online+retail.zip",
+      "archive_file": "retail.zip",
+      "bytes": 23715478,
+      "sha256": "f5385cbb54bbebf7196389109c6b0621faab0c304e3702548165e71c84aede8b",
+      "title": "Online Retail",
+      "authors": "Daqing Chen",
+      "citation_year": 2015,
+      "page": "https://archive.ics.uci.edu/dataset/352/online+retail",
+      "doi": "10.24432/C5BW33",
+      "license": "CC BY 4.0",
+      "retrieved_utc": "2026-11-02",
+      "canonical_rows_sha256": "3a30d32b81eda7a2b150b7825b96e34ca4330442558bab874cec842ea53d20f6"
+    }
+  ],
+  "tables": [
+    {
+      "table": "day",
+      "source": "bike",
+      "file_sha256": "a6bcf826782d3c0fbfdcbeead17cd0884185a0dafe8ff10cd48a874ee7ba18be",
+      "rows": 731,
+      "source_columns": 16,
+      "validation_columns": [
+        "dteday",
+        "cnt",
+        "season",
+        "workingday"
+      ],
+      "ingested_rows": 731,
+      "ingested_columns_before_projection": 16,
+      "projection": "All rows; only declared task columns are passed to the engine; no records sampled or deleted.",
+      "corrections": {
+        "dteday": "date/time",
+        "cnt": "quantity",
+        "season": "category",
+        "workingday": "category"
+      },
+      "date_format": null
+    },
+    {
+      "table": "hour",
+      "source": "bike",
+      "file_sha256": "e03de4ee4ef4dc376ac6e04bf829673c6269e8eba5c60fa121640fa2f829504f",
+      "rows": 17379,
+      "source_columns": 17,
+      "validation_columns": [
+        "dteday",
+        "cnt",
+        "season",
+        "workingday"
+      ],
+      "ingested_rows": 17379,
+      "ingested_columns_before_projection": 17,
+      "projection": "All rows; only declared task columns are passed to the engine; no records sampled or deleted.",
+      "corrections": {
+        "dteday": "date/time",
+        "cnt": "quantity",
+        "season": "category",
+        "workingday": "category"
+      },
+      "date_format": null
+    },
+    {
+      "table": "bank",
+      "source": "bank",
+      "file_sha256": "d1513ec63b385506f7cfce9f2c5caa9fe99e7ba4e8c3fa264b3aaf0f849ed32d",
+      "rows": 45211,
+      "source_columns": 17,
+      "validation_columns": [
+        "campaign",
+        "job",
+        "month"
+      ],
+      "ingested_rows": 45211,
+      "ingested_columns_before_projection": 17,
+      "projection": "All rows; only declared task columns are passed to the engine; no records sampled or deleted.",
+      "corrections": {
+        "campaign": "quantity",
+        "job": "category",
+        "month": "generic categorical"
+      },
+      "date_format": null
+    },
+    {
+      "table": "retail",
+      "source": "retail",
+      "file_sha256": "d07aec9960083af2339975a3f9d3b26313b342dcd9f86cce0b919b1cde639a44",
+      "rows": 541909,
+      "source_columns": 8,
+      "validation_columns": [
+        "Quantity",
+        "InvoiceDate",
+        "Country"
+      ],
+      "ingested_rows": 541909,
+      "ingested_columns_before_projection": 8,
+      "projection": "All rows; only declared task columns are passed to the engine; no records sampled or deleted.",
+      "corrections": {
+        "Quantity": "quantity",
+        "InvoiceDate": "date/time",
+        "Country": "region"
+      },
+      "date_format": "%m/%d/%Y %H:%M"
+    }
+  ],
+  "summary": {
+    "overall": {
+      "cases": 32,
+      "passed": 29,
+      "failed": 3,
+      "answerable_cases": 27,
+      "resolved_answers": 24,
+      "correct_resolved_answers": 24,
+      "wrong_resolved_answers": 0,
+      "coverage": 0.8888888888888888,
+      "numeric_accuracy_when_answered": 1.0,
+      "unsafe_unconditional_answers": 0,
+      "unexpected_exceptions": 0
+    },
+    "by_family": {
+      "metadata_configured": {
+        "cases": 23,
+        "passed": 23,
+        "failed": 0,
+        "answerable_cases": 23,
+        "resolved_answers": 23,
+        "correct_resolved_answers": 23,
+        "wrong_resolved_answers": 0,
+        "coverage": 1.0,
+        "numeric_accuracy_when_answered": 1.0,
+        "unsafe_unconditional_answers": 0,
+        "unexpected_exceptions": 0
+      },
+      "safe_refusal": {
+        "cases": 5,
+        "passed": 5,
+        "failed": 0,
+        "answerable_cases": 0,
+        "resolved_answers": 0,
+        "correct_resolved_answers": 0,
+        "wrong_resolved_answers": 0,
+        "coverage": null,
+        "numeric_accuracy_when_answered": null,
+        "unsafe_unconditional_answers": 0,
+        "unexpected_exceptions": 0
+      },
+      "unassisted": {
+        "cases": 4,
+        "passed": 1,
+        "failed": 3,
+        "answerable_cases": 4,
+        "resolved_answers": 1,
+        "correct_resolved_answers": 1,
+        "wrong_resolved_answers": 0,
+        "coverage": 0.25,
+        "numeric_accuracy_when_answered": 1.0,
+        "unsafe_unconditional_answers": 0,
+        "unexpected_exceptions": 0
+      }
+    },
+    "failure_reasons": {
+      "Expected OK, got INSUFFICIENT DATA": 3,
+      "No resolved answer": 3
+    }
+  },
+  "records": [
+    {
+      "case_id": "day-cold",
+      "table": "day",
+      "family": "unassisted",
+      "seed": 0,
+      "question": "What is quantity?",
+      "expected_status": "OK",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": false,
+      "errors": [
+        "Expected OK, got INSUFFICIENT DATA",
+        "No resolved answer"
+      ],
+      "expected": {
+        "measure": "cnt",
+        "operation": "sum",
+        "value": 3292679.0
+      },
+      "actual_evidence": [],
+      "exception": null,
+      "latency_seconds": 0.015203599999949802,
+      "declared_settings": {}
+    },
+    {
+      "case_id": "day-total",
+      "table": "day",
+      "family": "metadata_configured",
+      "seed": 0,
+      "question": "What is cnt?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "cnt",
+        "operation": "sum",
+        "value": 3292679.0
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "8d1b72bd-0abb-41bb-ae91-097c6b374b4b",
+          "dataset_id": "real-day",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "cnt"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "cnt",
+            "sum": 3292679.0,
+            "mean": 4504.3488372093025,
+            "rows": 731,
+            "valid_rows": 731,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:25.251735+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "cnt",
+            "measure_column": "cnt",
+            "semantic_role": "quantity",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "dteday": "date/time",
+            "cnt": "quantity",
+            "season": "category",
+            "workingday": "category"
+          },
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "exception": null,
+      "latency_seconds": 0.006370800001604948,
+      "declared_settings": {
+        "corrections": {
+          "dteday": "date/time",
+          "cnt": "quantity",
+          "season": "category",
+          "workingday": "category"
+        }
+      }
+    },
+    {
+      "case_id": "day-mean",
+      "table": "day",
+      "family": "metadata_configured",
+      "seed": 0,
+      "question": "What is average cnt?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "cnt",
+        "operation": "mean",
+        "value": 4504.3488372093025
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "134dc6cb-0686-4705-9eeb-504e463f1ff9",
+          "dataset_id": "real-day",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "cnt"
+          ],
+          "filters": {},
+          "method": "pandas mean",
+          "result": {
+            "measure": "cnt",
+            "sum": 3292679.0,
+            "mean": 4504.3488372093025,
+            "rows": 731,
+            "valid_rows": 731,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:25.253424+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "cnt",
+            "measure_column": "cnt",
+            "semantic_role": "quantity",
+            "aggregation": "mean",
+            "grouping_column": null,
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "dteday": "date/time",
+            "cnt": "quantity",
+            "season": "category",
+            "workingday": "category"
+          },
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "exception": null,
+      "latency_seconds": 0.0013510000026144553,
+      "declared_settings": {
+        "corrections": {
+          "dteday": "date/time",
+          "cnt": "quantity",
+          "season": "category",
+          "workingday": "category"
+        }
+      }
+    },
+    {
+      "case_id": "day-group",
+      "table": "day",
+      "family": "metadata_configured",
+      "seed": 0,
+      "question": "Show cnt by season",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "cnt",
+        "operation": "sum",
+        "value": 3292679.0,
+        "groups": {
+          "1": 471348.0,
+          "2": 918589.0,
+          "3": 1061129.0,
+          "4": 841613.0
+        }
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "b80e0c71-76b3-4154-b272-c8a6e1d79f41",
+          "dataset_id": "real-day",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "cnt",
+            "season"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "cnt",
+            "sum": 3292679.0,
+            "mean": 4504.3488372093025,
+            "rows": 731,
+            "valid_rows": 731,
+            "excluded_rows": 0,
+            "grouped_by": "season",
+            "ranking": {
+              "3": 1061129.0,
+              "2": 918589.0,
+              "4": 841613.0,
+              "1": 471348.0
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:25.256707+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "cnt",
+            "measure_column": "cnt",
+            "semantic_role": "quantity",
+            "aggregation": "sum",
+            "grouping_column": "season",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "dteday": "date/time",
+            "cnt": "quantity",
+            "season": "category",
+            "workingday": "category"
+          },
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "exception": null,
+      "latency_seconds": 0.003291299999546027,
+      "declared_settings": {
+        "corrections": {
+          "dteday": "date/time",
+          "cnt": "quantity",
+          "season": "category",
+          "workingday": "category"
+        }
+      }
+    },
+    {
+      "case_id": "day-rank",
+      "table": "day",
+      "family": "metadata_configured",
+      "seed": 0,
+      "question": "Which season has the highest cnt?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "cnt",
+        "operation": "sum",
+        "value": 3292679.0,
+        "groups": {
+          "1": 471348.0,
+          "2": 918589.0,
+          "3": 1061129.0,
+          "4": 841613.0
+        },
+        "winners": [
+          "3"
+        ],
+        "winning_value": 1061129.0
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "17b9ad22-f393-417c-b660-18cbb2003c85",
+          "dataset_id": "real-day",
+          "analysis_type": "ranking",
+          "source_columns": [
+            "cnt",
+            "season"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "cnt",
+            "sum": 3292679.0,
+            "mean": 4504.3488372093025,
+            "rows": 731,
+            "valid_rows": 731,
+            "excluded_rows": 0,
+            "grouped_by": "season",
+            "ranking": {
+              "3": 1061129.0,
+              "2": 918589.0,
+              "4": 841613.0,
+              "1": 471348.0
+            },
+            "requested_result": {
+              "direction": "highest",
+              "dimension": "3",
+              "value": 1061129.0
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:25.260157+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ],
+            "ranking": [
+              "requested_result",
+              "value"
+            ]
+          },
+          "definition": {
+            "term": "cnt",
+            "measure_column": "cnt",
+            "semantic_role": "quantity",
+            "aggregation": "sum",
+            "grouping_column": "season",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "dteday": "date/time",
+            "cnt": "quantity",
+            "season": "category",
+            "workingday": "category"
+          },
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "exception": null,
+      "latency_seconds": 0.003426499999477528,
+      "declared_settings": {
+        "corrections": {
+          "dteday": "date/time",
+          "cnt": "quantity",
+          "season": "category",
+          "workingday": "category"
+        }
+      }
+    },
+    {
+      "case_id": "day-revenue-missing",
+      "table": "day",
+      "family": "safe_refusal",
+      "seed": 0,
+      "question": "What is revenue?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "exception": null,
+      "latency_seconds": 0.0004602999979397282,
+      "declared_settings": {
+        "corrections": {
+          "dteday": "date/time",
+          "cnt": "quantity",
+          "season": "category",
+          "workingday": "category"
+        }
+      }
+    },
+    {
+      "case_id": "day-filtered",
+      "table": "day",
+      "family": "metadata_configured",
+      "seed": 0,
+      "question": "What is cnt?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "cnt",
+        "operation": "sum",
+        "value": 471348.0,
+        "row_scope": {
+          "selected_rows": 181,
+          "source_rows": 731,
+          "row_position_sha256": "d5e3a07d6ed5bcd8c1c9e1e7881c73d88969d8bcc1a0099b2af8c3a7c7f7a207",
+          "predicate": {
+            "columns": {
+              "season": [
+                "1"
+              ]
+            }
+          }
+        }
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "6260c325-4ecc-47bb-8f5b-5d2a13546643",
+          "dataset_id": "real-day",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "cnt",
+            "season"
+          ],
+          "filters": {
+            "columns": {
+              "season": [
+                "1"
+              ]
+            }
+          },
+          "method": "pandas sum",
+          "result": {
+            "measure": "cnt",
+            "sum": 471348.0,
+            "mean": 2604.1325966850827,
+            "rows": 181,
+            "valid_rows": 181,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:25.264606+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "cnt",
+            "measure_column": "cnt",
+            "semantic_role": "quantity",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {
+              "season": [
+                "1"
+              ]
+            },
+            "period": "all supplied dates within selected filters",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "dteday": "date/time",
+            "cnt": "quantity",
+            "season": "category",
+            "workingday": "category"
+          },
+          "interpretation_status": "RESOLVED",
+          "scope": {
+            "source_rows": 731,
+            "selected_rows": 181,
+            "row_position_sha256": "d5e3a07d6ed5bcd8c1c9e1e7881c73d88969d8bcc1a0099b2af8c3a7c7f7a207",
+            "row_position_basis": "zero-based source row order",
+            "period_coverage": "observed rows only; source completeness not established"
+          }
+        }
+      ],
+      "exception": null,
+      "latency_seconds": 0.004036199999973178,
+      "declared_settings": {
+        "corrections": {
+          "dteday": "date/time",
+          "cnt": "quantity",
+          "season": "category",
+          "workingday": "category"
+        },
+        "scope": {
+          "filters": {
+            "season": [
+              "1"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "case_id": "day-comparison",
+      "table": "day",
+      "family": "metadata_configured",
+      "seed": 0,
+      "question": "What is cnt?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "periods": {
+          "current": {
+            "measure": "cnt",
+            "operation": "sum",
+            "value": 96744.0,
+            "row_scope": {
+              "selected_rows": 31,
+              "source_rows": 731,
+              "row_position_sha256": "ac9ef5b62e6d079ca5d075c8f8077c305d24e45293de210540b99432b0a7b184",
+              "predicate": {
+                "columns": {},
+                "date": {
+                  "column": "dteday",
+                  "start_inclusive": "2012-01-01",
+                  "end_inclusive": "2012-01-31",
+                  "end_exclusive": "2012-02-01",
+                  "calendar_days": 31
+                }
+              }
+            }
+          },
+          "baseline": {
+            "measure": "cnt",
+            "operation": "sum",
+            "value": 38189.0,
+            "row_scope": {
+              "selected_rows": 31,
+              "source_rows": 731,
+              "row_position_sha256": "3a769b546b52d0c3f05c1e24bbe23ca0cdfe2817022881ea5eae861b454f8e2d",
+              "predicate": {
+                "columns": {},
+                "date": {
+                  "column": "dteday",
+                  "start_inclusive": "2011-01-01",
+                  "end_inclusive": "2011-01-31",
+                  "end_exclusive": "2011-02-01",
+                  "calendar_days": 31
+                }
+              }
+            }
+          }
+        },
+        "difference": 58555.0,
+        "percent_change": 153.32949278588075
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "0c9da0b9-db30-4b59-ad2d-7d88b3237470",
+          "dataset_id": "real-day",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "cnt",
+            "dteday"
+          ],
+          "filters": {
+            "columns": {},
+            "date": {
+              "column": "dteday",
+              "start_inclusive": "2012-01-01",
+              "end_exclusive": "2012-02-01",
+              "end_inclusive": "2012-01-31",
+              "calendar_days": 31,
+              "timezone_policy": "naive source calendar; no timezone conversion"
+            }
+          },
+          "method": "pandas sum",
+          "result": {
+            "measure": "cnt",
+            "sum": 96744.0,
+            "mean": 3120.7741935483873,
+            "rows": 31,
+            "valid_rows": 31,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:25.272301+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "cnt",
+            "measure_column": "cnt",
+            "semantic_role": "quantity",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {},
+            "period": {
+              "column": "dteday",
+              "start_inclusive": "2012-01-01",
+              "end_exclusive": "2012-02-01",
+              "end_inclusive": "2012-01-31",
+              "calendar_days": 31,
+              "timezone_policy": "naive source calendar; no timezone conversion"
+            },
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "dteday": "date/time",
+            "cnt": "quantity",
+            "season": "category",
+            "workingday": "category"
+          },
+          "interpretation_status": "RESOLVED",
+          "scope": {
+            "source_rows": 731,
+            "selected_rows": 31,
+            "row_position_sha256": "ac9ef5b62e6d079ca5d075c8f8077c305d24e45293de210540b99432b0a7b184",
+            "row_position_basis": "zero-based source row order",
+            "period_coverage": "observed rows only; source completeness not established"
+          }
+        },
+        {
+          "evidence_id": "c99462db-4750-4c47-b341-2193baac48e8",
+          "dataset_id": "real-day",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "cnt",
+            "dteday"
+          ],
+          "filters": {
+            "columns": {},
+            "date": {
+              "column": "dteday",
+              "start_inclusive": "2011-01-01",
+              "end_exclusive": "2011-02-01",
+              "end_inclusive": "2011-01-31",
+              "calendar_days": 31,
+              "timezone_policy": "naive source calendar; no timezone conversion"
+            }
+          },
+          "method": "pandas sum",
+          "result": {
+            "measure": "cnt",
+            "sum": 38189.0,
+            "mean": 1231.9032258064517,
+            "rows": 31,
+            "valid_rows": 31,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:25.273388+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "cnt",
+            "measure_column": "cnt",
+            "semantic_role": "quantity",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {},
+            "period": {
+              "column": "dteday",
+              "start_inclusive": "2011-01-01",
+              "end_exclusive": "2011-02-01",
+              "end_inclusive": "2011-01-31",
+              "calendar_days": 31,
+              "timezone_policy": "naive source calendar; no timezone conversion"
+            },
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "dteday": "date/time",
+            "cnt": "quantity",
+            "season": "category",
+            "workingday": "category"
+          },
+          "interpretation_status": "RESOLVED",
+          "scope": {
+            "source_rows": 731,
+            "selected_rows": 31,
+            "row_position_sha256": "3a769b546b52d0c3f05c1e24bbe23ca0cdfe2817022881ea5eae861b454f8e2d",
+            "row_position_basis": "zero-based source row order",
+            "period_coverage": "observed rows only; source completeness not established"
+          }
+        },
+        {
+          "evidence_id": "7d2db0ed-91c7-4f81-8d1d-0d2b3f741157",
+          "dataset_id": "real-day",
+          "analysis_type": "period comparison",
+          "source_columns": [
+            "cnt",
+            "dteday"
+          ],
+          "filters": {
+            "current": {
+              "columns": {},
+              "date": {
+                "column": "dteday",
+                "start_inclusive": "2012-01-01",
+                "end_exclusive": "2012-02-01",
+                "end_inclusive": "2012-01-31",
+                "calendar_days": 31,
+                "timezone_policy": "naive source calendar; no timezone conversion"
+              }
+            },
+            "baseline": {
+              "columns": {},
+              "date": {
+                "column": "dteday",
+                "start_inclusive": "2011-01-01",
+                "end_exclusive": "2011-02-01",
+                "end_inclusive": "2011-01-31",
+                "calendar_days": 31,
+                "timezone_policy": "naive source calendar; no timezone conversion"
+              }
+            }
+          },
+          "method": "deterministic period comparison",
+          "result": {
+            "measure": "cnt",
+            "aggregation": "sum",
+            "current": 96744.0,
+            "baseline": 38189.0,
+            "difference": 58555.0,
+            "percent_change": 153.32949278588075,
+            "percent_change_status": "DEFINED",
+            "difference_formula": "current - baseline",
+            "percent_formula": "(current - baseline) / baseline * 100, only when baseline > 0",
+            "direction": "increase",
+            "period_lengths": {
+              "current": 31,
+              "baseline": 31
+            },
+            "row_counts": {
+              "current": 31,
+              "baseline": 31
+            },
+            "numeric_row_counts": {
+              "current": 31,
+              "baseline": 31
+            },
+            "excluded_numeric_rows": {
+              "current": 0,
+              "baseline": 0
+            },
+            "normalization": "None; totals are not normalized for different period lengths"
+          },
+          "uncertainty": {
+            "causal_claim": false,
+            "source_completeness_established": false
+          },
+          "timestamp": "2026-11-02T13:47:25.273388+00:00",
+          "result_bindings": {
+            "period_current": [
+              "current"
+            ],
+            "period_baseline": [
+              "baseline"
+            ],
+            "difference": [
+              "difference"
+            ],
+            "percent_change": [
+              "percent_change"
+            ]
+          },
+          "definition": {
+            "term": "cnt",
+            "measure_column": "cnt",
+            "semantic_role": "quantity",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {},
+            "period": {
+              "current": {
+                "column": "dteday",
+                "start_inclusive": "2012-01-01",
+                "end_exclusive": "2012-02-01",
+                "end_inclusive": "2012-01-31",
+                "calendar_days": 31,
+                "timezone_policy": "naive source calendar; no timezone conversion"
+              },
+              "baseline": {
+                "column": "dteday",
+                "start_inclusive": "2011-01-01",
+                "end_exclusive": "2011-02-01",
+                "end_inclusive": "2011-01-31",
+                "calendar_days": 31,
+                "timezone_policy": "naive source calendar; no timezone conversion"
+              }
+            },
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "dteday": "date/time",
+            "cnt": "quantity",
+            "season": "category",
+            "workingday": "category"
+          },
+          "interpretation_status": "RESOLVED",
+          "scope": {
+            "current": {
+              "source_rows": 731,
+              "selected_rows": 31,
+              "row_position_sha256": "ac9ef5b62e6d079ca5d075c8f8077c305d24e45293de210540b99432b0a7b184",
+              "row_position_basis": "zero-based source row order",
+              "period_coverage": "observed rows only; source completeness not established"
+            },
+            "baseline": {
+              "source_rows": 731,
+              "selected_rows": 31,
+              "row_position_sha256": "3a769b546b52d0c3f05c1e24bbe23ca0cdfe2817022881ea5eae861b454f8e2d",
+              "row_position_basis": "zero-based source row order",
+              "period_coverage": "observed rows only; source completeness not established"
+            }
+          },
+          "dependency_evidence_ids": [
+            "0c9da0b9-db30-4b59-ad2d-7d88b3237470",
+            "c99462db-4750-4c47-b341-2193baac48e8"
+          ]
+        }
+      ],
+      "exception": null,
+      "latency_seconds": 0.01028750000114087,
+      "declared_settings": {
+        "corrections": {
+          "dteday": "date/time",
+          "cnt": "quantity",
+          "season": "category",
+          "workingday": "category"
+        },
+        "scope": {
+          "date_column": "dteday",
+          "period": {
+            "start": "2012-01-01",
+            "end": "2012-01-31"
+          },
+          "compare_to": {
+            "start": "2011-01-01",
+            "end": "2011-01-31"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "hour-cold",
+      "table": "hour",
+      "family": "unassisted",
+      "seed": 0,
+      "question": "What is quantity?",
+      "expected_status": "OK",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": false,
+      "errors": [
+        "Expected OK, got INSUFFICIENT DATA",
+        "No resolved answer"
+      ],
+      "expected": {
+        "measure": "cnt",
+        "operation": "sum",
+        "value": 3292679.0
+      },
+      "actual_evidence": [],
+      "exception": null,
+      "latency_seconds": 0.03072489999976824,
+      "declared_settings": {}
+    },
+    {
+      "case_id": "hour-total",
+      "table": "hour",
+      "family": "metadata_configured",
+      "seed": 0,
+      "question": "What is cnt?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "cnt",
+        "operation": "sum",
+        "value": 3292679.0
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "a76febf1-ed17-4e2b-ba28-6eba74a71457",
+          "dataset_id": "real-hour",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "cnt"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "cnt",
+            "sum": 3292679.0,
+            "mean": 189.46308763450142,
+            "rows": 17379,
+            "valid_rows": 17379,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:25.622318+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "cnt",
+            "measure_column": "cnt",
+            "semantic_role": "quantity",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "dteday": "date/time",
+            "cnt": "quantity",
+            "season": "category",
+            "workingday": "category"
+          },
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "exception": null,
+      "latency_seconds": 0.0068681999982800335,
+      "declared_settings": {
+        "corrections": {
+          "dteday": "date/time",
+          "cnt": "quantity",
+          "season": "category",
+          "workingday": "category"
+        }
+      }
+    },
+    {
+      "case_id": "hour-mean",
+      "table": "hour",
+      "family": "metadata_configured",
+      "seed": 0,
+      "question": "What is average cnt?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "cnt",
+        "operation": "mean",
+        "value": 189.46308763450142
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "8f1daf5f-2e25-4ced-a48c-9e40848d18d0",
+          "dataset_id": "real-hour",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "cnt"
+          ],
+          "filters": {},
+          "method": "pandas mean",
+          "result": {
+            "measure": "cnt",
+            "sum": 3292679.0,
+            "mean": 189.46308763450142,
+            "rows": 17379,
+            "valid_rows": 17379,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:25.628835+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "cnt",
+            "measure_column": "cnt",
+            "semantic_role": "quantity",
+            "aggregation": "mean",
+            "grouping_column": null,
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "dteday": "date/time",
+            "cnt": "quantity",
+            "season": "category",
+            "workingday": "category"
+          },
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "exception": null,
+      "latency_seconds": 0.0067180000005464535,
+      "declared_settings": {
+        "corrections": {
+          "dteday": "date/time",
+          "cnt": "quantity",
+          "season": "category",
+          "workingday": "category"
+        }
+      }
+    },
+    {
+      "case_id": "hour-group",
+      "table": "hour",
+      "family": "metadata_configured",
+      "seed": 0,
+      "question": "Show cnt by season",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "cnt",
+        "operation": "sum",
+        "value": 3292679.0,
+        "groups": {
+          "1": 471348.0,
+          "2": 918589.0,
+          "3": 1061129.0,
+          "4": 841613.0
+        }
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "e9c4f10a-96c0-410f-9e6b-a6678ae42b9a",
+          "dataset_id": "real-hour",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "cnt",
+            "season"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "cnt",
+            "sum": 3292679.0,
+            "mean": 189.46308763450142,
+            "rows": 17379,
+            "valid_rows": 17379,
+            "excluded_rows": 0,
+            "grouped_by": "season",
+            "ranking": {
+              "3": 1061129.0,
+              "2": 918589.0,
+              "4": 841613.0,
+              "1": 471348.0
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:25.638818+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "cnt",
+            "measure_column": "cnt",
+            "semantic_role": "quantity",
+            "aggregation": "sum",
+            "grouping_column": "season",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "dteday": "date/time",
+            "cnt": "quantity",
+            "season": "category",
+            "workingday": "category"
+          },
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "exception": null,
+      "latency_seconds": 0.009403600000950973,
+      "declared_settings": {
+        "corrections": {
+          "dteday": "date/time",
+          "cnt": "quantity",
+          "season": "category",
+          "workingday": "category"
+        }
+      }
+    },
+    {
+      "case_id": "hour-rank",
+      "table": "hour",
+      "family": "metadata_configured",
+      "seed": 0,
+      "question": "Which season has the highest cnt?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "cnt",
+        "operation": "sum",
+        "value": 3292679.0,
+        "groups": {
+          "1": 471348.0,
+          "2": 918589.0,
+          "3": 1061129.0,
+          "4": 841613.0
+        },
+        "winners": [
+          "3"
+        ],
+        "winning_value": 1061129.0
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "779f36ce-5137-4554-8f80-e8890480288a",
+          "dataset_id": "real-hour",
+          "analysis_type": "ranking",
+          "source_columns": [
+            "cnt",
+            "season"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "cnt",
+            "sum": 3292679.0,
+            "mean": 189.46308763450142,
+            "rows": 17379,
+            "valid_rows": 17379,
+            "excluded_rows": 0,
+            "grouped_by": "season",
+            "ranking": {
+              "3": 1061129.0,
+              "2": 918589.0,
+              "4": 841613.0,
+              "1": 471348.0
+            },
+            "requested_result": {
+              "direction": "highest",
+              "dimension": "3",
+              "value": 1061129.0
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:25.648743+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ],
+            "ranking": [
+              "requested_result",
+              "value"
+            ]
+          },
+          "definition": {
+            "term": "cnt",
+            "measure_column": "cnt",
+            "semantic_role": "quantity",
+            "aggregation": "sum",
+            "grouping_column": "season",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "dteday": "date/time",
+            "cnt": "quantity",
+            "season": "category",
+            "workingday": "category"
+          },
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "exception": null,
+      "latency_seconds": 0.009773599998879945,
+      "declared_settings": {
+        "corrections": {
+          "dteday": "date/time",
+          "cnt": "quantity",
+          "season": "category",
+          "workingday": "category"
+        }
+      }
+    },
+    {
+      "case_id": "hour-revenue-missing",
+      "table": "hour",
+      "family": "safe_refusal",
+      "seed": 0,
+      "question": "What is revenue?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "exception": null,
+      "latency_seconds": 0.00039990000004763715,
+      "declared_settings": {
+        "corrections": {
+          "dteday": "date/time",
+          "cnt": "quantity",
+          "season": "category",
+          "workingday": "category"
+        }
+      }
+    },
+    {
+      "case_id": "hour-filtered",
+      "table": "hour",
+      "family": "metadata_configured",
+      "seed": 0,
+      "question": "What is cnt?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "cnt",
+        "operation": "sum",
+        "value": 471348.0,
+        "row_scope": {
+          "selected_rows": 4242,
+          "source_rows": 17379,
+          "row_position_sha256": "6eb3a3fbf30a3b1491643d6515d15c6f45bc520f7b3f11191d9b6f9f5b12c8fe",
+          "predicate": {
+            "columns": {
+              "season": [
+                "1"
+              ]
+            }
+          }
+        }
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "63960b64-b526-4cbf-9b9d-30acf71ab42a",
+          "dataset_id": "real-hour",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "cnt",
+            "season"
+          ],
+          "filters": {
+            "columns": {
+              "season": [
+                "1"
+              ]
+            }
+          },
+          "method": "pandas sum",
+          "result": {
+            "measure": "cnt",
+            "sum": 471348.0,
+            "mean": 111.11456859971712,
+            "rows": 4242,
+            "valid_rows": 4242,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:25.658202+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "cnt",
+            "measure_column": "cnt",
+            "semantic_role": "quantity",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {
+              "season": [
+                "1"
+              ]
+            },
+            "period": "all supplied dates within selected filters",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "dteday": "date/time",
+            "cnt": "quantity",
+            "season": "category",
+            "workingday": "category"
+          },
+          "interpretation_status": "RESOLVED",
+          "scope": {
+            "source_rows": 17379,
+            "selected_rows": 4242,
+            "row_position_sha256": "6eb3a3fbf30a3b1491643d6515d15c6f45bc520f7b3f11191d9b6f9f5b12c8fe",
+            "row_position_basis": "zero-based source row order",
+            "period_coverage": "observed rows only; source completeness not established"
+          }
+        }
+      ],
+      "exception": null,
+      "latency_seconds": 0.00915309999982128,
+      "declared_settings": {
+        "corrections": {
+          "dteday": "date/time",
+          "cnt": "quantity",
+          "season": "category",
+          "workingday": "category"
+        },
+        "scope": {
+          "filters": {
+            "season": [
+              "1"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "case_id": "hour-comparison",
+      "table": "hour",
+      "family": "metadata_configured",
+      "seed": 0,
+      "question": "What is cnt?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "periods": {
+          "current": {
+            "measure": "cnt",
+            "operation": "sum",
+            "value": 96744.0,
+            "row_scope": {
+              "selected_rows": 741,
+              "source_rows": 17379,
+              "row_position_sha256": "64fc7beb56d091d87504cd868086ac68d0c6cfe250c566c5de17cb90a9e2949c",
+              "predicate": {
+                "columns": {},
+                "date": {
+                  "column": "dteday",
+                  "start_inclusive": "2012-01-01",
+                  "end_inclusive": "2012-01-31",
+                  "end_exclusive": "2012-02-01",
+                  "calendar_days": 31
+                }
+              }
+            }
+          },
+          "baseline": {
+            "measure": "cnt",
+            "operation": "sum",
+            "value": 38189.0,
+            "row_scope": {
+              "selected_rows": 688,
+              "source_rows": 17379,
+              "row_position_sha256": "749111586f00f1fd5143e7991c0c8db954d9d25e85ca787919c0077f619c5ce9",
+              "predicate": {
+                "columns": {},
+                "date": {
+                  "column": "dteday",
+                  "start_inclusive": "2011-01-01",
+                  "end_inclusive": "2011-01-31",
+                  "end_exclusive": "2011-02-01",
+                  "calendar_days": 31
+                }
+              }
+            }
+          }
+        },
+        "difference": 58555.0,
+        "percent_change": 153.32949278588075
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "9eaf08aa-f71e-413b-b7fb-ab706ffc3710",
+          "dataset_id": "real-hour",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "cnt",
+            "dteday"
+          ],
+          "filters": {
+            "columns": {},
+            "date": {
+              "column": "dteday",
+              "start_inclusive": "2012-01-01",
+              "end_exclusive": "2012-02-01",
+              "end_inclusive": "2012-01-31",
+              "calendar_days": 31,
+              "timezone_policy": "naive source calendar; no timezone conversion"
+            }
+          },
+          "method": "pandas sum",
+          "result": {
+            "measure": "cnt",
+            "sum": 96744.0,
+            "mean": 130.5587044534413,
+            "rows": 741,
+            "valid_rows": 741,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:25.668181+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "cnt",
+            "measure_column": "cnt",
+            "semantic_role": "quantity",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {},
+            "period": {
+              "column": "dteday",
+              "start_inclusive": "2012-01-01",
+              "end_exclusive": "2012-02-01",
+              "end_inclusive": "2012-01-31",
+              "calendar_days": 31,
+              "timezone_policy": "naive source calendar; no timezone conversion"
+            },
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "dteday": "date/time",
+            "cnt": "quantity",
+            "season": "category",
+            "workingday": "category"
+          },
+          "interpretation_status": "RESOLVED",
+          "scope": {
+            "source_rows": 17379,
+            "selected_rows": 741,
+            "row_position_sha256": "64fc7beb56d091d87504cd868086ac68d0c6cfe250c566c5de17cb90a9e2949c",
+            "row_position_basis": "zero-based source row order",
+            "period_coverage": "observed rows only; source completeness not established"
+          }
+        },
+        {
+          "evidence_id": "06237030-7e26-4c0a-a8b3-e8074a1b2b5a",
+          "dataset_id": "real-hour",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "cnt",
+            "dteday"
+          ],
+          "filters": {
+            "columns": {},
+            "date": {
+              "column": "dteday",
+              "start_inclusive": "2011-01-01",
+              "end_exclusive": "2011-02-01",
+              "end_inclusive": "2011-01-31",
+              "calendar_days": 31,
+              "timezone_policy": "naive source calendar; no timezone conversion"
+            }
+          },
+          "method": "pandas sum",
+          "result": {
+            "measure": "cnt",
+            "sum": 38189.0,
+            "mean": 55.50726744186046,
+            "rows": 688,
+            "valid_rows": 688,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:25.670375+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "cnt",
+            "measure_column": "cnt",
+            "semantic_role": "quantity",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {},
+            "period": {
+              "column": "dteday",
+              "start_inclusive": "2011-01-01",
+              "end_exclusive": "2011-02-01",
+              "end_inclusive": "2011-01-31",
+              "calendar_days": 31,
+              "timezone_policy": "naive source calendar; no timezone conversion"
+            },
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "dteday": "date/time",
+            "cnt": "quantity",
+            "season": "category",
+            "workingday": "category"
+          },
+          "interpretation_status": "RESOLVED",
+          "scope": {
+            "source_rows": 17379,
+            "selected_rows": 688,
+            "row_position_sha256": "749111586f00f1fd5143e7991c0c8db954d9d25e85ca787919c0077f619c5ce9",
+            "row_position_basis": "zero-based source row order",
+            "period_coverage": "observed rows only; source completeness not established"
+          }
+        },
+        {
+          "evidence_id": "b2b517f5-44c1-4387-acab-681e392e9724",
+          "dataset_id": "real-hour",
+          "analysis_type": "period comparison",
+          "source_columns": [
+            "cnt",
+            "dteday"
+          ],
+          "filters": {
+            "current": {
+              "columns": {},
+              "date": {
+                "column": "dteday",
+                "start_inclusive": "2012-01-01",
+                "end_exclusive": "2012-02-01",
+                "end_inclusive": "2012-01-31",
+                "calendar_days": 31,
+                "timezone_policy": "naive source calendar; no timezone conversion"
+              }
+            },
+            "baseline": {
+              "columns": {},
+              "date": {
+                "column": "dteday",
+                "start_inclusive": "2011-01-01",
+                "end_exclusive": "2011-02-01",
+                "end_inclusive": "2011-01-31",
+                "calendar_days": 31,
+                "timezone_policy": "naive source calendar; no timezone conversion"
+              }
+            }
+          },
+          "method": "deterministic period comparison",
+          "result": {
+            "measure": "cnt",
+            "aggregation": "sum",
+            "current": 96744.0,
+            "baseline": 38189.0,
+            "difference": 58555.0,
+            "percent_change": 153.32949278588075,
+            "percent_change_status": "DEFINED",
+            "difference_formula": "current - baseline",
+            "percent_formula": "(current - baseline) / baseline * 100, only when baseline > 0",
+            "direction": "increase",
+            "period_lengths": {
+              "current": 31,
+              "baseline": 31
+            },
+            "row_counts": {
+              "current": 741,
+              "baseline": 688
+            },
+            "numeric_row_counts": {
+              "current": 741,
+              "baseline": 688
+            },
+            "excluded_numeric_rows": {
+              "current": 0,
+              "baseline": 0
+            },
+            "normalization": "None; totals are not normalized for different period lengths"
+          },
+          "uncertainty": {
+            "causal_claim": false,
+            "source_completeness_established": false
+          },
+          "timestamp": "2026-11-02T13:47:25.670375+00:00",
+          "result_bindings": {
+            "period_current": [
+              "current"
+            ],
+            "period_baseline": [
+              "baseline"
+            ],
+            "difference": [
+              "difference"
+            ],
+            "percent_change": [
+              "percent_change"
+            ]
+          },
+          "definition": {
+            "term": "cnt",
+            "measure_column": "cnt",
+            "semantic_role": "quantity",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {},
+            "period": {
+              "current": {
+                "column": "dteday",
+                "start_inclusive": "2012-01-01",
+                "end_exclusive": "2012-02-01",
+                "end_inclusive": "2012-01-31",
+                "calendar_days": 31,
+                "timezone_policy": "naive source calendar; no timezone conversion"
+              },
+              "baseline": {
+                "column": "dteday",
+                "start_inclusive": "2011-01-01",
+                "end_exclusive": "2011-02-01",
+                "end_inclusive": "2011-01-31",
+                "calendar_days": 31,
+                "timezone_policy": "naive source calendar; no timezone conversion"
+              }
+            },
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "dteday": "date/time",
+            "cnt": "quantity",
+            "season": "category",
+            "workingday": "category"
+          },
+          "interpretation_status": "RESOLVED",
+          "scope": {
+            "current": {
+              "source_rows": 17379,
+              "selected_rows": 741,
+              "row_position_sha256": "64fc7beb56d091d87504cd868086ac68d0c6cfe250c566c5de17cb90a9e2949c",
+              "row_position_basis": "zero-based source row order",
+              "period_coverage": "observed rows only; source completeness not established"
+            },
+            "baseline": {
+              "source_rows": 17379,
+              "selected_rows": 688,
+              "row_position_sha256": "749111586f00f1fd5143e7991c0c8db954d9d25e85ca787919c0077f619c5ce9",
+              "row_position_basis": "zero-based source row order",
+              "period_coverage": "observed rows only; source completeness not established"
+            }
+          },
+          "dependency_evidence_ids": [
+            "9eaf08aa-f71e-413b-b7fb-ab706ffc3710",
+            "06237030-7e26-4c0a-a8b3-e8074a1b2b5a"
+          ]
+        }
+      ],
+      "exception": null,
+      "latency_seconds": 0.012860399998317007,
+      "declared_settings": {
+        "corrections": {
+          "dteday": "date/time",
+          "cnt": "quantity",
+          "season": "category",
+          "workingday": "category"
+        },
+        "scope": {
+          "date_column": "dteday",
+          "period": {
+            "start": "2012-01-01",
+            "end": "2012-01-31"
+          },
+          "compare_to": {
+            "start": "2011-01-01",
+            "end": "2011-01-31"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "bank-cold",
+      "table": "bank",
+      "family": "unassisted",
+      "seed": 0,
+      "question": "What is quantity?",
+      "expected_status": "OK",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": false,
+      "errors": [
+        "Expected OK, got INSUFFICIENT DATA",
+        "No resolved answer"
+      ],
+      "expected": {
+        "measure": "campaign",
+        "operation": "sum",
+        "value": 124956.0
+      },
+      "actual_evidence": [],
+      "exception": null,
+      "latency_seconds": 0.35940620000110357,
+      "declared_settings": {}
+    },
+    {
+      "case_id": "bank-total",
+      "table": "bank",
+      "family": "metadata_configured",
+      "seed": 0,
+      "question": "What is campaign?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "campaign",
+        "operation": "sum",
+        "value": 124956.0
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "7796730f-12d0-4eeb-b11f-5625d954041a",
+          "dataset_id": "real-bank",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "campaign"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "campaign",
+            "sum": 124956.0,
+            "mean": 2.763840658246887,
+            "rows": 45211,
+            "valid_rows": 45211,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:26.792647+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "campaign",
+            "measure_column": "campaign",
+            "semantic_role": "quantity",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "campaign": "quantity",
+            "job": "category",
+            "month": "generic categorical"
+          },
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "exception": null,
+      "latency_seconds": 0.022086000000854256,
+      "declared_settings": {
+        "corrections": {
+          "campaign": "quantity",
+          "job": "category",
+          "month": "generic categorical"
+        }
+      }
+    },
+    {
+      "case_id": "bank-mean",
+      "table": "bank",
+      "family": "metadata_configured",
+      "seed": 0,
+      "question": "What is average campaign?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "campaign",
+        "operation": "mean",
+        "value": 2.763840658246887
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "8a2f73e4-09bb-4a34-b1b4-dbe56a939c8f",
+          "dataset_id": "real-bank",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "campaign"
+          ],
+          "filters": {},
+          "method": "pandas mean",
+          "result": {
+            "measure": "campaign",
+            "sum": 124956.0,
+            "mean": 2.763840658246887,
+            "rows": 45211,
+            "valid_rows": 45211,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:26.808389+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "campaign",
+            "measure_column": "campaign",
+            "semantic_role": "quantity",
+            "aggregation": "mean",
+            "grouping_column": null,
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "campaign": "quantity",
+            "job": "category",
+            "month": "generic categorical"
+          },
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "exception": null,
+      "latency_seconds": 0.015536400002019946,
+      "declared_settings": {
+        "corrections": {
+          "campaign": "quantity",
+          "job": "category",
+          "month": "generic categorical"
+        }
+      }
+    },
+    {
+      "case_id": "bank-group",
+      "table": "bank",
+      "family": "metadata_configured",
+      "seed": 0,
+      "question": "Show campaign by job",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "campaign",
+        "operation": "sum",
+        "value": 124956.0,
+        "groups": {
+          "management": 27091.0,
+          "technician": 22083.0,
+          "entrepreneur": 4163.0,
+          "blue-collar": 27415.0,
+          "unknown": 953.0,
+          "retired": 5313.0,
+          "admin.": 13317.0,
+          "services": 11292.0,
+          "self-employed": 4505.0,
+          "unemployed": 3169.0,
+          "housemaid": 3498.0,
+          "student": 2157.0
+        }
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "b97f17d5-72a6-4bf2-9f91-98b6697014f0",
+          "dataset_id": "real-bank",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "campaign",
+            "job"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "campaign",
+            "sum": 124956.0,
+            "mean": 2.763840658246887,
+            "rows": 45211,
+            "valid_rows": 45211,
+            "excluded_rows": 0,
+            "grouped_by": "job",
+            "ranking": {
+              "blue-collar": 27415.0,
+              "management": 27091.0,
+              "technician": 22083.0,
+              "admin.": 13317.0,
+              "services": 11292.0,
+              "retired": 5313.0,
+              "self-employed": 4505.0,
+              "entrepreneur": 4163.0,
+              "housemaid": 3498.0,
+              "unemployed": 3169.0,
+              "student": 2157.0,
+              "unknown": 953.0
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:26.831197+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "campaign",
+            "measure_column": "campaign",
+            "semantic_role": "quantity",
+            "aggregation": "sum",
+            "grouping_column": "job",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "campaign": "quantity",
+            "job": "category",
+            "month": "generic categorical"
+          },
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "exception": null,
+      "latency_seconds": 0.022771100000682054,
+      "declared_settings": {
+        "corrections": {
+          "campaign": "quantity",
+          "job": "category",
+          "month": "generic categorical"
+        }
+      }
+    },
+    {
+      "case_id": "bank-rank",
+      "table": "bank",
+      "family": "metadata_configured",
+      "seed": 0,
+      "question": "Which job has the highest campaign?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "campaign",
+        "operation": "sum",
+        "value": 124956.0,
+        "groups": {
+          "management": 27091.0,
+          "technician": 22083.0,
+          "entrepreneur": 4163.0,
+          "blue-collar": 27415.0,
+          "unknown": 953.0,
+          "retired": 5313.0,
+          "admin.": 13317.0,
+          "services": 11292.0,
+          "self-employed": 4505.0,
+          "unemployed": 3169.0,
+          "housemaid": 3498.0,
+          "student": 2157.0
+        },
+        "winners": [
+          "blue-collar"
+        ],
+        "winning_value": 27415.0
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "95930f4f-b359-48d9-832c-ae60e0f20852",
+          "dataset_id": "real-bank",
+          "analysis_type": "ranking",
+          "source_columns": [
+            "campaign",
+            "job"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "campaign",
+            "sum": 124956.0,
+            "mean": 2.763840658246887,
+            "rows": 45211,
+            "valid_rows": 45211,
+            "excluded_rows": 0,
+            "grouped_by": "job",
+            "ranking": {
+              "blue-collar": 27415.0,
+              "management": 27091.0,
+              "technician": 22083.0,
+              "admin.": 13317.0,
+              "services": 11292.0,
+              "retired": 5313.0,
+              "self-employed": 4505.0,
+              "entrepreneur": 4163.0,
+              "housemaid": 3498.0,
+              "unemployed": 3169.0,
+              "student": 2157.0,
+              "unknown": 953.0
+            },
+            "requested_result": {
+              "direction": "highest",
+              "dimension": "blue-collar",
+              "value": 27415.0
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:26.855482+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ],
+            "ranking": [
+              "requested_result",
+              "value"
+            ]
+          },
+          "definition": {
+            "term": "campaign",
+            "measure_column": "campaign",
+            "semantic_role": "quantity",
+            "aggregation": "sum",
+            "grouping_column": "job",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "campaign": "quantity",
+            "job": "category",
+            "month": "generic categorical"
+          },
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "exception": null,
+      "latency_seconds": 0.02485259999957634,
+      "declared_settings": {
+        "corrections": {
+          "campaign": "quantity",
+          "job": "category",
+          "month": "generic categorical"
+        }
+      }
+    },
+    {
+      "case_id": "bank-revenue-missing",
+      "table": "bank",
+      "family": "safe_refusal",
+      "seed": 0,
+      "question": "What is revenue?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "exception": null,
+      "latency_seconds": 0.00041059999784920365,
+      "declared_settings": {
+        "corrections": {
+          "campaign": "quantity",
+          "job": "category",
+          "month": "generic categorical"
+        }
+      }
+    },
+    {
+      "case_id": "bank-filtered",
+      "table": "bank",
+      "family": "metadata_configured",
+      "seed": 0,
+      "question": "What is campaign?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "campaign",
+        "operation": "sum",
+        "value": 13317.0,
+        "row_scope": {
+          "selected_rows": 5171,
+          "source_rows": 45211,
+          "row_position_sha256": "c84d2718b2a599d733ebf2b9975d7b0a6c9a69ed9687b5beade1eadec89c5112",
+          "predicate": {
+            "columns": {
+              "job": [
+                "admin."
+              ]
+            }
+          }
+        }
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "16cfac44-a76d-4aec-b7e3-705b5284d722",
+          "dataset_id": "real-bank",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "campaign",
+            "job"
+          ],
+          "filters": {
+            "columns": {
+              "job": [
+                "admin."
+              ]
+            }
+          },
+          "method": "pandas sum",
+          "result": {
+            "measure": "campaign",
+            "sum": 13317.0,
+            "mean": 2.5753239218719783,
+            "rows": 5171,
+            "valid_rows": 5171,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:26.870354+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "campaign",
+            "measure_column": "campaign",
+            "semantic_role": "quantity",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {
+              "job": [
+                "admin."
+              ]
+            },
+            "period": "all supplied dates within selected filters",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "campaign": "quantity",
+            "job": "category",
+            "month": "generic categorical"
+          },
+          "interpretation_status": "RESOLVED",
+          "scope": {
+            "source_rows": 45211,
+            "selected_rows": 5171,
+            "row_position_sha256": "c84d2718b2a599d733ebf2b9975d7b0a6c9a69ed9687b5beade1eadec89c5112",
+            "row_position_basis": "zero-based source row order",
+            "period_coverage": "observed rows only; source completeness not established"
+          }
+        }
+      ],
+      "exception": null,
+      "latency_seconds": 0.014235899998311652,
+      "declared_settings": {
+        "corrections": {
+          "campaign": "quantity",
+          "job": "category",
+          "month": "generic categorical"
+        },
+        "scope": {
+          "filters": {
+            "job": [
+              "admin."
+            ]
+          }
+        }
+      }
+    },
+    {
+      "case_id": "bank-no-invented-year",
+      "table": "bank",
+      "family": "safe_refusal",
+      "seed": 0,
+      "question": "What is campaign?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "exception": null,
+      "latency_seconds": 0.00016990000221994705,
+      "declared_settings": {
+        "corrections": {
+          "campaign": "quantity",
+          "job": "category",
+          "month": "generic categorical"
+        },
+        "scope": {
+          "date_column": "month",
+          "period": {
+            "start": "2010-01-01",
+            "end": "2010-01-31"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "retail-cold",
+      "table": "retail",
+      "family": "unassisted",
+      "seed": 0,
+      "question": "What is quantity?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Quantity",
+        "operation": "sum",
+        "value": 5176450.0
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "f9ad3f0d-b760-490f-82ff-c1144450ac1a",
+          "dataset_id": "real-retail",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Quantity"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "Quantity",
+            "sum": 5176450.0,
+            "mean": 9.55224954743324,
+            "rows": 541909,
+            "valid_rows": 541909,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:52.587896+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "quantity",
+            "measure_column": "Quantity",
+            "semantic_role": "quantity",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {},
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "exception": null,
+      "latency_seconds": 6.855532999998104,
+      "declared_settings": {}
+    },
+    {
+      "case_id": "retail-total",
+      "table": "retail",
+      "family": "metadata_configured",
+      "seed": 0,
+      "question": "What is Quantity?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Quantity",
+        "operation": "sum",
+        "value": 5176450.0
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "a56ad77d-163d-45c7-8ca4-b9a8f9806511",
+          "dataset_id": "real-retail",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Quantity"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "Quantity",
+            "sum": 5176450.0,
+            "mean": 9.55224954743324,
+            "rows": 541909,
+            "valid_rows": 541909,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:52.768346+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "quantity",
+            "measure_column": "Quantity",
+            "semantic_role": "quantity",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "Quantity": "quantity",
+            "InvoiceDate": "date/time",
+            "Country": "region"
+          },
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "exception": null,
+      "latency_seconds": 0.17982560000018566,
+      "declared_settings": {
+        "corrections": {
+          "Quantity": "quantity",
+          "InvoiceDate": "date/time",
+          "Country": "region"
+        }
+      }
+    },
+    {
+      "case_id": "retail-mean",
+      "table": "retail",
+      "family": "metadata_configured",
+      "seed": 0,
+      "question": "What is average Quantity?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Quantity",
+        "operation": "mean",
+        "value": 9.55224954743324
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "c2fe6685-ded5-4ed9-b2d5-6624b0a3e073",
+          "dataset_id": "real-retail",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Quantity"
+          ],
+          "filters": {},
+          "method": "pandas mean",
+          "result": {
+            "measure": "Quantity",
+            "sum": 5176450.0,
+            "mean": 9.55224954743324,
+            "rows": 541909,
+            "valid_rows": 541909,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:52.941357+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "quantity",
+            "measure_column": "Quantity",
+            "semantic_role": "quantity",
+            "aggregation": "mean",
+            "grouping_column": null,
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "Quantity": "quantity",
+            "InvoiceDate": "date/time",
+            "Country": "region"
+          },
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "exception": null,
+      "latency_seconds": 0.17324839999855612,
+      "declared_settings": {
+        "corrections": {
+          "Quantity": "quantity",
+          "InvoiceDate": "date/time",
+          "Country": "region"
+        }
+      }
+    },
+    {
+      "case_id": "retail-group",
+      "table": "retail",
+      "family": "metadata_configured",
+      "seed": 0,
+      "question": "Show Quantity by Country",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Quantity",
+        "operation": "sum",
+        "value": 5176450.0,
+        "groups": {
+          "United Kingdom": 4263829.0,
+          "France": 110480.0,
+          "Australia": 83653.0,
+          "Netherlands": 200128.0,
+          "Germany": 117448.0,
+          "Norway": 19247.0,
+          "EIRE": 142637.0,
+          "Switzerland": 30325.0,
+          "Spain": 26824.0,
+          "Poland": 3653.0,
+          "Portugal": 16180.0,
+          "Italy": 7999.0,
+          "Belgium": 23152.0,
+          "Lithuania": 652.0,
+          "Japan": 25218.0,
+          "Iceland": 2458.0,
+          "Channel Islands": 9479.0,
+          "Denmark": 8188.0,
+          "Cyprus": 6317.0,
+          "Sweden": 35637.0,
+          "Austria": 4827.0,
+          "Israel": 4353.0,
+          "Finland": 10666.0,
+          "Bahrain": 260.0,
+          "Greece": 1556.0,
+          "Hong Kong": 4769.0,
+          "Singapore": 5234.0,
+          "Lebanon": 386.0,
+          "United Arab Emirates": 982.0,
+          "Saudi Arabia": 75.0,
+          "Czech Republic": 592.0,
+          "Canada": 2763.0,
+          "Unspecified": 3300.0,
+          "Brazil": 356.0,
+          "USA": 1034.0,
+          "European Community": 497.0,
+          "Malta": 944.0,
+          "RSA": 352.0
+        }
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "aa8c8089-af50-4f34-bee3-0f41d0876f09",
+          "dataset_id": "real-retail",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Quantity",
+            "Country"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "Quantity",
+            "sum": 5176450.0,
+            "mean": 9.55224954743324,
+            "rows": 541909,
+            "valid_rows": 541909,
+            "excluded_rows": 0,
+            "grouped_by": "Country",
+            "ranking": {
+              "United Kingdom": 4263829.0,
+              "Netherlands": 200128.0,
+              "EIRE": 142637.0,
+              "Germany": 117448.0,
+              "France": 110480.0,
+              "Australia": 83653.0,
+              "Sweden": 35637.0,
+              "Switzerland": 30325.0,
+              "Spain": 26824.0,
+              "Japan": 25218.0,
+              "Belgium": 23152.0,
+              "Norway": 19247.0,
+              "Portugal": 16180.0,
+              "Finland": 10666.0,
+              "Channel Islands": 9479.0,
+              "Denmark": 8188.0,
+              "Italy": 7999.0,
+              "Cyprus": 6317.0,
+              "Singapore": 5234.0,
+              "Austria": 4827.0,
+              "Hong Kong": 4769.0,
+              "Israel": 4353.0,
+              "Poland": 3653.0,
+              "Unspecified": 3300.0,
+              "Canada": 2763.0,
+              "Iceland": 2458.0,
+              "Greece": 1556.0,
+              "USA": 1034.0,
+              "United Arab Emirates": 982.0,
+              "Malta": 944.0,
+              "Lithuania": 652.0,
+              "Czech Republic": 592.0,
+              "European Community": 497.0,
+              "Lebanon": 386.0,
+              "Brazil": 356.0,
+              "RSA": 352.0,
+              "Bahrain": 260.0,
+              "Saudi Arabia": 75.0
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:53.207019+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "quantity",
+            "measure_column": "Quantity",
+            "semantic_role": "quantity",
+            "aggregation": "sum",
+            "grouping_column": "Country",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "Quantity": "quantity",
+            "InvoiceDate": "date/time",
+            "Country": "region"
+          },
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "exception": null,
+      "latency_seconds": 0.26593180000054417,
+      "declared_settings": {
+        "corrections": {
+          "Quantity": "quantity",
+          "InvoiceDate": "date/time",
+          "Country": "region"
+        }
+      }
+    },
+    {
+      "case_id": "retail-rank",
+      "table": "retail",
+      "family": "metadata_configured",
+      "seed": 0,
+      "question": "Which Country has the highest Quantity?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Quantity",
+        "operation": "sum",
+        "value": 5176450.0,
+        "groups": {
+          "United Kingdom": 4263829.0,
+          "France": 110480.0,
+          "Australia": 83653.0,
+          "Netherlands": 200128.0,
+          "Germany": 117448.0,
+          "Norway": 19247.0,
+          "EIRE": 142637.0,
+          "Switzerland": 30325.0,
+          "Spain": 26824.0,
+          "Poland": 3653.0,
+          "Portugal": 16180.0,
+          "Italy": 7999.0,
+          "Belgium": 23152.0,
+          "Lithuania": 652.0,
+          "Japan": 25218.0,
+          "Iceland": 2458.0,
+          "Channel Islands": 9479.0,
+          "Denmark": 8188.0,
+          "Cyprus": 6317.0,
+          "Sweden": 35637.0,
+          "Austria": 4827.0,
+          "Israel": 4353.0,
+          "Finland": 10666.0,
+          "Bahrain": 260.0,
+          "Greece": 1556.0,
+          "Hong Kong": 4769.0,
+          "Singapore": 5234.0,
+          "Lebanon": 386.0,
+          "United Arab Emirates": 982.0,
+          "Saudi Arabia": 75.0,
+          "Czech Republic": 592.0,
+          "Canada": 2763.0,
+          "Unspecified": 3300.0,
+          "Brazil": 356.0,
+          "USA": 1034.0,
+          "European Community": 497.0,
+          "Malta": 944.0,
+          "RSA": 352.0
+        },
+        "winners": [
+          "United Kingdom"
+        ],
+        "winning_value": 4263829.0
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "952c2b41-10fc-4a65-b769-dec0d3188e06",
+          "dataset_id": "real-retail",
+          "analysis_type": "ranking",
+          "source_columns": [
+            "Quantity",
+            "Country"
+          ],
+          "filters": {},
+          "method": "pandas sum",
+          "result": {
+            "measure": "Quantity",
+            "sum": 5176450.0,
+            "mean": 9.55224954743324,
+            "rows": 541909,
+            "valid_rows": 541909,
+            "excluded_rows": 0,
+            "grouped_by": "Country",
+            "ranking": {
+              "United Kingdom": 4263829.0,
+              "Netherlands": 200128.0,
+              "EIRE": 142637.0,
+              "Germany": 117448.0,
+              "France": 110480.0,
+              "Australia": 83653.0,
+              "Sweden": 35637.0,
+              "Switzerland": 30325.0,
+              "Spain": 26824.0,
+              "Japan": 25218.0,
+              "Belgium": 23152.0,
+              "Norway": 19247.0,
+              "Portugal": 16180.0,
+              "Finland": 10666.0,
+              "Channel Islands": 9479.0,
+              "Denmark": 8188.0,
+              "Italy": 7999.0,
+              "Cyprus": 6317.0,
+              "Singapore": 5234.0,
+              "Austria": 4827.0,
+              "Hong Kong": 4769.0,
+              "Israel": 4353.0,
+              "Poland": 3653.0,
+              "Unspecified": 3300.0,
+              "Canada": 2763.0,
+              "Iceland": 2458.0,
+              "Greece": 1556.0,
+              "USA": 1034.0,
+              "United Arab Emirates": 982.0,
+              "Malta": 944.0,
+              "Lithuania": 652.0,
+              "Czech Republic": 592.0,
+              "European Community": 497.0,
+              "Lebanon": 386.0,
+              "Brazil": 356.0,
+              "RSA": 352.0,
+              "Bahrain": 260.0,
+              "Saudi Arabia": 75.0
+            },
+            "requested_result": {
+              "direction": "highest",
+              "dimension": "United Kingdom",
+              "value": 4263829.0
+            }
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:53.473759+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ],
+            "ranking": [
+              "requested_result",
+              "value"
+            ]
+          },
+          "definition": {
+            "term": "quantity",
+            "measure_column": "Quantity",
+            "semantic_role": "quantity",
+            "aggregation": "sum",
+            "grouping_column": "Country",
+            "filters": {},
+            "period": "all supplied rows",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "Quantity": "quantity",
+            "InvoiceDate": "date/time",
+            "Country": "region"
+          },
+          "interpretation_status": "RESOLVED"
+        }
+      ],
+      "exception": null,
+      "latency_seconds": 0.26674629999979516,
+      "declared_settings": {
+        "corrections": {
+          "Quantity": "quantity",
+          "InvoiceDate": "date/time",
+          "Country": "region"
+        }
+      }
+    },
+    {
+      "case_id": "retail-revenue-missing",
+      "table": "retail",
+      "family": "safe_refusal",
+      "seed": 0,
+      "question": "What is revenue?",
+      "expected_status": "INSUFFICIENT DATA",
+      "actual_status": "INSUFFICIENT DATA",
+      "passed": true,
+      "errors": [],
+      "expected": {},
+      "actual_evidence": [],
+      "exception": null,
+      "latency_seconds": 0.0004327000024204608,
+      "declared_settings": {
+        "corrections": {
+          "Quantity": "quantity",
+          "InvoiceDate": "date/time",
+          "Country": "region"
+        }
+      }
+    },
+    {
+      "case_id": "retail-filtered",
+      "table": "retail",
+      "family": "metadata_configured",
+      "seed": 0,
+      "question": "What is Quantity?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "measure": "Quantity",
+        "operation": "sum",
+        "value": 110480.0,
+        "row_scope": {
+          "selected_rows": 8557,
+          "source_rows": 541909,
+          "row_position_sha256": "f0921041fff539fc50632ff5613cb7ab64d618fefe31bed017be8d63817e2f95",
+          "predicate": {
+            "columns": {
+              "Country": [
+                "France"
+              ]
+            }
+          }
+        }
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "d772af0a-32b4-4100-a6a3-55d4f2a29e40",
+          "dataset_id": "real-retail",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Quantity",
+            "Country"
+          ],
+          "filters": {
+            "columns": {
+              "Country": [
+                "France"
+              ]
+            }
+          },
+          "method": "pandas sum",
+          "result": {
+            "measure": "Quantity",
+            "sum": 110480.0,
+            "mean": 12.91106696272058,
+            "rows": 8557,
+            "valid_rows": 8557,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:53.602963+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "quantity",
+            "measure_column": "Quantity",
+            "semantic_role": "quantity",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {
+              "Country": [
+                "France"
+              ]
+            },
+            "period": "all supplied dates within selected filters",
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "Quantity": "quantity",
+            "InvoiceDate": "date/time",
+            "Country": "region"
+          },
+          "interpretation_status": "RESOLVED",
+          "scope": {
+            "source_rows": 541909,
+            "selected_rows": 8557,
+            "row_position_sha256": "f0921041fff539fc50632ff5613cb7ab64d618fefe31bed017be8d63817e2f95",
+            "row_position_basis": "zero-based source row order",
+            "period_coverage": "observed rows only; source completeness not established"
+          }
+        }
+      ],
+      "exception": null,
+      "latency_seconds": 0.12832890000208863,
+      "declared_settings": {
+        "corrections": {
+          "Quantity": "quantity",
+          "InvoiceDate": "date/time",
+          "Country": "region"
+        },
+        "scope": {
+          "filters": {
+            "Country": [
+              "France"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "case_id": "retail-comparison",
+      "table": "retail",
+      "family": "metadata_configured",
+      "seed": 0,
+      "question": "What is Quantity?",
+      "expected_status": "OK",
+      "actual_status": "OK",
+      "passed": true,
+      "errors": [],
+      "expected": {
+        "periods": {
+          "current": {
+            "measure": "Quantity",
+            "operation": "sum",
+            "value": 308966.0,
+            "row_scope": {
+              "selected_rows": 35147,
+              "source_rows": 541909,
+              "row_position_sha256": "a30ea6d9eea4a5573927b67eea1d356998a29c7ecff451009647c00780b423fa",
+              "predicate": {
+                "columns": {},
+                "date": {
+                  "column": "InvoiceDate",
+                  "start_inclusive": "2011-01-01",
+                  "end_inclusive": "2011-01-31",
+                  "end_exclusive": "2011-02-01",
+                  "calendar_days": 31
+                }
+              }
+            }
+          },
+          "baseline": {
+            "measure": "Quantity",
+            "operation": "sum",
+            "value": 342228.0,
+            "row_scope": {
+              "selected_rows": 42481,
+              "source_rows": 541909,
+              "row_position_sha256": "b8bf7840e9143bbe08b80a8b5410fbd28d65ec7d5b27083c0569d87e62e85ef1",
+              "predicate": {
+                "columns": {},
+                "date": {
+                  "column": "InvoiceDate",
+                  "start_inclusive": "2010-12-01",
+                  "end_inclusive": "2010-12-31",
+                  "end_exclusive": "2011-01-01",
+                  "calendar_days": 31
+                }
+              }
+            }
+          }
+        },
+        "difference": -33262.0,
+        "percent_change": -9.719251493156609
+      },
+      "actual_evidence": [
+        {
+          "evidence_id": "17ee8746-6ce5-46db-9964-76c7938e734d",
+          "dataset_id": "real-retail",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Quantity",
+            "InvoiceDate"
+          ],
+          "filters": {
+            "columns": {},
+            "date": {
+              "column": "InvoiceDate",
+              "start_inclusive": "2011-01-01",
+              "end_exclusive": "2011-02-01",
+              "end_inclusive": "2011-01-31",
+              "calendar_days": 31,
+              "timezone_policy": "naive source calendar; no timezone conversion",
+              "source_date_format": "%m/%d/%Y %H:%M"
+            }
+          },
+          "method": "pandas sum",
+          "result": {
+            "measure": "Quantity",
+            "sum": 308966.0,
+            "mean": 8.790679147580164,
+            "rows": 35147,
+            "valid_rows": 35147,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:54.253096+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "quantity",
+            "measure_column": "Quantity",
+            "semantic_role": "quantity",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {},
+            "period": {
+              "column": "InvoiceDate",
+              "start_inclusive": "2011-01-01",
+              "end_exclusive": "2011-02-01",
+              "end_inclusive": "2011-01-31",
+              "calendar_days": 31,
+              "timezone_policy": "naive source calendar; no timezone conversion",
+              "source_date_format": "%m/%d/%Y %H:%M"
+            },
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "Quantity": "quantity",
+            "InvoiceDate": "date/time",
+            "Country": "region"
+          },
+          "interpretation_status": "RESOLVED",
+          "scope": {
+            "source_rows": 541909,
+            "selected_rows": 35147,
+            "row_position_sha256": "a30ea6d9eea4a5573927b67eea1d356998a29c7ecff451009647c00780b423fa",
+            "row_position_basis": "zero-based source row order",
+            "period_coverage": "observed rows only; source completeness not established"
+          }
+        },
+        {
+          "evidence_id": "afb936fa-9664-4f23-96fc-746742dc97fe",
+          "dataset_id": "real-retail",
+          "analysis_type": "descriptive statistics",
+          "source_columns": [
+            "Quantity",
+            "InvoiceDate"
+          ],
+          "filters": {
+            "columns": {},
+            "date": {
+              "column": "InvoiceDate",
+              "start_inclusive": "2010-12-01",
+              "end_exclusive": "2011-01-01",
+              "end_inclusive": "2010-12-31",
+              "calendar_days": 31,
+              "timezone_policy": "naive source calendar; no timezone conversion",
+              "source_date_format": "%m/%d/%Y %H:%M"
+            }
+          },
+          "method": "pandas sum",
+          "result": {
+            "measure": "Quantity",
+            "sum": 342228.0,
+            "mean": 8.056025046491373,
+            "rows": 42481,
+            "valid_rows": 42481,
+            "excluded_rows": 0
+          },
+          "uncertainty": {
+            "causal_claim": false
+          },
+          "timestamp": "2026-11-02T13:47:54.268985+00:00",
+          "result_bindings": {
+            "sum": [
+              "sum"
+            ],
+            "mean": [
+              "mean"
+            ]
+          },
+          "definition": {
+            "term": "quantity",
+            "measure_column": "Quantity",
+            "semantic_role": "quantity",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {},
+            "period": {
+              "column": "InvoiceDate",
+              "start_inclusive": "2010-12-01",
+              "end_exclusive": "2011-01-01",
+              "end_inclusive": "2010-12-31",
+              "calendar_days": 31,
+              "timezone_policy": "naive source calendar; no timezone conversion",
+              "source_date_format": "%m/%d/%Y %H:%M"
+            },
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "Quantity": "quantity",
+            "InvoiceDate": "date/time",
+            "Country": "region"
+          },
+          "interpretation_status": "RESOLVED",
+          "scope": {
+            "source_rows": 541909,
+            "selected_rows": 42481,
+            "row_position_sha256": "b8bf7840e9143bbe08b80a8b5410fbd28d65ec7d5b27083c0569d87e62e85ef1",
+            "row_position_basis": "zero-based source row order",
+            "period_coverage": "observed rows only; source completeness not established"
+          }
+        },
+        {
+          "evidence_id": "de4a28cd-6a2e-4cc3-98ea-fac728144e31",
+          "dataset_id": "real-retail",
+          "analysis_type": "period comparison",
+          "source_columns": [
+            "Quantity",
+            "InvoiceDate"
+          ],
+          "filters": {
+            "current": {
+              "columns": {},
+              "date": {
+                "column": "InvoiceDate",
+                "start_inclusive": "2011-01-01",
+                "end_exclusive": "2011-02-01",
+                "end_inclusive": "2011-01-31",
+                "calendar_days": 31,
+                "timezone_policy": "naive source calendar; no timezone conversion",
+                "source_date_format": "%m/%d/%Y %H:%M"
+              }
+            },
+            "baseline": {
+              "columns": {},
+              "date": {
+                "column": "InvoiceDate",
+                "start_inclusive": "2010-12-01",
+                "end_exclusive": "2011-01-01",
+                "end_inclusive": "2010-12-31",
+                "calendar_days": 31,
+                "timezone_policy": "naive source calendar; no timezone conversion",
+                "source_date_format": "%m/%d/%Y %H:%M"
+              }
+            }
+          },
+          "method": "deterministic period comparison",
+          "result": {
+            "measure": "Quantity",
+            "aggregation": "sum",
+            "current": 308966.0,
+            "baseline": 342228.0,
+            "difference": -33262.0,
+            "percent_change": -9.719251493156609,
+            "percent_change_status": "DEFINED",
+            "difference_formula": "current - baseline",
+            "percent_formula": "(current - baseline) / baseline * 100, only when baseline > 0",
+            "direction": "decrease",
+            "period_lengths": {
+              "current": 31,
+              "baseline": 31
+            },
+            "row_counts": {
+              "current": 35147,
+              "baseline": 42481
+            },
+            "numeric_row_counts": {
+              "current": 35147,
+              "baseline": 42481
+            },
+            "excluded_numeric_rows": {
+              "current": 0,
+              "baseline": 0
+            },
+            "normalization": "None; totals are not normalized for different period lengths"
+          },
+          "uncertainty": {
+            "causal_claim": false,
+            "source_completeness_established": false
+          },
+          "timestamp": "2026-11-02T13:47:54.268985+00:00",
+          "result_bindings": {
+            "period_current": [
+              "current"
+            ],
+            "period_baseline": [
+              "baseline"
+            ],
+            "difference": [
+              "difference"
+            ],
+            "percent_change": [
+              "percent_change"
+            ]
+          },
+          "definition": {
+            "term": "quantity",
+            "measure_column": "Quantity",
+            "semantic_role": "quantity",
+            "aggregation": "sum",
+            "grouping_column": null,
+            "filters": {},
+            "period": {
+              "current": {
+                "column": "InvoiceDate",
+                "start_inclusive": "2011-01-01",
+                "end_exclusive": "2011-02-01",
+                "end_inclusive": "2011-01-31",
+                "calendar_days": 31,
+                "timezone_policy": "naive source calendar; no timezone conversion",
+                "source_date_format": "%m/%d/%Y %H:%M"
+              },
+              "baseline": {
+                "column": "InvoiceDate",
+                "start_inclusive": "2010-12-01",
+                "end_exclusive": "2011-01-01",
+                "end_inclusive": "2010-12-31",
+                "calendar_days": 31,
+                "timezone_policy": "naive source calendar; no timezone conversion",
+                "source_date_format": "%m/%d/%Y %H:%M"
+              }
+            },
+            "missing_value_policy": "exclude missing, invalid and non-finite measure values",
+            "selection": "explicit"
+          },
+          "semantic_corrections": {
+            "Quantity": "quantity",
+            "InvoiceDate": "date/time",
+            "Country": "region"
+          },
+          "interpretation_status": "RESOLVED",
+          "scope": {
+            "current": {
+              "source_rows": 541909,
+              "selected_rows": 35147,
+              "row_position_sha256": "a30ea6d9eea4a5573927b67eea1d356998a29c7ecff451009647c00780b423fa",
+              "row_position_basis": "zero-based source row order",
+              "period_coverage": "observed rows only; source completeness not established"
+            },
+            "baseline": {
+              "source_rows": 541909,
+              "selected_rows": 42481,
+              "row_position_sha256": "b8bf7840e9143bbe08b80a8b5410fbd28d65ec7d5b27083c0569d87e62e85ef1",
+              "row_position_basis": "zero-based source row order",
+              "period_coverage": "observed rows only; source completeness not established"
+            }
+          },
+          "dependency_evidence_ids": [
+            "17ee8746-6ce5-46db-9964-76c7938e734d",
+            "afb936fa-9664-4f23-96fc-746742dc97fe"
+          ]
+        }
+      ],
+      "exception": null,
+      "latency_seconds": 0.6676551000018662,
+      "declared_settings": {
+        "corrections": {
+          "Quantity": "quantity",
+          "InvoiceDate": "date/time",
+          "Country": "region"
+        },
+        "scope": {
+          "date_column": "InvoiceDate",
+          "period": {
+            "start": "2011-01-01",
+            "end": "2011-01-31"
+          },
+          "compare_to": {
+            "start": "2010-12-01",
+            "end": "2010-12-31"
+          },
+          "date_format": "%m/%d/%Y %H:%M"
+        }
+      }
+    }
+  ],
+  "local_retail_verification": {
+    "rows": 541909,
+    "canonical_sha256": "3a30d32b81eda7a2b150b7825b96e34ca4330442558bab874cec842ea53d20f6",
+    "empty_cells": {
+      "Description": 1454,
+      "CustomerID": 135080
+    },
+    "path": "data\\data.csv",
+    "equivalent_under_declared_normalization": true,
+    "normalization": "All 8 source columns in row order; ISO seconds; Decimal text for Quantity/UnitPrice/CustomerID; empty cells to empty strings; exact remaining strings. Local dates explicitly MM/DD/YYYY HH:MM, decoded cp1252."
+  },
+  "metadata": {
+    "run_id": "20261102T134754Z",
+    "python": "3.12.16 (main, Oct 26 2026, 14:10:56) [MSC v.1944 64 bit (AMD64)]",
+    "source_hashes": {
+      "aura/core.py": "42ed0c11996727e0464113ba2a9c2b4371ea77fff88a6bcab2aeab4cbfdb6d01",
+      "aura/scopes.py": "8670c26d6ca9b9ffc417e78969b38f5a2fff38d168e9de553fb50d4b7a83aa7e",
+      "aura/scoped_engine.py": "c1a8fbb7678a7a18dc09c27cfc9d1fe2041b20d69ebfc59797d6896e4c37706f",
+      "experiments/real_data.py": "78ca1aa0e493f51a01cb60aa0821fbe6c302389ae52c6725c6fc1b377cfe2eba",
+      "experiments/oracle.py": "de381e08d892dddf00009fd5ca0d093ca1f0ccb1767876d2e9d4c1dffef78366",
+      "experiments/scope_checks.py": "003d646a51268ec6dcd3fb1f28bfc54a523f400f8891e8071673ece5ff33c8ea",
+      "app/ingestion.py": "636e75986efcf30171f748c1f9f0af021c83f2f18df81c1adde76c7edccb2867"
+    },
+    "scope": "Historical public data; developer-authored tasks. Four projected tables from three UCI releases, not four independent sources. No claims of real-user usability, general-domain accuracy or model superiority."
+  }
+}

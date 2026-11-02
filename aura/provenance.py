@@ -23,16 +23,19 @@ class EvidenceClaim:
     tolerance: float
     supported: bool = False
     verification_status: str = "PENDING"
+    result_path: list[str] | None = None
 
     @classmethod
     def numeric(
-        cls, *, claim_text: str, evidence: dict, value: float, operation: str, tolerance: float = 1e-6
+        cls, *, claim_text: str, evidence: dict, value: float, operation: str, tolerance: float = 1e-6,
+        result_path: list[str] | None = None
     ) -> "EvidenceClaim":
         return cls(
             claim_id=str(uuid4()), claim_text=claim_text, claim_type="numerical",
             evidence_id=evidence["evidence_id"], dataset_id=evidence["dataset_id"],
             source_columns=list(evidence.get("source_columns", [])), filters=dict(evidence.get("filters", {})),
             operation=operation, expected_value=value, computed_value=value, tolerance=tolerance,
+            result_path=result_path if result_path is not None else [operation],
         )
 
     def to_dict(self) -> dict[str, Any]:

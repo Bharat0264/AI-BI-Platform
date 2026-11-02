@@ -8,8 +8,19 @@
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 </head>
 <body>
+  <dialog id="accountLogin" aria-labelledby="accountLoginTitle">
+    <form id="accountLoginForm">
+      <h2 id="accountLoginTitle">Sign in to your workspace</h2>
+      <p>Use the account provided by your administrator. Each account has separate datasets and history.</p>
+      <label class="analyst-label" for="accountUsername">Username</label><input id="accountUsername" autocomplete="username" maxlength="80" required>
+      <label class="analyst-label" for="accountPassword">Password</label><input id="accountPassword" type="password" autocomplete="current-password" maxlength="1024" required>
+      <button id="accountLoginButton" type="submit">Sign in</button>
+      <p id="accountLoginStatus" role="alert" aria-live="polite"></p>
+    </form>
+  </dialog>
   <aside class="sidebar">
     <div class="brand">AURA-BI</div>
+    <div id="accountControls" hidden><span id="accountName"></span><button id="accountLogout" type="button">Sign out</button><p id="accountSessionStatus" role="status"></p></div>
     <div class="caption">Autonomous Unified Reasoning &amp; Analytics</div>
     <nav>
       <a href="#overview" data-page="overview" class="active">Executive</a>
@@ -46,9 +57,10 @@
       <h1>AURA-BI</h1>
       <p>Analyze business data, measure profit quality, detect risk exposure, forecast sales, ask AI questions, and generate board-ready reports from one full-stack website.</p>
       <form id="uploadForm" class="upload">
-        <input type="file" id="datasetFile" accept=".csv,.xlsx,.xls,.json">
-        <button type="submit" id="analyzeCsvButton">Analyze CSV</button>
+        <input type="file" id="datasetFile" aria-describedby="importHelp" aria-label="Choose a business dataset" accept=".csv,.xlsx,.xls,.json">
+        <button type="submit" id="analyzeCsvButton">Import dataset</button>
         <button type="button" class="secondary" id="demoButton">Load Demo Dataset</button>
+        <p id="importHelp" class="muted">CSV, Excel or JSON. Maximum file size: 100 MB.</p>
         <div class="upload-status" id="uploadStatus" aria-live="polite"></div>
       </form>
     </section>
@@ -158,17 +170,61 @@
     <section id="assistant" data-page-content="assistant">
       <h2>AI Analyst</h2>
       <div class="panel assistant">
-        <textarea id="question" placeholder="Ask a business question..."></textarea>
+        <label class="analyst-label" for="question">Your business question</label>
+        <textarea id="question" maxlength="2000" aria-describedby="analystScope questionHelp questionError" placeholder="Try: What is sales? Or: Which region has the highest profit?"></textarea>
+        <p id="analystScope" class="muted">Questions use all uploaded rows unless you select an explicit scope below. Dashboard filters do not apply here.</p>
+        <p id="questionHelp" class="muted">Use an exact column name for a total or average. Ctrl+Enter (Command+Enter on Mac) asks your question. Maximum 2,000 characters.</p>
+        <p id="nextQuestionScope" class="scope-summary" aria-live="polite">Next question: all uploaded rows.</p>
+        <p id="questionError" class="status-line error" role="alert" hidden></p>
+        <details id="analystScopeControls" class="analyst-card"><summary>Filter rows or compare date periods (optional)</summary>
+          <p class="muted">Choose exact labels. Leave filter values empty to include all labels. Dates include both start and end, in the source calendar with no timezone conversion.</p>
+          <div class="analyst-form">
+            <div><label class="analyst-label" for="scopeRegionColumn">Region filter column</label><select id="scopeRegionColumn" data-scope-input><option value="">No region filter</option></select><label class="analyst-label" for="scopeRegionValues">Region values</label><select id="scopeRegionValues" multiple size="3" data-scope-input></select></div>
+            <div><label class="analyst-label" for="scopeCategoryColumn">Category filter column</label><select id="scopeCategoryColumn" data-scope-input><option value="">No category filter</option></select><label class="analyst-label" for="scopeCategoryValues">Category values</label><select id="scopeCategoryValues" multiple size="3" data-scope-input></select></div>
+          </div>
+          <label class="analyst-label" for="scopeDateColumn">Date column (required for date periods)</label><select id="scopeDateColumn" data-scope-input><option value="">No date period</option></select>
+          <label class="analyst-label" for="scopeDateFormat">Source date format (choose explicitly)</label><select id="scopeDateFormat" data-scope-input><option value="ISO">ISO dates / naive ISO timestamps</option><option value="%m/%d/%Y">MM/DD/YYYY</option><option value="%d/%m/%Y">DD/MM/YYYY</option><option value="%m/%d/%Y %H:%M">MM/DD/YYYY HH:MM (24-hour)</option><option value="%d/%m/%Y %H:%M">DD/MM/YYYY HH:MM (24-hour)</option><option value="%m/%d/%Y %H:%M:%S">MM/DD/YYYY HH:MM:SS</option><option value="%d/%m/%Y %H:%M:%S">DD/MM/YYYY HH:MM:SS</option></select>
+          <div class="analyst-form"><div><label class="analyst-label" for="scopeStart">Current period start</label><input id="scopeStart" type="date" data-scope-input></div><div><label class="analyst-label" for="scopeEnd">Current period end</label><input id="scopeEnd" type="date" data-scope-input></div></div>
+          <p class="muted">Optional: compare with a separate, non-overlapping baseline. Comparisons support a single total or average. Different period lengths are disclosed, not normalized.</p>
+          <div class="analyst-form"><div><label class="analyst-label" for="scopeBaselineStart">Baseline start</label><input id="scopeBaselineStart" type="date" data-scope-input></div><div><label class="analyst-label" for="scopeBaselineEnd">Baseline end</label><input id="scopeBaselineEnd" type="date" data-scope-input></div></div>
+          <p id="scopeOptionsNote" class="muted"></p><button id="clearAnalystScope" class="secondary" type="button" data-analyst-action>Clear selected scope</button>
+        </details>
         <div class="assistant-actions">
           <button id="voiceQuestionButton" type="button">Start Voice Question</button>
-          <button id="askButton" type="button">Analyze With AI</button>
+          <button id="askButton" type="button">Ask about data</button>
           <button id="speakAnswerButton" type="button" class="secondary">Play Answer</button>
           <button id="stopVoiceButton" type="button" class="ghost inline">Stop Voice</button>
         </div>
         <div class="voice-status" id="voiceStatus" aria-live="polite">Voice assistant ready.</div>
-        <pre id="answer"></pre>
+        <p id="answerOutcome" class="scope-summary" role="status" hidden></p>
+        <div id="answerFreshness" aria-live="polite"></div>
+        <pre id="answer" aria-live="polite"></pre>
+        <div id="interpretationChoices" class="analyst-cards"></div>
         <div id="answerCitations" class="evidence-grid"></div>
         <details id="aiEvidence"><summary>View Evidence</summary><pre id="aiEvidenceDetail"></pre></details>
+      </div>
+      <div id="analystWorkspace">
+        <div class="section-heading"><h3>Definitions &amp; answer history</h3><button id="refreshAnalyst" type="button" class="secondary" data-analyst-action>Refresh status</button></div>
+        <div id="analystStatus" class="status-line" role="status" aria-live="polite"></div>
+        <div class="panel">
+          <h3>Business definitions</h3>
+          <p id="definitionScope" class="muted">Upload a dataset to confirm a definition. Choices stay within this workspace and exact dataset.</p>
+          <div id="savedDefinitions" class="analyst-cards"></div>
+          <div class="analyst-form">
+            <div><label class="analyst-label" for="definitionTerm">Business term</label><select id="definitionTerm"><option value="sales">Sales</option><option value="revenue">Revenue</option><option value="profit">Profit</option><option value="cost">Cost</option><option value="costs">Costs</option><option value="quantity">Quantity</option></select></div>
+            <div><label class="analyst-label" for="definitionColumn">Column to use</label><select id="definitionColumn"><option value="">Choose a column</option></select></div>
+          </div>
+          <div class="analyst-actions"><button id="reviewDefinition" type="button" data-analyst-action>Review definition</button><button id="reviewDisable" type="button" class="secondary" data-analyst-action>Review disabling default</button><button id="viewDefinitionHistory" type="button" class="secondary" data-analyst-action>View version history</button></div>
+          <div id="definitionConfirmation" class="analyst-review" hidden><h4>Confirm your choice</h4><p id="definitionConfirmationText"></p><div class="analyst-actions"><button id="confirmDefinition" type="button" data-analyst-action>Confirm &amp; save</button><button id="cancelDefinition" type="button" class="secondary" data-analyst-action>Cancel</button></div></div>
+          <div id="definitionHistory" class="analyst-cards"></div>
+        </div>
+        <div id="recomputeReview" class="panel analyst-review" hidden>
+          <h3>Review recalculation</h3><p class="muted">The original answer stays in history. Saving creates a new answer.</p>
+          <div class="analyst-form"><div><h4>Original answer</h4><pre id="recomputeOriginal"></pre></div><div><h4>New calculation</h4><pre id="recomputePreview"></pre></div></div>
+          <div class="analyst-actions"><button id="confirmRecompute" type="button" data-analyst-action>Save as new answer</button><button id="cancelRecompute" type="button" class="secondary" data-analyst-action>Cancel</button></div>
+        </div>
+        <div class="panel"><h3>Answer history</h3><p class="muted">Freshness checks definitions and data context. It does not certify analytical accuracy.</p><div id="analystAnswerHistory" class="analyst-cards"><p>No answers loaded.</p></div></div>
+        <div class="panel"><h3>Report history</h3><p class="muted">Regenerating preserves recorded filters and creates a separate file. Recalculate any outdated answers first.</p><div id="analystReportHistory" class="analyst-cards"><p>No reports loaded.</p></div></div>
       </div>
     </section>
 
@@ -270,11 +326,14 @@
       <h2>Export Center</h2>
       <div class="export-grid">
         <a class="button" href="/api/export/filtered">Download Filtered CSV</a>
-        <a class="button" href="/api/report">Generate PDF Report</a>
+        <a id="generateReportLink" class="button" href="/api/report">Generate PDF Report</a>
       </div>
+      <div id="exportReportStatus" class="status-line" role="status" aria-live="polite"></div>
     </section>
   </main>
 
+  <script src="/auth.js"></script>
+  <script src="/analyst.js"></script>
   <script src="/app.js"></script>
   <script src="/platform.js"></script>
 </body>

@@ -20,7 +20,7 @@ def _write_csv(path, rows):
         writer=csv.DictWriter(handle,fieldnames=keys); writer.writeheader(); writer.writerows(rows)
 
 def _flat(record):
-    base={key:value for key,value in record.items() if key not in {"semantic","kpi","answerability","grounding","anomaly"}}
+    base={key:value for key,value in record.items() if key not in {"semantic","kpi","answerability","grounding","anomaly","numeric_records"}}
     return {**base,**{f"semantic_{k}":v for k,v in record["semantic"].items() if k!="per_role"},**{f"kpi_{k}":v for k,v in record["kpi"].items()},**{f"answerability_{k}":v for k,v in record["answerability"].items()},**{f"grounding_{k}":v for k,v in record["grounding"].items()},**{f"anomaly_{k}":v for k,v in record["anomaly"].items()}}
 
 def _figures(records, target):
@@ -43,7 +43,7 @@ def _figures(records, target):
     for group,metric,name,title in (("ablation","semantic_macro_f1","ablation_comparison.png","Ablation comparison"),("family","semantic_macro_f1","domain_wise_performance.png","Domain-wise semantic performance")):
         labels=sorted({row[group] for row in records}); values=[sum(r[metric] for r in records if r[group]==label)/max(1,sum(r[group]==label for r in records)) for label in labels]
         fig,ax=plt.subplots(figsize=(8,4.5)); ax.bar(labels,values,color="#5a8f60"); ax.set_ylim(0,1); ax.set_ylabel("Semantic macro-F1"); ax.set_title(title); plt.xticks(rotation=25,ha="right"); fig.tight_layout(); fig.savefig(target/name,dpi=300); plt.close(fig)
-    fig,ax=plt.subplots(figsize=(7,4.5)); ax.scatter([r["latency_seconds"] for r in records],[r["numeric_correctness"] for r in records],alpha=.65,color="#a64d79"); ax.set_xlabel("Latency (seconds)"); ax.set_ylabel("Numeric correctness"); ax.set_ylim(0,1); ax.set_title("Accuracy vs latency"); fig.tight_layout(); fig.savefig(target/"accuracy_vs_latency.png",dpi=300); plt.close(fig)
+    fig,ax=plt.subplots(figsize=(7,4.5)); ax.scatter([r["latency_seconds"] for r in records if r["numeric_correctness"] is not None],[r["numeric_correctness"] for r in records if r["numeric_correctness"] is not None],alpha=.65,color="#a64d79"); ax.set_xlabel("Latency (seconds)"); ax.set_ylabel("Numeric correctness"); ax.set_ylim(0,1); ax.set_title("Accuracy vs latency"); fig.tight_layout(); fig.savefig(target/"accuracy_vs_latency.png",dpi=300); plt.close(fig)
 
 def main():
     parser=argparse.ArgumentParser(); parser.add_argument("--mode",choices=("smoke","small","full"),default="smoke"); parser.add_argument("--seed",type=int,default=42); parser.add_argument("--rows",type=int,default=80); args=parser.parse_args()

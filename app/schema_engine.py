@@ -11,7 +11,7 @@ ALIASES = {
     "Product Name": ["product name", "product", "item", "item name", "sku", "commodity", "crop", "description"],
     "Quantity": ["quantity", "qty", "units", "units sold", "volume", "demand"],
     "Inventory": ["inventory", "stock", "stock on hand", "on hand", "available stock", "closing stock"],
-    "Sales": ["sales", "revenue", "amount", "total", "turnover", "net sales", "gross sales"],
+    "Sales": ["sales", "revenue", "amount", "total", "turnover", "net sales", "gross sales", "total amount", "sales amount", "revenue amount"],
     "Unit Price": ["unit price", "unitprice", "price per unit", "selling price", "rate"],
     "Profit": ["profit", "net profit", "gross profit", "income", "margin", "earnings"],
     "Discount": ["discount", "discount rate", "discount percent", "markdown"],
