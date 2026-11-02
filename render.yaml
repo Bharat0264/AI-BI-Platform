@@ -1,4 +1,4 @@
-# Hosted start requires account security and valid MongoDB configuration.
+# Temporary shared public demo; existing private accounts remain isolated.
 services:
   - type: web
     name: ai-bi-platform
@@ -8,8 +8,10 @@ services:
     startCommand: python start.py
     healthCheckPath: /api/health
     envVars:
-      - key: AURA_AUTH_REQUIRED
+      - key: AURA_PUBLIC_DEMO
         value: "true"
+      - key: AURA_AUTH_REQUIRED
+        value: "false"
       - key: AURA_COOKIE_SECURE
         value: "true"
       - key: AURA_SECRET_KEY

@@ -40,6 +40,12 @@ Original enterprise data
 
 The specialized Data, Analyst, ML, Anomaly, Visualization, and Report services exchange structured outputs through an orchestrator. Computation is deterministic first; LLM use is optional and constrained to supplied evidence.
 
+## Temporary no-login demo
+
+Verified by **410 passing tests**, including a real-browser no-login upload/question flow. See [demo-mode validation](docs/validation/public-demo.json).
+
+At the owner’s request, Render now defaults to a shared public demo with no sign-in. `AURA_PUBLIC_DEMO=true` overrides an older `AURA_AUTH_REQUIRED=true` setting. Existing private accounts/data remain separate. Uploaded demo data is visible to other visitors. Keep the existing signing key and MongoDB settings. Restore account login with `AURA_PUBLIC_DEMO=false` and `AURA_AUTH_REQUIRED=true`.
+
 ## Release status
 
 Account login, per-user storage isolation and security-patched Python 3.12 dependencies are implemented. The launcher supports local evaluation and **authenticated Render hosting**. Render requires a private signing secret, secure cookies and configured MongoDB; see [Render setup](docs/RENDER_DEPLOYMENT.md). Production infrastructure validation remains an operator responsibility. No live service settings have been changed by editing this repository.
@@ -51,7 +57,6 @@ py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt -c constraints-local-win-py312.txt
 Copy-Item .env.example .env
 # Set isolated MongoDB credentials and AURA_SECRET_KEY in .env before proceeding.
-.\.venv\Scripts\python.exe scripts/manage_user.py --username analyst@example.com
 .\.venv\Scripts\python.exe start.py
 ```
 

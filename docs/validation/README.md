@@ -13,3 +13,5 @@ Raw measured evaluation/audit records accompany the final source delivery. The r
 These are developer-authored checks. Cases are correlated and do not represent independent statistical samples, a user study or production validation. Public tasks use every row but only declared task columns; semantic metadata is explicit. Runtime/audit results may differ on another platform or after dependency updates. No raw uploaded source data, credentials, production database contents or private account data are included here.
 
 render-startup.json records the subsequent Render binding/cache-recovery fix and its 405-test regression run. The earlier summary.json is the pre-fix phase-completion snapshot.
+
+public-demo.json records the owner-requested temporary no-login mode, its isolation/reversal behavior and the 410-test regression run.

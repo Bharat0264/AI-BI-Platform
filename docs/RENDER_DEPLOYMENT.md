@@ -1,5 +1,13 @@
 # Render deployment and cache recovery
 
+## Temporary public demo (current setting)
+
+At the owner's explicit request, login is paused. Render defaults AURA_PUBLIC_DEMO=true, so the existing service does not need to remove its older AURA_AUTH_REQUIRED=true variable to open the demo. The blueprint also sets AURA_AUTH_REQUIRED=false for clarity. The login dialog and sign-out controls stay hidden; a shared-workspace notice is displayed.
+
+Anonymous requests use a dedicated public-demo database namespace, not the legacy shared cache or any existing private account's database. All visitors to the demo can read/change its uploaded sample data and settings. Existing private sessions are ignored in demo mode, but their data is preserved. The server-side file connector remains unavailable. Keep the existing AURA_SECRET_KEY, AURA_COOKIE_SECURE=true and MongoDB configuration: the key also signs stored dataset blobs even while login is disabled.
+
+After the latest source is deployed, refresh the browser to open the demo directly. To restore accounts, set AURA_PUBLIC_DEMO=false and AURA_AUTH_REQUIRED=true, then redeploy. The authenticated-mode instructions below apply when restoring accounts.
+
 ## Failure diagnosed from the supplied log
 
 The build successfully installed Python 3.12 packages and ran `python start.py`. The old launcher then listened on localhost. Render reported that it found only localhost ports and timed out because a public web service must bind to 0.0.0.0 on PORT. The previous source blueprint also used an offline release-check command instead of a server. Those two startup paths are corrected.

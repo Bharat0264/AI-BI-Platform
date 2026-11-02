@@ -11,6 +11,7 @@ window.auraAuthReady = fetch('/api/auth/session', {cache:'no-store'}).then(respo
   return response.json();
 }).then(info => {
   window.auraCsrfToken = info.csrf_token || null;
+  if (info.public_demo) document.getElementById('publicDemoNotice').hidden = false;
   if (!info.auth_required) return;
   if (info.authenticated) {
     document.getElementById('accountName').textContent = info.username;

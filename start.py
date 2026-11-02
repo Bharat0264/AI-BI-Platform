@@ -1,4 +1,4 @@
-"""Waitress startup: loopback locally, authenticated HTTPS service on Render."""
+"""Waitress startup: loopback locally, HTTPS service with a temporary public-demo mode on Render."""
 import os
 import re
 from dotenv import load_dotenv
@@ -7,6 +7,12 @@ from dotenv import load_dotenv
 def on_render(environ=None):
     env = os.environ if environ is None else environ
     return env.get('RENDER', '').lower() == 'true'
+
+
+def public_demo_enabled(environ=None):
+    env = os.environ if environ is None else environ
+    default = 'true' if on_render(env) else 'false'
+    return env.get('AURA_PUBLIC_DEMO', default).lower() == 'true'
 
 
 def render_trusted_hosts(environ=None):
@@ -24,7 +30,7 @@ def serve_options(environ=None):
     # Render must remain reachable even if an old local HOST setting was copied.
     host = '0.0.0.0' if render else env.get('HOST', '127.0.0.1')
     if render:
-        if env.get('AURA_AUTH_REQUIRED', 'true').lower() != 'true':
+        if not public_demo_enabled(env) and env.get('AURA_AUTH_REQUIRED', 'true').lower() != 'true':
             raise ValueError('Render requires AURA_AUTH_REQUIRED=true. Hosted anonymous access is not allowed.')
         secret = env.get('AURA_SECRET_KEY', '')
         if len(secret) < 32:

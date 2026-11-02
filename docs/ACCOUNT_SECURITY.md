@@ -2,6 +2,10 @@
 
 Implemented during final phase completion on 2 November 2026. This document supersedes the missing-authentication and shared-data descriptions in the historical Phase 10–12 reports. Render hosting is supported with mandatory account security; real infrastructure validation remains necessary. See RENDER_DEPLOYMENT.md.
 
+## Temporary no-login operation
+
+The owner has requested a public demo for now. AURA_PUBLIC_DEMO=true overrides the authentication-required setting; it defaults true on Render and false in an unconfigured local environment. Visitors share a dedicated public-demo namespace and see a sample-data-only notice. Existing private-account namespaces are not exposed or deleted. Set AURA_PUBLIC_DEMO=false and AURA_AUTH_REQUIRED=true to restore the private-account model documented below. Retain the signing key because public-demo dataset blobs are still signed.
+
 ## Operator setup
 
 Use Python 3.12.16 as recorded in .python-version. Install requirements-dev.txt, or requirements.txt without test/audit tools for runtime-only installation. The old Python 3.10 constraints file is historical and cannot install the security-patched dependencies.

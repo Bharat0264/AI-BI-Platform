@@ -17,7 +17,7 @@ from start import serve_options
 
 
 def render_environment():
-    return {'RENDER':'true','PORT':'12345','HOST':'127.0.0.1',
+    return {'RENDER':'true','PORT':'12345','HOST':'127.0.0.1','AURA_PUBLIC_DEMO':'false',
             'RENDER_EXTERNAL_HOSTNAME':'ai-bi-platform-gud0.onrender.com',
             'AURA_SECRET_KEY':'render-fixture-secret-only-1234567890123456',
             'AURA_AUTH_REQUIRED':'true','AURA_COOKIE_SECURE':'true'}

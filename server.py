@@ -15,7 +15,7 @@ from flask import send_file
 from flask import send_from_directory
 from werkzeug.exceptions import RequestEntityTooLarge
 from security import configure_security, validate_workbook, validate_frame
-from authentication import configure_authentication
+from authentication import configure_authentication, principal_scope, PUBLIC_DEMO_PRINCIPAL
 from werkzeug.local import LocalProxy
 import hmac
 import hashlib
@@ -45,7 +45,13 @@ app = Flask(__name__, static_folder="frontend", static_url_path="")
 app.config["MAX_CONTENT_LENGTH"] = 100 * 1024 * 1024
 configure_security(app)
 configure_authentication(app)
-if app.config["AURA_AUTH_REQUIRED"]:
+if app.config["AURA_PUBLIC_DEMO"]:
+    with principal_scope(PUBLIC_DEMO_PRINCIPAL):
+        new_workspace = get_setting("current_user") is None
+        init_store()
+        if new_workspace:
+            set_setting("current_user", {"name": "Public Demo", "role": "Executive", "workspace": "Public Demo"})
+elif app.config["AURA_AUTH_REQUIRED"]:
     ping_database()
 else:
     init_store()
@@ -139,7 +145,7 @@ def aura_context(df, source):
 
 
 def restore_active_dataset():
-    if app.config["AURA_AUTH_REQUIRED"]:
+    if app.config["AURA_AUTH_REQUIRED"] or app.config["AURA_PUBLIC_DEMO"]:
         return
     try:
         saved = get_setting("active_dataset", {}) or {}

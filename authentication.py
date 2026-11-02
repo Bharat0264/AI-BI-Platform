@@ -12,6 +12,7 @@ from uuid import uuid4
 from flask import current_app, g, jsonify, request, session
 from werkzeug.security import check_password_hash, generate_password_hash
 
+PUBLIC_DEMO_PRINCIPAL = 'public-demo-workspace'
 principal = ContextVar('aura_principal', default=None)
 DUMMY_HASH = generate_password_hash('non-account-placeholder-for-timing')
 
@@ -72,23 +73,29 @@ def current_user():
 
 
 def configure_authentication(app):
-    from start import on_render, serve_options, render_trusted_hosts
+    from start import on_render, serve_options, render_trusted_hosts, public_demo_enabled
     hosted=on_render()
     if hosted:
         serve_options()  # Enforce hosting security even when imported by another WSGI entry point.
         app.config['TRUSTED_HOSTS']=render_trusted_hosts()
-    required=os.getenv('AURA_AUTH_REQUIRED','true' if hosted else 'false').lower()=='true'
+    demo=public_demo_enabled()
+    required=not demo and os.getenv('AURA_AUTH_REQUIRED','true' if hosted else 'false').lower()=='true'
     secret=os.getenv('AURA_SECRET_KEY','')
-    if required and len(secret)<32:
+    if (required or demo) and len(secret)<32:
         raise RuntimeError('AURA_AUTH_REQUIRED requires an AURA_SECRET_KEY of at least 32 characters.')
-    app.config.update(AURA_AUTH_REQUIRED=required,SECRET_KEY=secret or None,
+    app.config.update(AURA_AUTH_REQUIRED=required,AURA_PUBLIC_DEMO=demo,SECRET_KEY=secret or None,
         SESSION_COOKIE_HTTPONLY=True,SESSION_COOKIE_SAMESITE='Strict',
         SESSION_COOKIE_SECURE=os.getenv('AURA_COOKIE_SECURE','true').lower()=='true',
         PERMANENT_SESSION_LIFETIME=timedelta(hours=8))
 
     @app.before_request
     def authorize():
-        if not app.config['AURA_AUTH_REQUIRED'] or not request.path.startswith('/api/'):return
+        if not request.path.startswith('/api/'):return
+        if app.config['AURA_PUBLIC_DEMO']:
+            g.principal=PUBLIC_DEMO_PRINCIPAL
+            g.principal_token=principal.set(PUBLIC_DEMO_PRINCIPAL)
+            return
+        if not app.config['AURA_AUTH_REQUIRED']:return
         user=current_user()
         if request.path not in {'/api/auth/session','/api/auth/login','/api/health'} and not user:
             return jsonify(error='Sign in to access this workspace.'),401
@@ -118,6 +125,7 @@ def configure_authentication(app):
 
     @app.get('/api/auth/session')
     def session_info():
+        if app.config['AURA_PUBLIC_DEMO']:return jsonify(auth_required=False,authenticated=False,public_demo=True)
         if not app.config['AURA_AUTH_REQUIRED']:return jsonify(auth_required=False,authenticated=True)
         if not session.get('csrf'):session['csrf']=secrets.token_urlsafe(32)
         return jsonify(auth_required=True,authenticated=bool(getattr(g,'principal',None)),

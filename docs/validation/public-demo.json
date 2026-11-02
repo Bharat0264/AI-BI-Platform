@@ -1,0 +1,30 @@
+{
+  "date": "2026-11-02",
+  "change": "Owner-requested temporary no-login public demo",
+  "tests": {
+    "tests": "410",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "72.492"
+  },
+  "demo_cases": 5,
+  "behavior": [
+    "Render defaults to AURA_PUBLIC_DEMO=true, overriding previous login-required setting",
+    "No sign-in modal; anonymous visitors share a dedicated public-demo namespace",
+    "Existing private account databases and legacy shared cache are not exposed",
+    "Private data remains accessible after restoring account mode",
+    "Shared-demo notice is visible; cross-origin checks and file connector restrictions remain"
+  ],
+  "restore_login": "Set AURA_PUBLIC_DEMO=false and AURA_AUTH_REQUIRED=true, then redeploy.",
+  "limits": "Local mocked MongoDB plus real browser tests; actual Render deployment not yet verified. Demo uploads are shared with every visitor. Existing signing key remains required for snapshot integrity.",
+  "source_sha256": {
+    "start.py": "2f5714a2b86ae0277a7c2755fcccfc5cf81ae84c705a40049407dbd1a354c7f2",
+    "authentication.py": "c2d889db790631cd750aa56e15b47ae3bd5573d172d053d119bbc0d6e6552ed0",
+    "server.py": "2cf91356f7d6187fd5bb968fe5ecc8a8aaaebae4496cdb00d23726f1a7945d87",
+    "frontend/auth.js": "279f0b01060f437327c56d826546fe1130da80636628dc5b7548b304a34cd634",
+    "frontend/index.html": "d43772d15a1edf094b0cccb3f513449804fd2a11830223fcb444e7d690ed6a20",
+    "render.yaml": "5c7f2550f4725b6493495878bb7b7ee3ae418afd3b3a277e8a068c42bf45d8c4",
+    "tests/test_public_demo.py": "83f74f7b10d618f257907a2531fda5df50c8351984b35ed8bcf7864fd5b626d8"
+  }
+}
