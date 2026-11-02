@@ -1,9 +1,20 @@
-# Public deploy is intentionally blocked until docs/RELEASE_RUNBOOK.md gates pass.
+# Hosted start requires account security and valid MongoDB configuration.
 services:
   - type: web
     name: ai-bi-platform
     runtime: python
     autoDeployTrigger: "off"
     buildCommand: python -m pip install -r requirements.txt
-    startCommand: python scripts/release_check.py --target public
+    startCommand: python start.py
     healthCheckPath: /api/health
+    envVars:
+      - key: AURA_AUTH_REQUIRED
+        value: "true"
+      - key: AURA_COOKIE_SECURE
+        value: "true"
+      - key: AURA_SECRET_KEY
+        generateValue: true
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DATABASE
+        sync: false

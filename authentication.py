@@ -72,7 +72,12 @@ def current_user():
 
 
 def configure_authentication(app):
-    required=os.getenv('AURA_AUTH_REQUIRED','false').lower()=='true'
+    from start import on_render, serve_options, render_trusted_hosts
+    hosted=on_render()
+    if hosted:
+        serve_options()  # Enforce hosting security even when imported by another WSGI entry point.
+        app.config['TRUSTED_HOSTS']=render_trusted_hosts()
+    required=os.getenv('AURA_AUTH_REQUIRED','true' if hosted else 'false').lower()=='true'
     secret=os.getenv('AURA_SECRET_KEY','')
     if required and len(secret)<32:
         raise RuntimeError('AURA_AUTH_REQUIRED requires an AURA_SECRET_KEY of at least 32 characters.')

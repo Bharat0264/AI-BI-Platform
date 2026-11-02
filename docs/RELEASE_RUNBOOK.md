@@ -2,7 +2,7 @@
 
 ## Current status
 
-The implementation for Phases 1–12, plus account security and isolated storage, is prepared for source delivery. The fresh Python 3.12 environment passes regression tests and a dependency audit. Earlier phase reports are historical; see ACCOUNT_SECURITY.md for the final account model. No public service has been deployed or real database migrated in this work. Public deployment remains gated pending staging/infrastructure validation.
+The implementation for Phases 1–12, plus account security and isolated storage, is prepared for source delivery. The fresh Python 3.12 environment passes regression tests and a dependency audit. Earlier phase reports are historical; see ACCOUNT_SECURITY.md for the final account model. No public service has been deployed or real database migrated in this work. Authenticated Render hosting is now supported; see RENDER_DEPLOYMENT.md for required settings. Real production infrastructure validation remains separate.
 
 ## Local setup
 
@@ -23,7 +23,7 @@ The old constraints-local-win-py310.txt is retained as a historical Phase 12 art
 
 ## Runtime and storage boundaries
 
-start.py validates loopback binding before importing the app, uses one Waitress application thread, 16 connections, a 30-second idle-channel timeout, 100 MiB body limit and untrusted proxy-header clearing. The direct development server also validates local-only options. These settings do not provide CPU deadlines or process-memory caps.
+start.py validates hosting configuration before importing the app. Local startup defaults to loopback; Render startup binds 0.0.0.0 on PORT, requires authentication/secure cookies, and uses the known HTTPS external scheme. It uses one Waitress application thread, 16 connections, a 30-second idle-channel timeout, 100 MiB body limit and untrusted proxy-header clearing. These settings do not provide CPU deadlines or process-memory caps.
 
 Authenticated requests resolve separate account database namespaces and request-scoped active data. They never use shared local dataset caches. Snapshot HMACs bind the blob to the account and signing secret before deserialization. Legacy AURA_AUTH_REQUIRED=false still uses the old shared dataset architecture and must be confined to isolated loopback evaluation. Old immutable blobs are retained for in-flight readers; define a storage retention/quota policy before hosting. Reset removes the active pointer, not a cryptographic erasure of every retained blob.
 
@@ -46,13 +46,13 @@ The dependency audit must not suppress findings. Regression and audit GitHub Act
 
 The fresh Python 3.12 environment installs dnspython 2.9.1, Pillow 13.0.0 and filelock 4.2.6, resolving the advisory entries from the old Python 3.10 environment. A zero-known-findings scan is evidence about that environment at that time, not a security guarantee.
 
-## Public deployment gates
+## Hosted deployment and operational checks
 
-`python scripts/release_check.py --target public` intentionally exits 2 with known unresolved deployment requirements. `--target local` reports LOCAL_EVALUATION_ONLY without claiming that credentials/startup were validated. The Render blueprint disables auto-deploys and runs the failing public gate; it is intentionally not deployable yet. Editing/pushing source is not a live service configuration change, although your own connected hosting integrations can react to repository events.
+Use `python start.py` on Render, not the offline release-check script. The updated blueprint includes account-security variables, a generated signing secret for Blueprint-managed services, manual MongoDB secrets and /api/health. Existing services must configure missing environment variables manually; see RENDER_DEPLOYMENT.md.
 
-Before restoring a hosted start command, verify: real MongoDB account permissions and TLS; server secret/cookie/hostname/proxy policy; a patched deployment image and its audit; hard memory/CPU/request execution limits; edge rate limits; representative concurrent HTTP/database load; account isolation on staging; account/dataset quotas and blob retention; a real database/GridFS/file backup and restore rehearsal. Authentication, private account isolation, application request limits and local adversarial tests are implemented, but do not substitute for those operational checks. Public network binding remains rejected by start.py until the release configuration is reviewed and changed intentionally.
+`python scripts/release_check.py --target public` remains an offline inventory of operational checks that have not been certified. Its BLOCKED output is not the server entry point and must not be used as Render's Start Command. Automatic deployment remains off in the blueprint; this does not change an existing service's separately configured auto-deploy setting.
 
-Shared-team RBAC, SSO/MFA, email password recovery and collaborative workspaces are not part of the implemented private-account model. Profile role labels confer no cross-account administrator privileges.
+Before using real business data, verify MongoDB account permissions/TLS, the signing key and secure cookies, host/proxy behavior, the deployed-image dependency audit, hard resource limits, edge rate limits, concurrent load, quotas/blob retention and a database/GridFS backup/restore rehearsal. Account security and binding tests use mocked database transport; they cannot establish actual hosted readiness. Shared-team RBAC, SSO/MFA, email recovery and collaboration are not part of this private-account model.
 
 ## Rollback
 

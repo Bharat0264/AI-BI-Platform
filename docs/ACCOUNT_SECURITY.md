@@ -1,6 +1,6 @@
 # Account security and isolated storage
 
-Implemented during final phase completion on 2 November 2026. This document supersedes the missing-authentication and shared-data descriptions in the historical Phase 10–12 reports. Public deployment still needs real infrastructure validation and remains gated.
+Implemented during final phase completion on 2 November 2026. This document supersedes the missing-authentication and shared-data descriptions in the historical Phase 10–12 reports. Render hosting is supported with mandatory account security; real infrastructure validation remains necessary. See RENDER_DEPLOYMENT.md.
 
 ## Operator setup
 
@@ -37,7 +37,7 @@ No actual user credentials or real MongoDB accounts were provisioned during auto
 
 Backend tests walk the entire API route map for unauthenticated rejection; check bad credentials, missing request tokens, sign-out/captured-cookie revocation, password reset/disabled users, login limits, account-specific answers/records/reset, guessed artifact IDs, spoofed workspace/user fields, tampered snapshot rejection before deserialization, and simultaneous requests for two accounts. A real browser check signs in, uploads, asks a question, signs out and signs in as another account without retaining its dataset.
 
-MongoDB/GridFS transport is mocked in these tests. No live Atlas permissions, durability, operational backups, production throughput or penetration-test claim follows from these checks. start.py remains loopback-only pending staging validation. Legacy unauthenticated mode must not be hosted.
+MongoDB/GridFS transport is mocked in these tests. No live Atlas permissions, durability, operational backups, production throughput or penetration-test claim follows from these checks. start.py remains loopback by default locally; on Render it binds the platform port only after validating account security, secure cookies and trusted host configuration. Legacy unauthenticated mode cannot run on Render.
 
 ## Dependencies and CI
 

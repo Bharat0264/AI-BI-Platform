@@ -104,7 +104,11 @@ def load_account_dataset():
     if not hmac.compare_digest(expected, str(saved.get("signature", ""))):
         from werkzeug.exceptions import Conflict
         raise Conflict("Stored dataset integrity could not be verified. Re-import your source dataset.")
-    return {"df": pd.read_pickle(BytesIO(payload)), "source": saved.get("source") or "Saved dataset"}
+    try:
+        frame = pd.read_pickle(BytesIO(payload))
+    except (NotImplementedError, ValueError, TypeError, ImportError, AttributeError, EOFError) as error:
+        raise Conflict("This saved dataset is incompatible with the current runtime. Re-import the original CSV, Excel or JSON file; the stored copy has been preserved.") from error
+    return {"df": frame, "source": saved.get("source") or "Saved dataset"}
 
 
 def persist_active_dataset(df=None, source=None):
@@ -119,7 +123,7 @@ def persist_active_dataset(df=None, source=None):
         return
     buffer = BytesIO(); df.to_pickle(buffer); payload = buffer.getvalue()
     file_id = fs.put(payload, filename=str(source or "Saved dataset"))
-    saved = {"file_id": file_id, "source": str(source or "Saved dataset")}
+    saved = {"file_id": file_id, "source": str(source or "Saved dataset"), "pandas_version": pd.__version__}
     if account_storage(): saved["signature"] = dataset_signature(payload)
     set_setting("active_dataset", saved)
     if not account_storage():

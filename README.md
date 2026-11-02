@@ -6,6 +6,8 @@
 
 AURA-BI is an evidence-first business intelligence platform that understands unfamiliar datasets, infers business semantics, proposes valid KPIs and visualizations, plans deterministic analytics, investigates anomalies, supports practical AutoML, and answers business questions without allowing an LLM to invent metrics. It preserves the existing responsive dashboard and its established sales analytics, forecasting, voice interaction, reporting, and workspace features.
 
+Render startup/cache-recovery follow-up: **405 tests passed**. See [deployment setup](docs/RENDER_DEPLOYMENT.md) and [measured startup validation](docs/validation/render-startup.json). Earlier phase results below are historical snapshots.
+
 ## Latest verification
 
 On 2 November 2026, the fresh Python 3.12.16 environment passed **395 tests**, including **22 browser checks**, and its dependency audit found **no known vulnerabilities**. Arithmetic/language/scope evaluations passed **332/332**, **154/154**, and **70/70**. Public-data validation passed **29/32**; the remaining three opaque-column cases require explicit semantic confirmation. See [measured records and limits](docs/validation/summary.json). These checks do not establish production readiness or competitive superiority.
@@ -40,7 +42,7 @@ The specialized Data, Analyst, ML, Anomaly, Visualization, and Report services e
 
 ## Release status
 
-This is a **local-only release candidate**. Account login, per-user storage isolation and security-patched Python 3.12 dependencies are now implemented. Public deployment remains blocked pending real staging/infrastructure validation. Read [the release runbook](docs/RELEASE_RUNBOOK.md). The Render blueprint intentionally fails its public-release gate and disables automatic deployment. No live service settings have been changed.
+Account login, per-user storage isolation and security-patched Python 3.12 dependencies are implemented. The launcher supports local evaluation and **authenticated Render hosting**. Render requires a private signing secret, secure cookies and configured MongoDB; see [Render setup](docs/RENDER_DEPLOYMENT.md). Production infrastructure validation remains an operator responsibility. No live service settings have been changed by editing this repository.
 
 ## Run locally
 
@@ -77,7 +79,7 @@ Research execution details: [AURABench](docs/AURABENCH.md) and [reproducibility]
 
 ## Deployment
 
-Public Render deployment is intentionally blocked in this candidate. `start.py` permits loopback only and one request thread; the blueprint runs the failing public-release gate. See [the release runbook](docs/RELEASE_RUNBOOK.md) for local evaluation and unresolved release requirements. These changes are local and have not been applied to any live service.
+On Render, use `python start.py`. The launcher binds `0.0.0.0:$PORT`, forces authenticated hosting and uses HTTPS-aware session/origin handling behind Render’s TLS edge. The blueprint declares required account/MongoDB settings and keeps auto-deploy off. Existing services must update their own settings/environment; a repository blueprint does not automatically configure them. See [Render deployment and cache recovery](docs/RENDER_DEPLOYMENT.md).
 
 ## Persistence
 

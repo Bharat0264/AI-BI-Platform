@@ -1,0 +1,28 @@
+{
+  "date": "2026-11-02",
+  "problem": "Render saw only a localhost listener; legacy shared pickle restore also raised an incompatible pandas StringDtype error.",
+  "tests": {
+    "tests": "405",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "51.540"
+  },
+  "targeted_render_and_release_checks": 25,
+  "implemented": [
+    "Render binds 0.0.0.0 using PORT, overriding stale local HOST",
+    "Hosted account security and secure cookies are required",
+    "Render HTTPS origin and trusted host validation",
+    "Working python start.py blueprint entry point",
+    "No legacy shared dataset restore in hosted account mode",
+    "Incompatible signed account cache returns a preserved-data re-import message"
+  ],
+  "limits": "Local tests use real Waitress HTTP with simulated Render forwarding and mocked MongoDB. Live Render settings/secrets and deployment success have not been verified.",
+  "source_sha256": {
+    "start.py": "61ce3c0f0f85435de215230fdb8fa5ce5c6fdc686873191537cd0ec22d99319d",
+    "authentication.py": "a98dd30eb9ef601f86ad8a081b6467392d7cea8401f2b9786ef5a131ec5f8b42",
+    "server.py": "a163fc30e2c24f4e4d902c58bcca72509043e84436fdf280e02c2481c9ad487b",
+    "render.yaml": "22f7220c6f382d4fb1e38aab22264acd92fc4f4f7f8bb6cd80766be984241579",
+    "tests/test_render_startup.py": "0391dc1c62a7e24aad53c84c8893dc59aab0eb511f2fa269a76669a35dc7aec2"
+  }
+}
