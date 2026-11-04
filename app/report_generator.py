@@ -1,5 +1,7 @@
 from pathlib import Path
 from uuid import uuid4
+import json
+import os
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER
@@ -18,6 +20,16 @@ ACCENT = colors.HexColor("#0f766e")
 INK = colors.HexColor("#101828")
 MUTED = colors.HexColor("#667085")
 SOFT = colors.HexColor("#ecfdf5")
+
+def report_directory(kind="reports"):
+    """Use operator-provided durable storage or the ephemeral local default."""
+    base = Path(os.getenv("AURA_REPORT_DIR", "").strip()) if os.getenv("AURA_REPORT_DIR", "").strip() else Path(__file__).resolve().parents[1] / "outputs"
+    target = base / kind
+    target.mkdir(parents=True, exist_ok=True)
+    return target
+
+def report_storage_mode():
+    return "operator_configured" if os.getenv("AURA_REPORT_DIR", "").strip() else "ephemeral_local"
 
 
 def _clean_text(value):
@@ -99,8 +111,7 @@ def _build_styles():
 
 
 def generate_pdf_report(report_text, metrics=None, insights=None, anomalies=None, forecast=None, evidence=None):
-    reports_dir = Path(__file__).resolve().parents[1] / "outputs" / "reports"
-    reports_dir.mkdir(parents=True, exist_ok=True)
+    reports_dir = report_directory("reports")
 
     file_path = reports_dir / f"AI_Business_Report_{uuid4().hex}.pdf"
     doc = SimpleDocTemplate(
@@ -192,3 +203,35 @@ def generate_pdf_report(report_text, metrics=None, insights=None, anomalies=None
     doc.build(story)
 
     return str(file_path)
+
+
+def generate_research_report(contract, manifest):
+    """Write an opt-in research PDF and adjacent auditor manifest.
+
+    This deliberately does not render legacy Plotly charts or conditional
+    specifications as verified findings.
+    """
+    reports_dir = report_directory("research_reports")
+    report_id = manifest["report_id"]
+    pdf_path = reports_dir / f"AURA_Research_Report_{report_id}.pdf"
+    manifest_path = reports_dir / f"AURA_Research_Report_{report_id}.json"
+    doc = SimpleDocTemplate(str(pdf_path), pagesize=A4, rightMargin=.6*inch, leftMargin=.6*inch, topMargin=.55*inch, bottomMargin=.55*inch)
+    styles = _build_styles(); story=[]
+    story += [_section("AURA-BI Evidence-Verified Research Report", styles), Paragraph("Publication decision: PUBLISH_VERIFIED", styles["BodySoft"])]
+    dataset = contract["dataset"]
+    story += [_section("Dataset identity and contract", styles), _table([["Field","Value"], ["Dataset ID",dataset["dataset_id"]], ["Dataset version",dataset["dataset_version_id"]], ["Contract version",contract["contract_version"]], ["Report ID",report_id]], [2*inch,5.1*inch])]
+    rows=[["Question","Definition","Result","Evidence ID"]]
+    for item in contract["items"]:
+        answer=item["answer"]; definition=answer.get("definition",{}); record=answer.get("evidence",[{}])[0]
+        rows.append([item["question"], definition.get("measure_column",""), str(record.get("result",{}).get(definition.get("aggregation"),"")), record.get("evidence_id","")])
+    story += [_section("Verified analytical results",styles),_table(rows,[1.8*inch,1.5*inch,1.3*inch,2.5*inch])]
+    chart_rows=[["Question","Chart type","Verification","Evidence ID"]]
+    for item in contract["items"]:
+        spec=item.get("visualization",{}); check=item.get("visualization_verification",{})
+        if spec and check.get("status")=="VERIFIED": chart_rows.append([item["question"],spec.get("chart_type",""),check.get("status",""),spec.get("evidence_references",[""])[0]])
+    story += [_section("Verified visualization specifications",styles),_table(chart_rows,[2.4*inch,1.3*inch,1.3*inch,2.1*inch])]
+    story += [_section("Verification and consistency",styles),Paragraph(_clean_text(json.dumps(contract["consistency"],sort_keys=True)),styles["BodySoft"])]
+    story += [_section("Limitations",styles),Paragraph("Evidence verification binds displayed numerical claims and chart series to recorded deterministic computation. It does not establish the real-world correctness of a business definition, and these descriptive findings are non-causal.",styles["BodySoft"])]
+    doc.build(story)
+    manifest_path.write_text(json.dumps(manifest,indent=2,sort_keys=True),encoding="utf-8")
+    return str(pdf_path),str(manifest_path)

@@ -45,7 +45,7 @@ class AuraRepository(DefinitionRepository, LifecycleRepository):
         _required(item,["evidence_id","analysis_type","method","result","timestamp"])
         doc={"evidence_id":item["evidence_id"],"workspace_id":workspace_id,"dataset_id":dataset_id,"analysis_type":item["analysis_type"],"source_columns":item.get("source_columns",[]),"filters":item.get("filters",{}),"method":item["method"],"result":item["result"],"statistical_metadata":item.get("uncertainty",{}),"created_at":item["timestamp"]}
         doc["lifecycle_version"] = 1
-        for key in ("result_bindings", "definition", "semantic_corrections", "interpretation_status", "scope", "dependency_evidence_ids"):
+        for key in ("result_bindings", "definition", "semantic_corrections", "interpretation_status", "scope", "dependency_evidence_ids", "evidence_role", "report_eligible"):
             if key in item:
                 doc[key] = item[key]
         try: self.db.analytics_evidence.insert_one(doc)

@@ -1,0 +1,5 @@
+{
+  "independent_baseline_comparison": "NOT_RUN: no frozen external human corpus",
+  "ablations": "NOT_PLOTTED: developer stress fixtures are not independent evidence",
+  "live_deployment_performance": "NOT_RUN: no verified deployment"
+}

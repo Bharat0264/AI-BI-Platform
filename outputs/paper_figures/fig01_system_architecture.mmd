@@ -1,0 +1,25 @@
+flowchart LR
+  u["User / browser"]
+  f["Flask + static UI"]
+  a["Authentication + dataset context"]
+  m["MongoDB accounts/datasets/evidence"]
+  c["Semantic schema + planner"]
+  d["Deterministic analytics"]
+  v["Evidence verifier"]
+  s["SIIE"]
+  e["EVVE"]
+  g["Dashboard consistency"]
+  p["Selective publication"]
+  r["Research PDF + JSON manifest"]
+  u --> f
+  f --> a
+  a -->|persist| m
+  a -->|dataset| c
+  c -->|plan| d
+  d -->|evidence| v
+  v -->|ambiguity| s
+  v -->|values| e
+  s -->|conditional| e
+  e -->|contracts| g
+  g -->|gate| p
+  p -->|verified only| r

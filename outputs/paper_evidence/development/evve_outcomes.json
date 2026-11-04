@@ -1,0 +1,12 @@
+[
+  {
+    "case": "correct_series",
+    "expected": "VERIFIED",
+    "actual": "VERIFIED"
+  },
+  {
+    "case": "incorrect_series",
+    "expected": "INVALID",
+    "actual": "INVALID"
+  }
+]

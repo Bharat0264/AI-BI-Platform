@@ -1,0 +1,11 @@
+{
+  "classification": "DEVELOPER_ONLY_MEASURED_OUTPUTS",
+  "created_at": "2026-11-04T16:17:39.751819+00:00",
+  "python": "3.12.16 (main, Oct 25 2026, 18:24:37) [Clang 21.0.0 (clang-2100.3.34.2)]",
+  "platform": "macOS-27.2-arm64-arm-64bit",
+  "git_revision": "b07a9ac15f9387d76756fcfb913fea621d34c8ea",
+  "working_tree": "dirty research branch; revision is base commit only",
+  "maxrss": 579747840,
+  "timing_method": "perf_counter_ns; 10 sequential runs on a 1,000-row derived development fixture; warm/cold not separated",
+  "limitations": "No human labels, frozen independent corpus, deployment measurements, baseline claims, or scalability inference."
+}

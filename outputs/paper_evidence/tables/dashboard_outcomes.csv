@@ -1,0 +1,3 @@
+case,expected,actual
+consistent,PUBLISH_VERIFIED,PUBLISH_VERIFIED
+scope_currency_conflict,REJECT,REJECT

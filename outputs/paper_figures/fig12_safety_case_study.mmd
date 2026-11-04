@@ -1,0 +1,13 @@
+flowchart LR
+  q["“What is sales by category?”"]
+  g["Gross Sales source-derived"]
+  n["Net Sales proxy source-derived"]
+  i["Different values/ranks/ chart shapes"]
+  c["SIIE: VALUE + RANKING + VISUALIZATION sensitive"]
+  r["CLARIFICATION_REQUIRED no verified report"]
+  q -->|candidate| g
+  q -->|candidate| n
+  g --> i
+  n --> i
+  i --> c
+  c --> r

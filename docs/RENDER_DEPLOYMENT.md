@@ -1,12 +1,10 @@
 # Render deployment and cache recovery
 
-## Temporary public demo (current setting)
+## Controlled private deployment (current setting)
 
-At the owner's explicit request, login is paused. Render defaults AURA_PUBLIC_DEMO=true, so the existing service does not need to remove its older AURA_AUTH_REQUIRED=true variable to open the demo. The blueprint also sets AURA_AUTH_REQUIRED=false for clarity. The login dialog and sign-out controls stay hidden; a shared-workspace notice is displayed.
+The Blueprint uses `AURA_PUBLIC_DEMO=false` and `AURA_AUTH_REQUIRED=true`. This is required for controlled research measurements: each authenticated account receives an isolated MongoDB namespace for datasets, evidence, reports, and settings. Do not enable the shared public-demo workspace for a deployment that will hold participant, research, or private business data.
 
-Anonymous requests use a dedicated public-demo database namespace, not the legacy shared cache or any existing private account's database. All visitors to the demo can read/change its uploaded sample data and settings. Existing private sessions are ignored in demo mode, but their data is preserved. The server-side file connector remains unavailable. Keep the existing AURA_SECRET_KEY, AURA_COOKIE_SECURE=true and MongoDB configuration: the key also signs stored dataset blobs even while login is disabled.
-
-After the latest source is deployed, refresh the browser to open the demo directly. To restore accounts, set AURA_PUBLIC_DEMO=false and AURA_AUTH_REQUIRED=true, then redeploy. The authenticated-mode instructions below apply when restoring accounts.
+Keep `AURA_SECRET_KEY`, `AURA_COOKIE_SECURE=true`, and the MongoDB configuration secret-managed. The stable secret signs stored dataset blobs and sessions. If a temporary public demonstration is ever required, use a separate service/database and document that uploads in the public-demo workspace are shared.
 
 ## Failure diagnosed from the supplied log
 
@@ -75,3 +73,9 @@ The deployment log reported that the generated AURABI tenant database name excee
 Keep MONGODB_DATABASE and your URI unchanged; changing the base manually could select a different data namespace. Deploy the latest naming fix instead. No database is renamed or deleted by the fix. Previously oversized tenant names could not be created on the affected Atlas tier. For pre-existing oversized databases on a different tier, data migration is a separate operator step, not silently performed by startup.
 
 Regression tests reproduce the reported AURABI/public-demo path with a database client enforcing 38 bytes, cover the longest supported bases and multiple identities, preserve valid existing names, and verify isolation between bases sharing a readable prefix. MongoDB documents the Free-cluster limit here: https://www.mongodb.com/docs/atlas/reference/free-shared-limitations/
+
+## Report file persistence
+
+Render web-service local files are ephemeral. AURA-BI streams a newly generated PDF in the response, but default `outputs/` files must not be described as durable or retrievable after a restart. Both report routes expose `X-AURA-Report-Storage: ephemeral_local` by default.
+
+For durable retention, configure an operator-managed mounted directory through `AURA_REPORT_DIR`, ensure write permissions and backups, and document access/retention policy. The header becomes `operator_configured`; that reports configuration only, not a backup guarantee. Do not expose report paths or commit reports to Git.

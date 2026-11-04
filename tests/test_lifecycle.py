@@ -288,6 +288,11 @@ def test_unselected_interpretations_are_never_reported_as_current_selected_evide
         assert store.artifact_state(workspace, "evidence", evidence["evidence_id"])["status"] == "UNRESOLVED"
     selected, excluded = store.report_evidence(workspace, dataset)
     assert selected == [] and excluded == 2
+    diagnostics = list(store.db.analytics_evidence.find({"workspace_id": workspace, "dataset_id": dataset,
+        "evidence_role": "INTERPRETATION_IMPACT_DIAGNOSTIC"}, {"_id": 0}))
+    assert len(diagnostics) == 2
+    assert all(item["interpretation_status"] == "CONDITIONAL" for item in diagnostics)
+    assert all(item["report_eligible"] is False for item in diagnostics)
 
 
 @pytest.mark.parametrize("body", [[], "question", None])

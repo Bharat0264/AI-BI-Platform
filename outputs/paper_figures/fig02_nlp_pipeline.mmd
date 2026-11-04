@@ -1,0 +1,16 @@
+flowchart LR
+  q["Natural-language question"]
+  x["parse_question supported grammar"]
+  s["SemanticSchemaEngine columns + corrections"]
+  i["Metric candidates / exact selection"]
+  p["Analytics plan"]
+  d["Pandas deterministic computation"]
+  v["EvidenceClaim + verifier"]
+  l["Optional Gemini narrator NOT_VERIFIED"]
+  q --> x
+  x -->|grounding| s
+  s -->|roles| i
+  i -->|ambiguous → alternatives| p
+  p --> d
+  d --> v
+  v -->|compact evidence only| l

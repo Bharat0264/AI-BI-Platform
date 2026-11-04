@@ -1,0 +1,12 @@
+[
+  {
+    "case": "consistent",
+    "expected": "PUBLISH_VERIFIED",
+    "actual": "PUBLISH_VERIFIED"
+  },
+  {
+    "case": "scope_currency_conflict",
+    "expected": "REJECT",
+    "actual": "REJECT"
+  }
+]

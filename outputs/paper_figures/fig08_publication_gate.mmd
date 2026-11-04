@@ -1,0 +1,15 @@
+flowchart LR
+  s["Start: pipeline output"]
+  a["Any unresolved ambiguity?"]
+  b["Any blocked / invalid / insufficient evidence?"]
+  c["Consistency = PUBLISH_VERIFIED?"]
+  q["CLARIFICATION_REQUIRED"]
+  x["BLOCKED"]
+  p["PUBLISH_VERIFIED"]
+  s --> a
+  a -->|yes| q
+  a -->|no| b
+  b -->|yes| x
+  b -->|no| c
+  c -->|yes| p
+  c -->|no| x

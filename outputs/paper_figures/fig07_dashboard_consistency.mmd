@@ -1,0 +1,15 @@
+flowchart LR
+  c["KPI/chart components"]
+  d["Definition + aggregation"]
+  s["Dataset/version scope/time"]
+  u["Currency + unit"]
+  i["Declared direct-comparison groups"]
+  g["Consistency issues semantic graph"]
+  p["Publish / clarify / reject"]
+  c --> d
+  c --> s
+  d --> i
+  s --> i
+  u --> i
+  i --> g
+  g --> p

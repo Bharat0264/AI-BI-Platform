@@ -102,6 +102,10 @@ class LifecycleRepository:
         self._definition_scope(workspace_id, dataset_id)
         current, excluded = [], 0
         for item in self.db.analytics_evidence.find({"workspace_id": workspace_id, "dataset_id": dataset_id}, {"_id": 0}).sort("created_at", -1):
+            # Impact diagnostics remain inspectable but are never report
+            # candidates and do not inflate candidate-exclusion accounting.
+            if item.get("report_eligible") is False:
+                continue
             if self.artifact_state(workspace_id, "evidence", item["evidence_id"], dataset_id)["status"] == "CURRENT":
                 current.append(item)
                 if len(current) == limit:

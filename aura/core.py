@@ -346,7 +346,8 @@ class AuraOrchestrator:
                 candidates,
                 lambda column: self._answer_unscoped(question, df, dataset_id, corrections,
                                            definition={"measure_column": column}, _fields=fields),
-                plan, role, term=alias)
+                plan, role, term=alias,
+                impact_context={"df": df, "dataset_id": dataset_id, "dimensions": [field.column for field in fields if field.semantic_role in {"region", "category"}], "verifier": self.verifier})
         col = candidates[0]
         # A rate/margin is not an additive profit amount.
         if "%" in str(col) or any(token in _name(col).split() for token in ("margin", "percent", "percentage", "pct", "rate")):

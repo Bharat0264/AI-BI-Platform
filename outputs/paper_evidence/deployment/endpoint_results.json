@@ -1,0 +1,7 @@
+{
+  "record_type": "live_endpoint_results",
+  "deployment_status": "NOT_DEPLOYED",
+  "live_url": null,
+  "results": [],
+  "reason": "No Render account/service authorization or production MongoDB credentials were available in this workspace. No live requests were made and no result has been simulated."
+}

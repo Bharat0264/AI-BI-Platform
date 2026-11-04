@@ -1,0 +1,12 @@
+[
+  {
+    "case_id": "ambiguous",
+    "impact": [
+      "RANKING_SENSITIVE",
+      "VALUE_SENSITIVE",
+      "VISUALIZATION_SENSITIVE"
+    ],
+    "conditional_charts": "AMBIGUOUS",
+    "unconditional_publication": false
+  }
+]

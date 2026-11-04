@@ -1,0 +1,3 @@
+case,expected,actual
+correct_series,VERIFIED,VERIFIED
+incorrect_series,INVALID,INVALID

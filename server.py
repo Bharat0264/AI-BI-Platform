@@ -27,12 +27,12 @@ if str(APP_DIR) not in sys.path:
     sys.path.insert(0, str(APP_DIR))
 
 from prediction import predict_sales
-from report_generator import generate_pdf_report
+from report_generator import generate_pdf_report, generate_research_report, report_storage_mode
 from schema_engine import normalize_business_dataset, ALIASES, _key
 from ingestion import read_csv_dataset
 from stock_analysis import analyze_stock
 from platform_store import add_record, delete_record, get_record, get_setting, init_store, list_records, set_setting, update_record
-from aura import AuraOrchestrator
+from aura import AuraOrchestrator, ResearchDashboardPipeline
 from aura.replay import review_token
 from aura.scopes import scope_options
 from aura.providers import GeminiEvidenceProvider
@@ -872,6 +872,56 @@ def api_ask():
                     "explanation_verification": "NOT_VERIFIED" if narrative else "NOT_RUN"})
 
 
+@app.route("/api/research/dashboard", methods=["POST"])
+def research_dashboard():
+    """Opt-in research contract; does not alter existing dashboard/PDF endpoints."""
+    body=request.get_json(silent=True)
+    if not isinstance(body,dict) or set(body)-{"questions","expected_dataset_id","expected_workspace_id"}:
+        return jsonify({"error":"Provide only a questions array and optional dataset/workspace guards."}),400
+    questions=body.get("questions")
+    if not isinstance(questions,list) or not questions or len(questions)>10 or not all(isinstance(q,str) and q.strip() and len(q)<=2000 for q in questions):
+        return jsonify({"error":"questions must contain 1-10 non-empty strings up to 2,000 characters."}),400
+    raw_df,source=dataset_from_request()
+    if raw_df is None: return jsonify({"error":"Import a dataset before creating a research dashboard."}),400
+    workspace_id,dataset_id=aura_context(raw_df,source)
+    if (("expected_dataset_id" in body and body["expected_dataset_id"]!=dataset_id) or ("expected_workspace_id" in body and body["expected_workspace_id"]!=workspace_id)):
+        return jsonify({"error":"The workspace or dataset changed. Refresh and retry."}),409
+    corrections={**get_setting(f"aura_schema:{source}",{}),**PERSISTENCE.corrections(dataset_id)}
+    result=ResearchDashboardPipeline(AURA).build(df=raw_df,dataset_id=str(dataset_id),dataset_version_id=str(dataset_id),questions=questions,corrections=corrections,saved_definitions=PERSISTENCE.definition_defaults(workspace_id,dataset_id))
+    return jsonify(result)
+
+
+@app.route("/api/research/report", methods=["POST"])
+def research_report():
+    body=request.get_json(silent=True)
+    if not isinstance(body,dict) or set(body)-{"questions","expected_dataset_id","expected_workspace_id"}:
+        return jsonify({"error":"Provide only a questions array and optional dataset/workspace guards."}),400
+    questions=body.get("questions")
+    if not isinstance(questions,list) or not questions or len(questions)>10 or not all(isinstance(q,str) and q.strip() and len(q)<=2000 for q in questions):
+        return jsonify({"error":"questions must contain 1-10 non-empty strings up to 2,000 characters."}),400
+    raw_df,source=dataset_from_request()
+    if raw_df is None: return jsonify({"error":"Import a dataset before creating a research report."}),400
+    workspace_id,dataset_id=aura_context(raw_df,source)
+    if (("expected_dataset_id" in body and body["expected_dataset_id"]!=dataset_id) or ("expected_workspace_id" in body and body["expected_workspace_id"]!=workspace_id)):
+        return jsonify({"error":"The workspace or dataset changed. Refresh and retry."}),409
+    corrections={**get_setting(f"aura_schema:{source}",{}),**PERSISTENCE.corrections(dataset_id)}
+    contract=ResearchDashboardPipeline(AURA).build(df=raw_df,dataset_id=str(dataset_id),dataset_version_id=str(dataset_id),questions=questions,corrections=corrections,saved_definitions=PERSISTENCE.definition_defaults(workspace_id,dataset_id))
+    if contract["publication_decision"] != "PUBLISH_VERIFIED":
+        return jsonify({"error":"Research report publication is blocked.","publication_decision":contract["publication_decision"],"contract":contract}),409
+    try:
+        manifest=ResearchDashboardPipeline.report_manifest(contract)
+        pdf_path,manifest_path=generate_research_report(contract,manifest)
+    except (ValueError, OSError) as error:
+        app.logger.exception("Research report generation failed")
+        return jsonify({"error":"Research report generation failed.","detail":str(error)}),500
+    response=send_file(pdf_path,as_attachment=True,download_name="AURA_Evidence_Verified_Research_Report.pdf")
+    response.headers["X-AURA-Research-Report-ID"]=manifest["report_id"]
+    response.headers["X-AURA-Research-Manifest"]=Path(manifest_path).name
+    response.headers["X-AURA-Publication-Decision"]="PUBLISH_VERIFIED"
+    response.headers["X-AURA-Report-Storage"]=report_storage_mode()
+    return response
+
+
 @app.route("/api/aura/answers", methods=["GET"])
 @app.route("/api/aura/reports", methods=["GET"])
 def aura_artifacts():
@@ -1144,6 +1194,7 @@ def export_report():
     response = send_file(pdf_path, as_attachment=True, download_name="AI_Business_Report.pdf")
     response.headers["X-AURA-Report-ID"] = report_id
     response.headers["X-AURA-Freshness"] = PERSISTENCE.artifact_state(workspace_id, "report", report_id, dataset_id)["status"]
+    response.headers["X-AURA-Report-Storage"] = report_storage_mode()
     return response
 
 

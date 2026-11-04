@@ -1,0 +1,12 @@
+flowchart LR
+  q["Verified questions"]
+  e["Analytical evidence records"]
+  c["EVVE chart contracts"]
+  g["Consistency + publication decision"]
+  p["PDF research report"]
+  j["JSON manifest IDs/definitions/results"]
+  q --> e
+  e --> c
+  c --> g
+  g -->|PUBLISH_VERIFIED only| p
+  g --> j

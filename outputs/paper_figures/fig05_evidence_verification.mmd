@@ -1,0 +1,12 @@
+flowchart LR
+  d["Dataset + version"]
+  s["Selected columns filters/scope"]
+  o["Operation + result bindings"]
+  e["AnalyticsEvidence ID"]
+  c["EvidenceClaim path/value/tolerance"]
+  r["SUPPORTED or UNSUPPORTED"]
+  d --> s
+  s --> o
+  o --> e
+  e --> c
+  c -->|exact binding| r

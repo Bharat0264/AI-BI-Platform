@@ -1,0 +1,11 @@
+{
+  "annotation_id": "UUID", "annotator_id": "PSEUDONYM", "training_version": "v1", "case_id": "CASE-ID", "timestamp": "UTC-ISO-8601",
+  "answerability": "ANSWERABLE|CLARIFICATION_REQUIRED|INSUFFICIENT_DATA",
+  "correct_business_interpretation": {"term": "", "columns": [], "formula": "", "unit": null, "currency": null},
+  "candidate_definitions": [{"term": "", "columns": [], "formula": "", "admissible": true, "rationale": ""}],
+  "numerical_oracle": {"method": "independent spreadsheet/Decimal calculation", "aggregate": null, "grouped": {}, "ranking": [], "difference": null},
+  "visualization_label": {"recommended_type": "", "valid_specification": true, "reasons": []},
+  "dashboard_label": {"consistent": true, "issues": [], "affected_components": []},
+  "provenance_label": {"evidence_verifiable": true, "reason": ""},
+  "unsupported_request": false, "notes": ""
+}

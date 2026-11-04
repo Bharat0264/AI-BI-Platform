@@ -1,0 +1,7 @@
+# Fair baseline status and findings protocol
+
+Valid existing work: the repository has deterministic regression suites, a retrospective paired policy ablation, public-data execution checks, SIIE/EVVE/dashboard contract tests, and a small held-out synthetic fixture runner. Missing: independently authored test questions, independent candidate-definition annotations, frozen visualization/dashboard gold labels, resource-equivalent LLM runs, and enough independent dataset/template clusters for inference.
+
+`experiments.fair_baselines` provides matched B0 manual, B1 first-candidate, B2 clarification-only, B3 numeric-only, B4 full, and B5 LLM-chart-planning adapters. Each receives only a case's records and question; expected labels are used only after execution by evaluation code. B5 is `NOT_RUN` unless both `GEMINI_API_KEY` and `AURA_ENABLE_LLM=true` are configured. It is never simulated.
+
+Do not claim improvements from the current fixture run. B0/B1/B2 are simplified baselines, B3/B4 share portions of implementation, and B5 has not run. A future study must pair outputs by frozen case, report paired differences and cluster bootstrap intervals only when independent dataset/template clusters justify them, and publish full raw traces/costs. Recent ambiguity-aware text-to-SQL and NL visualization literature remains relevant prior work; this framework is not yet evidence of a materially different published method.

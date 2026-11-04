@@ -1,0 +1,35 @@
+{
+  "record_type": "deployment_preparation_environment",
+  "recorded_on": "2026-11-04",
+  "deployment_status": "NOT_DEPLOYED",
+  "branch": "research/independent-evaluation",
+  "base_commit": "b07a9ac15f9387d76756fcfb913fea621d34c8ea",
+  "worktree_state": "dirty; release tag intentionally deferred until reviewed changes are committed",
+  "python": "CPython 3.12.16",
+  "platform": "macOS 27.2 arm64",
+  "dependencies": {
+    "Flask": "3.1.3",
+    "waitress": "3.0.2",
+    "pandas": "2.3.3",
+    "numpy": "2.5.4",
+    "pymongo": "4.19.0",
+    "reportlab": "5.1.0",
+    "plotly": "7.1.0",
+    "google-generativeai": "0.8.6",
+    "pytest": "9.0.3"
+  },
+  "test_run": {
+    "command": "MPLBACKEND=Agg MPLCONFIGDIR=/private/tmp/aura-mpl /private/tmp/aura-py312-venv/bin/python -m pytest -q",
+    "result": "464 passed, 1 warning in 39.46s",
+    "warning": "Upstream google.generativeai package deprecation warning"
+  },
+  "deployment_profile": {
+    "provider_candidate": "Render Web Service",
+    "build_command": "python -m pip install -r requirements.txt",
+    "start_command": "python start.py",
+    "health_check_path": "/api/health",
+    "authentication_required": true,
+    "public_demo": false,
+    "report_storage_default": "ephemeral_local"
+  }
+}

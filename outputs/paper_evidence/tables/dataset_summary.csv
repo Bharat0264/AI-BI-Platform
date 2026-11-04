@@ -1,0 +1,4 @@
+dataset,rows,columns,identity,limitations
+Online Retail,541909,8,official UCI original archive; SHA-256 in benchmark/collection/acquisition_manifest.json,Raw schema may lack an analyst-supported monetary field or unambiguous business definition.
+Online Shoppers Purchasing Intention,12330,18,official UCI original archive; SHA-256 in benchmark/collection/acquisition_manifest.json,Raw schema may lack an analyst-supported monetary field or unambiguous business definition.
+Bank Marketing,45211,17,official UCI original archive; SHA-256 in benchmark/collection/acquisition_manifest.json,Raw schema may lack an analyst-supported monetary field or unambiguous business definition.

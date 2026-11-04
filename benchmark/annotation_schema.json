@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AURA-BI external annotation package",
+  "description": "Schemas are documentary contracts; the loader enforces the safety-critical input boundary.",
+  "input_required": ["case_id", "dataset_id", "dataset_family", "template_family", "records", "question", "source_sha256"],
+  "label_required": ["case_id", "answerability", "candidate_definitions", "numerical_oracle", "visualization_label", "dashboard_label", "provenance_label", "adjudication_id"],
+  "annotator_required": ["annotation_id", "annotator_id", "training_version", "case_id", "timestamp"],
+  "adjudication_required": ["adjudication_id", "case_id", "annotation_ids", "adjudicator_id", "decision", "rationale", "timestamp"]
+}

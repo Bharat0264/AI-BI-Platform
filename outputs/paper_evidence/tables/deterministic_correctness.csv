@@ -1,0 +1,7 @@
+case_id,question,expected_status,actual_status,expected_value,actual_value,difference,numerical_correct,evidence_status,failure_reason
+total,What is gross sales?,OK,OK,102189.23999999999,102189.23999999999,0.0,True,SUPPORTED,
+average,What is average gross sales?,OK,OK,20.437848,20.437848,0.0,True,SUPPORTED,
+group,What is gross sales by category?,OK,OK,102189.23999999999,102189.23999999999,0.0,True,SUPPORTED,
+rank,Which category has the highest gross sales?,OK,OK,98170.83,98170.83,0.0,True,SUPPORTED,
+ambiguous,What is sales by category?,CLARIFICATION_REQUIRED,CLARIFICATION_REQUIRED,,102189.23999999999,,False,CONDITIONAL,
+causal,Why did sales decline?,INSUFFICIENT DATA,INSUFFICIENT DATA,,,,False,NOT_RUN,

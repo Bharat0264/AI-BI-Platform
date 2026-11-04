@@ -1,0 +1,6 @@
+{
+  "adjudication_id": "UUID", "case_id": "CASE-ID", "annotation_ids": ["ANNOTATION-A", "ANNOTATION-B"], "adjudicator_id": "PSEUDONYM", "timestamp": "UTC-ISO-8601",
+  "disagreements": [{"field": "", "annotation_a": null, "annotation_b": null}],
+  "decision": {"answerability": "", "candidate_definitions": [], "numerical_oracle": {}, "visualization_label": {}, "dashboard_label": {}, "provenance_label": {}},
+  "rationale": ""
+}

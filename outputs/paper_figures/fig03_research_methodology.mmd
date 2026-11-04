@@ -1,0 +1,14 @@
+flowchart LR
+  p["UCI procurement COMPLETED"]
+  v["Checksum/schema validation COMPLETED"]
+  q["Developer task preparation COMPLETED"]
+  h["Independent human annotation PENDING"]
+  a["Adjudication + freeze PENDING"]
+  b["Matched B0–B4 PENDING"]
+  m["Metrics + clustered statistics PENDING"]
+  p --> v
+  v --> q
+  q --> h
+  h -->|two annotators| a
+  a -->|frozen corpus| b
+  b --> m

@@ -1,0 +1,18 @@
+flowchart LR
+  q["Ambiguous business question"]
+  c["Candidate definitions ≤32"]
+  a["Independent deterministic computations"]
+  n["Aggregate / grouped impact"]
+  r["Ranking impact"]
+  v["Chart-shape impact"]
+  g["Semantic impact graph"]
+  k["Clarification required no selection"]
+  q --> c
+  c --> a
+  a --> n
+  a --> r
+  a --> v
+  n --> g
+  r --> g
+  v --> g
+  g --> k

@@ -1,0 +1,74 @@
+[
+  {
+    "case_id": "total",
+    "question": "What is gross sales?",
+    "expected_status": "OK",
+    "actual_status": "OK",
+    "expected_value": 102189.23999999999,
+    "actual_value": 102189.23999999999,
+    "difference": 0.0,
+    "numerical_correct": true,
+    "evidence_status": "SUPPORTED",
+    "failure_reason": null
+  },
+  {
+    "case_id": "average",
+    "question": "What is average gross sales?",
+    "expected_status": "OK",
+    "actual_status": "OK",
+    "expected_value": 20.437848,
+    "actual_value": 20.437848,
+    "difference": 0.0,
+    "numerical_correct": true,
+    "evidence_status": "SUPPORTED",
+    "failure_reason": null
+  },
+  {
+    "case_id": "group",
+    "question": "What is gross sales by category?",
+    "expected_status": "OK",
+    "actual_status": "OK",
+    "expected_value": 102189.23999999999,
+    "actual_value": 102189.23999999999,
+    "difference": 0.0,
+    "numerical_correct": true,
+    "evidence_status": "SUPPORTED",
+    "failure_reason": null
+  },
+  {
+    "case_id": "rank",
+    "question": "Which category has the highest gross sales?",
+    "expected_status": "OK",
+    "actual_status": "OK",
+    "expected_value": 98170.83,
+    "actual_value": 98170.83,
+    "difference": 0.0,
+    "numerical_correct": true,
+    "evidence_status": "SUPPORTED",
+    "failure_reason": null
+  },
+  {
+    "case_id": "ambiguous",
+    "question": "What is sales by category?",
+    "expected_status": "CLARIFICATION_REQUIRED",
+    "actual_status": "CLARIFICATION_REQUIRED",
+    "expected_value": null,
+    "actual_value": 102189.23999999999,
+    "difference": null,
+    "numerical_correct": false,
+    "evidence_status": "CONDITIONAL",
+    "failure_reason": null
+  },
+  {
+    "case_id": "causal",
+    "question": "Why did sales decline?",
+    "expected_status": "INSUFFICIENT DATA",
+    "actual_status": "INSUFFICIENT DATA",
+    "expected_value": null,
+    "actual_value": null,
+    "difference": null,
+    "numerical_correct": false,
+    "evidence_status": "NOT_RUN",
+    "failure_reason": null
+  }
+]

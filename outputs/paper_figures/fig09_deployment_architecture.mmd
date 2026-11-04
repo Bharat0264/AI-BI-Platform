@@ -1,0 +1,14 @@
+flowchart LR
+  b["Browser"]
+  f["Flask static frontend"]
+  w["Waitress / start.py"]
+  a["Authentication + CSRF secure cookies"]
+  m["MongoDB required"]
+  r["PDF/JSON stream"]
+  s["AURA_REPORT_DIR optional or ephemeral local disk"]
+  b -->|HTTPS| f
+  f -->|API| w
+  w --> a
+  a -->|datasets/sessions| m
+  w -->|reports| r
+  r -->|storage| s

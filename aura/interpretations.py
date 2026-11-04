@@ -17,7 +17,7 @@ def _same(left, right):
     return left == right
 
 
-def compare_interpretations(candidates, execute, plan, role, term=None):
+def compare_interpretations(candidates, execute, plan, role, term=None, impact_context=None):
     alternatives, evidence, claims, checked = [], [], [], []
     for column in candidates[:MAX_INTERPRETATIONS]:
         response = execute(column)
@@ -41,6 +41,8 @@ def compare_interpretations(candidates, execute, plan, role, term=None):
         alternatives.append(item)
         for record in response["evidence"]:
             record["interpretation_status"] = "CONDITIONAL"
+            record["evidence_role"] = "CONDITIONAL_CANDIDATE"
+            record["report_eligible"] = True
         evidence.extend(response["evidence"])
         claims.extend(response.get("claims", []))
     complete = len(candidates) <= MAX_INTERPRETATIONS and len(checked) == len(candidates)
@@ -60,7 +62,7 @@ def compare_interpretations(candidates, execute, plan, role, term=None):
         lines.append("Comparison coverage is incomplete; no stability conclusion is available.")
     lines.append("Ask again using the exact column name to choose a definition.")
     options = [{"measure_column": column, "definition": {"measure_column": column}} for column in candidates]
-    return {"status": "INSUFFICIENT DATA" if all_failed else "CLARIFICATION_REQUIRED", "answer": "\n".join(lines), "plan": plan,
+    response = {"status": "INSUFFICIENT DATA" if all_failed else "CLARIFICATION_REQUIRED", "answer": "\n".join(lines), "plan": plan,
             "evidence": evidence, "claims": claims, "repair_attempts": 0,
             "verification": {"status": "CONDITIONAL", "claims": [],
                              "notice": "Each successful interpretation has separate verified evidence; no interpretation has been selected."},
@@ -71,3 +73,22 @@ def compare_interpretations(candidates, execute, plan, role, term=None):
                                      "scope": "Detected measure columns only; not all possible business definitions."},
             "clarification": {"field": "measure_column", "semantic_role": role, "term": term,
                               "question": "Which column should define this measure?", "options": options}}
+    if impact_context is not None:
+        from .impact import analyze_semantic_interpretation_impact
+        impact = analyze_semantic_interpretation_impact(candidates=candidates, semantic_role=role,
+            business_term=term or role, requested_aggregation=plan["aggregations"][0], **impact_context)
+        response["semantic_interpretation_impact"] = impact
+        # Conditional chart contracts are additive research output. They remain
+        # explicitly ambiguous until a user chooses a candidate definition.
+        from .visualization_engine import EvidenceVerifiedVisualizationEngine
+        response["conditional_visualizations"] = EvidenceVerifiedVisualizationEngine().conditional_from_impact(impact)
+        impact_evidence = [candidate["evidence"] for candidate in impact["candidates"] if "evidence" in candidate]
+        for record in impact_evidence:
+            # Broader grouped/ranking/chart diagnostics are inspectable lineage,
+            # not a second candidate conclusion for report selection.
+            record["evidence_role"] = "INTERPRETATION_IMPACT_DIAGNOSTIC"
+            record["report_eligible"] = False
+        impact_claims = [claim for candidate in impact["candidates"] for claim in candidate.get("verification", {}).get("claims", [])]
+        response["evidence"].extend(impact_evidence)
+        response["claims"].extend(impact_claims)
+    return response

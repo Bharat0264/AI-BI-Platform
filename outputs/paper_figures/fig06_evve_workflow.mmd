@@ -1,0 +1,12 @@
+flowchart LR
+  e["Computed evidence"]
+  s["VisualizationSpecification"]
+  a["Type, axes, metric, grouping"]
+  n["Series oracle + alignment"]
+  p["Dataset/version/scope/provenance"]
+  r["VERIFIED / INVALID / AMBIGUOUS / UNSUPPORTED"]
+  e --> s
+  s --> a
+  a --> n
+  n --> p
+  p --> r
