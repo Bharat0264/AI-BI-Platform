@@ -3,8 +3,9 @@
   "recorded_on": "2026-11-04",
   "deployment_status": "NOT_DEPLOYED",
   "branch": "research/independent-evaluation",
-  "base_commit": "b07a9ac15f9387d76756fcfb913fea621d34c8ea",
-  "worktree_state": "dirty; release tag intentionally deferred until reviewed changes are committed",
+  "implementation_commit": "e08143c50455e3e0aa1783f78bd0ec7ffc22620c",
+  "implementation_parent_commit": "b07a9ac15f9387d76756fcfb913fea621d34c8ea",
+  "worktree_state_at_recording": "release metadata follows the implementation freeze; no untracked private data is included",
   "python": "CPython 3.12.16",
   "platform": "macOS 27.2 arm64",
   "dependencies": {

@@ -5,12 +5,12 @@
 ## Frozen implementation baseline
 
 - Branch: `research/independent-evaluation`
-- Base committed revision: `b07a9ac15f9387d76756fcfb913fea621d34c8ea`
+- Frozen implementation revision: `e08143c50455e3e0aa1783f78bd0ec7ffc22620c`
 - Python: CPython 3.12.16
 - Runtime dependencies: `requirements.txt`; dependency integrity check: `python -m pip check` reported no broken requirements.
 - Regression run: 464 passed, 1 warning, 38.54 seconds, using the supported CPython environment. The single warning is the installed `google.generativeai` package's upstream deprecation warning; it is not a test failure.
 
-This worktree contains uncommitted implementation and research artifacts. It must be committed in a reviewed release commit before a Git tag can truthfully identify the complete deployment candidate. A tag on the base revision alone would omit the research pipeline, report export, independent-evaluation infrastructure, and figure generator.
+The frozen implementation revision contains the reviewed research pipeline, report export, independent-evaluation infrastructure, and figure generator. The accompanying release metadata is committed separately; the annotated release tag identifies the complete snapshot.
 
 ## Included implemented components
 
@@ -38,13 +38,12 @@ Render is compatible with the one-service architecture: Flask serves static fron
 
 ## Required operator actions before a live deployment
 
-1. Commit the reviewed working tree and create an annotated release tag from that commit.
-2. In Render, create/select a Python Web Service connected to that immutable commit.
-3. Configure secret-managed `MONGODB_URI`, `MONGODB_DATABASE`, and a stable `AURA_SECRET_KEY` of at least 32 characters. Do not paste `.env` into source control.
-4. Set `AURA_AUTH_REQUIRED=true`, `AURA_PUBLIC_DEMO=false`, `AURA_COOKIE_SECURE=true`; add custom domain hostnames to `AURA_TRUSTED_HOSTS` only if used.
-5. Provision the first account privately with `python scripts/manage_user.py --username <operator>` against the same MongoDB database. Enter its password only at the terminal prompt.
-6. Deploy and obtain the actual `onrender.com` or custom URL.
-7. Run the live validation checklist in `docs/DEPLOYMENT_VALIDATION.md`; record only observed responses in `outputs/paper_evidence/deployment/`.
+1. In Render, create/select a Python Web Service connected to the annotated release tag.
+2. Configure secret-managed `MONGODB_URI`, `MONGODB_DATABASE`, and a stable `AURA_SECRET_KEY` of at least 32 characters. Do not paste `.env` into source control.
+3. Set `AURA_AUTH_REQUIRED=true`, `AURA_PUBLIC_DEMO=false`, `AURA_COOKIE_SECURE=true`; add custom domain hostnames to `AURA_TRUSTED_HOSTS` only if used.
+4. Provision the first account privately with `python scripts/manage_user.py --username <operator>` against the same MongoDB database. Enter its password only at the terminal prompt.
+5. Deploy and obtain the actual `onrender.com` or custom URL.
+6. Run the live validation checklist in `docs/DEPLOYMENT_VALIDATION.md`; record only observed responses in `outputs/paper_evidence/deployment/`.
 
 ## Evidence and limitations
 
