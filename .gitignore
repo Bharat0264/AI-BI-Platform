@@ -7,6 +7,7 @@ __pycache__/
 !.env.example
 outputs/*.log
 outputs/*.err
+outputs/research_reports/
 outputs/experiments/
 .codex-server*.log
 .codex-server.pid
