@@ -1,6 +1,6 @@
 {
   "date": "2026-11-02",
-  "change": "Owner-requested temporary no-login public demo",
+  "change": "Historical owner-requested temporary no-login public demo",
   "tests": {
     "tests": "410",
     "failures": "0",
@@ -10,7 +10,7 @@
   },
   "demo_cases": 5,
   "behavior": [
-    "Render defaults to AURA_PUBLIC_DEMO=true, overriding previous login-required setting",
+    "At the time of this historical run, Render defaulted to AURA_PUBLIC_DEMO=true, overriding previous login-required setting",
     "No sign-in modal; anonymous visitors share a dedicated public-demo namespace",
     "Existing private account databases and legacy shared cache are not exposed",
     "Private data remains accessible after restoring account mode",

@@ -12,7 +12,7 @@ Implemented 2 November 2026 after feedback that the site was difficult for a nor
 - Question examples generated from the loaded file's recognized measure/group columns. Clicking an example fills the question without sending it automatically. The normal path is one question and one submit button; voice, raw calculation evidence and saved definition/history controls are collapsed initially. Remembering a selected meaning opens its confirmation section when needed.
 - A download page that explains each output. CSV stays available for general files; financial PDF is marked unavailable with an explanation when requirements are missing. The server report gate remains unchanged.
 - Mobile navigation keeps all five main choices visible. Long data tables retain contained scrolling. Focus outlines, existing keyboard submission, accessible labels/statuses, reduced motion and the Help dialog remain available.
-- The public no-login demo and its shared-data notice remain in place. No analytical engine, database behavior, authentication setting, original source data or numerical evidence calculation was changed in this redesign.
+- The historical public no-login UI state remains supported for isolated demonstrations, but the current deployment Blueprint uses private authenticated accounts. No analytical engine, database behavior, original source data or numerical evidence calculation was changed in this redesign.
 
 ## Verification
 

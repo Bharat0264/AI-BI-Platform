@@ -2,7 +2,7 @@
 
 ## Current status
 
-Temporary owner-requested no-login mode is now enabled on Render. No account provisioning is needed for the public demo. It has a separate shared namespace; existing private accounts are preserved. To restore the private-account procedure below, set AURA_PUBLIC_DEMO=false and AURA_AUTH_REQUIRED=true. See RENDER_DEPLOYMENT.md.
+The current release Blueprint requires authenticated private accounts: `AURA_PUBLIC_DEMO=false` and `AURA_AUTH_REQUIRED=true`. No Render service has been verified from this workspace. The historical public-demo path has a separate shared namespace and must not be used for controlled research data. See RENDER_DEPLOYMENT.md.
 
 The implementation for Phases 1–12, plus account security and isolated storage, is prepared for source delivery. The fresh Python 3.12 environment passes regression tests and a dependency audit. Earlier phase reports are historical; see ACCOUNT_SECURITY.md for the final account model. No public service has been deployed or real database migrated in this work. Authenticated Render hosting is now supported; see RENDER_DEPLOYMENT.md for required settings. Real production infrastructure validation remains separate.
 

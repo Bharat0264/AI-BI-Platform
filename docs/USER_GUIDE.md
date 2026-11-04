@@ -4,7 +4,7 @@
 
 Open **Start**. Choose a CSV, Excel or JSON file and click **Upload file**. If you do not have a file ready, click **Try sample data**. After loading, the site takes you to Results. Your original file is not edited.
 
-The current public demo is shared. Use sample data: other visitors can see or replace data in that demo workspace.
+In the controlled deployment profile, sign in before uploading data. Your workspace is isolated from other authenticated accounts. Do not use the historical shared-demo mode for private or research-participant data.
 
 ## 2. Check your file when needed
 

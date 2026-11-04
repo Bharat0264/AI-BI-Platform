@@ -48,11 +48,9 @@ Atlas deployment follow-up: generated workspace database names now fit the 38-by
 
 Start → My data → Results → Ask a question → Download. The main flow now has plain-language guidance, file-based question examples, useful empty states and a mobile-friendly five-item menu. Research/model tools are optional under More tools. See the [simple user guide](docs/USER_GUIDE.md) and [redesign details](docs/GUIDED_WORKSPACE.md).
 
-## Temporary no-login demo
+## Controlled deployment profile
 
-Verified by **410 passing tests**, including a real-browser no-login upload/question flow. See [demo-mode validation](docs/validation/public-demo.json).
-
-At the owner’s request, Render now defaults to a shared public demo with no sign-in. `AURA_PUBLIC_DEMO=true` overrides an older `AURA_AUTH_REQUIRED=true` setting. Existing private accounts/data remain separate. Uploaded demo data is visible to other visitors. Keep the existing signing key and MongoDB settings. Restore account login with `AURA_PUBLIC_DEMO=false` and `AURA_AUTH_REQUIRED=true`.
+The current Render Blueprint defaults to authenticated account mode: `AURA_PUBLIC_DEMO=false` and `AURA_AUTH_REQUIRED=true`. This is the only supported profile for controlled research or private business data. The historical no-login demo validation remains available in [public-demo.json](docs/validation/public-demo.json), but it is not the current deployment configuration and must not be used for private data.
 
 ## Release status
 
