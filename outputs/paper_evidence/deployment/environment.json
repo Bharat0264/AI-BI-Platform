@@ -1,11 +1,12 @@
 {
-  "record_type": "deployment_preparation_environment",
+  "record_type": "deployment_environment_and_observed_availability",
   "recorded_on": "2026-11-04",
-  "deployment_status": "NOT_DEPLOYED",
+  "deployment_status": "PARTIALLY_VALIDATED_LIVE_SERVICE",
+  "live_url": "https://aura-bieee.onrender.com",
   "branch": "research/independent-evaluation",
   "implementation_commit": "e08143c50455e3e0aa1783f78bd0ec7ffc22620c",
   "implementation_parent_commit": "b07a9ac15f9387d76756fcfb913fea621d34c8ea",
-  "worktree_state_at_recording": "release metadata follows the implementation freeze; no untracked private data is included",
+  "worktree_state_at_recording": "deployment evidence is collected separately from the frozen application revision; no private data is included",
   "python": "CPython 3.12.16",
   "platform": "macOS 27.2 arm64",
   "dependencies": {
@@ -32,5 +33,14 @@
     "authentication_required": true,
     "public_demo": false,
     "report_storage_default": "ephemeral_local"
+  },
+  "live_observation": {
+    "observed_at_utc": "2026-11-04T17:45:26Z through 2026-11-04T17:45:41Z",
+    "homepage_status": 200,
+    "health_status": 200,
+    "health_payload": {"persistence": "mongodb", "status": "ready"},
+    "tls_certificate_verification": "passed by curl (ssl_verify_result=0)",
+    "authentication_boundary": "auth_required=true; authenticated=false before private login",
+    "deployed_commit_verification": "NOT_VERIFIABLE: no public version/commit endpoint and no Render service/log access was supplied"
   }
 }

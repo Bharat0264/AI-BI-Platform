@@ -1,6 +1,8 @@
 # Deployment validation — pending operator authorization
 
-Status: **NOT DEPLOYED FROM THIS WORKSPACE**. No Render account/service authorization or production MongoDB credentials were supplied. No live URL is claimed.
+Status: **PARTIALLY VALIDATED LIVE SERVICE**. On 2026-11-04, `https://aura-bieee.onrender.com` returned homepage `200`, `/api/health` returned `200` with MongoDB `ready`, and the unauthenticated session endpoint reported `auth_required=true`. The protected research-dashboard endpoint returned `401` for every unauthenticated controlled request. No Render operator session, deployed-log access, or private test-account credentials were supplied; therefore the deployed commit, authenticated analytics, report export, dataset isolation, and screenshots remain unverified.
+
+Observed raw-safe records and timing summaries are in `outputs/paper_evidence/deployment/`. These are deployment engineering observations, not independent research evaluation.
 
 ## Audited architecture
 

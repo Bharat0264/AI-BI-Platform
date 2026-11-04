@@ -1,0 +1,4 @@
+case,repetitions,http_status_distribution,mean_ms,median_ms,min_ms,max_ms,p95_linear_interpolated_ms,classification
+health,10,200:10,596.338,562.951,522.670,773.744,730.718,deployment_engineering_measurement
+session_boundary,10,200:10,529.451,415.503,293.368,1046.320,1030.800,deployment_engineering_measurement
+unauthenticated_dashboard,10,401:10,347.967,322.444,288.085,605.659,494.449,deployment_engineering_measurement

@@ -1,6 +1,10 @@
 # AURA-BI final deployment report
 
-**Status (2026-11-04): deployment package prepared; no live deployment verified from this workspace.**
+**Status (2026-11-04): live availability partially validated; authenticated research workflow not yet validated.**
+
+The live URL `https://aura-bieee.onrender.com` served the homepage over certificate-verified HTTPS. `GET /api/health` returned `200` and `{"persistence":"mongodb","status":"ready"}`. `GET /api/auth/session` reported `auth_required=true` before login, and ten unauthenticated requests to `/api/research/dashboard` returned `401`. The service does not expose a commit/version identifier, and no Render deploy log/service access was supplied, so the deployed commit cannot be independently confirmed from this workspace.
+
+Thirty controlled requests are recorded in `outputs/paper_evidence/deployment/measurements.csv`; their summaries are in `performance_summary.csv`. They measure endpoint availability and authentication enforcement only. They do not establish research-pipeline performance or correctness.
 
 ## Frozen implementation baseline
 
@@ -47,7 +51,7 @@ Render is compatible with the one-service architecture: Flask serves static fron
 
 ## Evidence and limitations
 
-No hosting account authorization, Render service identifier, production MongoDB credentials, or live URL was available in this workspace. Therefore no live HTTP requests, uploads, screenshots, endpoint measurements, report downloads, or deployment performance records were created. Independent human benchmark evaluation is also still pending. Developer-only evidence remains separate from independent research results.
+A live URL was supplied and non-destructive public endpoint checks were completed. Render service/log access and private test-account credentials remain unavailable. Therefore no authenticated uploads, analytical answers, chart contracts, report downloads, dataset-isolation checks, screenshots, or research-pipeline timings have been created. Independent human benchmark evaluation is also still pending. Developer-only evidence remains separate from independent research results.
 
 ## Rollback
 
