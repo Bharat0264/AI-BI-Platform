@@ -193,8 +193,9 @@ window.createAuraAnalyst = function ({ request, escapeHtml: esc, onAnswer, onSta
   }
   async function refresh() {
     const generation = epoch, sequence = ++refreshId;
+    const signal = AbortSignal.timeout(12000);
     try {
-      const [definitions, history, exports] = await Promise.all([request("/api/aura/definitions"), request("/api/aura/answers"), request("/api/aura/reports")]);
+      const [definitions, history, exports] = await Promise.all(["definitions", "answers", "reports"].map(resource => request(`/api/aura/${resource}`, { signal })));
       if (generation !== epoch || sequence !== refreshId) return;
       if (definitions.dataset_id !== history.active_dataset_id || definitions.dataset_id !== exports.active_dataset_id) throw new Error("The dataset changed while loading. Refresh status again.");
       if (context && (context.dataset_id !== definitions.dataset_id || context.workspace_id !== definitions.workspace_id)) reset();
@@ -207,12 +208,17 @@ window.createAuraAnalyst = function ({ request, escapeHtml: esc, onAnswer, onSta
       updateScopeSummary(); renderHistories();
       if (currentAnswer?.query_id) {
         const id = currentAnswer.query_id;
-        const latest = answers.find(item => item.query_id === id) || await request(`/api/aura/answers/${encodeURIComponent(id)}`);
-        if (generation === epoch && currentAnswer?.query_id === id) renderAnswer({ ...currentAnswer, lifecycle: latest.lifecycle });
+        const latest = answers.find(item => item.query_id === id) || await request(`/api/aura/answers/${encodeURIComponent(id)}`, { signal });
+        if (generation === epoch && sequence === refreshId && currentAnswer?.query_id === id) renderAnswer({ ...currentAnswer, lifecycle: latest.lifecycle });
       }
       syncButtons();
     } catch (error) {
       if (generation === epoch && sequence === refreshId) {
+        if (signal.aborted) {
+          byId("answerFreshness").textContent = "Freshness could not be refreshed.";
+          status("Saved answers and reports took too long to refresh. You can retry the refresh or ask another question.", true);
+          return;
+        }
         context = null; clearConfirmation(); clearReplay(); syncButtons();
         byId("answerFreshness").textContent = "Freshness could not be refreshed.";
         status(error.message, true);
@@ -230,6 +236,8 @@ window.createAuraAnalyst = function ({ request, escapeHtml: esc, onAnswer, onSta
     fillColumns(); status(""); onAnswer("", false); syncButtons();
   }
   async function submit(text, definition, generation, speak, scope = null) {
+    // Ignore history responses associated with the previous question.
+    refreshId++;
     clearConfirmation(); clearReplay(); byId("interpretationChoices").textContent = "";
     byId("answerFreshness").textContent = ""; byId("answerCitations").textContent = ""; byId("aiEvidenceDetail").textContent = "";
     byId("answerOutcome").hidden = true;
@@ -241,7 +249,9 @@ window.createAuraAnalyst = function ({ request, escapeHtml: esc, onAnswer, onSta
     if (generation !== epoch) return;
     question = text; questionScope = scope; renderAnswer(payload);
     onStatus(payload.status === "CLARIFICATION_REQUIRED" ? "Choose the meaning of your measure below." : payload.status === "OK" ? "Answer ready." : "This question needs more information. Review the result below.");
-    onAnswer(payload.answer, speak); await refresh();
+    onAnswer(payload.answer, speak);
+    // The answer is already available. History refresh must not hold the form lock.
+    void refresh();
   }
   function ask(text, { speak = true } = {}) {
     return run(generation => {

@@ -27,6 +27,8 @@ def test_render_overrides_stale_local_host_and_uses_port():
     options=serve_options(render_environment())
     assert options['host']=='0.0.0.0' and options['port']==12345
     assert options['url_scheme']=='https' and options['threads']==1
+    assert options['connection_limit'] == 32 and options['cleanup_interval'] == 5
+    assert options['channel_timeout'] == 30
 
 
 @pytest.mark.parametrize('key,value,message',[

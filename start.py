@@ -53,6 +53,8 @@ def serve_options(environ=None):
         # Render terminates HTTPS at its load balancer, then forwards HTTP.
         # Use the known external scheme without trusting arbitrary proxy headers.
         options['url_scheme'] = 'https'
+        # Allow page-load bursts from the proxy without adding application workers.
+        options.update(connection_limit=32, cleanup_interval=5)
     return options
 
 
