@@ -421,6 +421,23 @@ def test_unsupported_question_explains_next_step(ui):
     assert errors==[]
 
 
+def test_next_question_can_run_while_answer_history_is_pending(ui):
+    page, _, _, _, errors = ui
+    pending_history = []
+    page.route('**/api/aura/answers', lambda route: pending_history.append(route))
+
+    with page.expect_request('**/api/aura/answers'):
+        page.locator('#question').fill('What is Gross Sales?')
+        page.locator('#askButton').click()
+    pw.expect(page.locator('#answer')).to_contain_text('1,000.00')
+    pw.expect(page.locator('#question')).to_be_enabled(timeout=4000)
+
+    ask(page, 'Why did our customers leave?')
+    pw.expect(page.locator('#answerOutcome')).to_contain_text('could not be answered')
+    assert len(pending_history) >= 1
+    assert errors == []
+
+
 def test_unsupported_file_keeps_existing_answer(ui):
     page,_,_,_,errors=ui
     ask(page,'What is Gross Sales?')
